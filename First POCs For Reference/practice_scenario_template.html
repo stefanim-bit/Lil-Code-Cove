@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Session — Interactive Scenario (Rise Code Block Template)</title>
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION  ·  INTERACTIVE SCENARIO TEMPLATE  (Rise Code Block)
+==================================================================================
+
+  HOW TO READ THIS FILE (for stakeholders / non-coders)
+  -----------------------------------------------------
+  Two parts, on purpose:
+    1) THE SCENARIO  (<script id="scenario">) — the CONTENT. Reads like a table:
+       every screen, every answer choice, its points, and where it goes next.
+    2) THE ENGINE    (<script id="engine">)   — the machinery that plays ANY
+       scenario. Authors never touch it.
+
+  THE INTERACTION MODEL
+  ---------------------
+  Each scenario mirrors a real Expert <-> user interaction across eight graded
+  behaviors (the rubric, 100 pts):
+     open(5) · dynamics(10) · familiarize(10) · clarify(15)
+     roadmap(10) · article(20) · recreate(10) · solve(20)
+
+  Rules:
+    • FEEDBACK IS SAVED FOR THE END. During play the learner gets NO grade, NO
+      correctness colors, and NO running score. Choosing an answer simply advances
+      the interaction. At the end they see their score, a per-stage scorecard, and
+      two written sections: TOP STRENGTHS and AREAS FOR IMPROVEMENT.
+    • IN-CHARACTER REACTIONS ARE NOT FEEDBACK. If a choice is weak, the caller may
+      react in dialogue (e.g. "I don't have a menu panel like that…"). That line is
+      part of the sim, not a grade.
+    • MOSTLY GATED, SOME FREEDOM — "gate:true" screens must be finished to advance;
+      "gate:false" screens are OPEN moments with more than one valid path.
+    • RETRY ONLY IF THE USER PROMPTS — no "try again" button by default. A choice
+      marked "retry:true" re-opens the screen because the caller pushed back; the
+      second attempt is capped by "capIfRetried".
+    • SKIPS ARE RECOVERABLE — each stage keeps its own best score. Perform a stage
+      late and you still earn it.
+    • ROADMAP FLOATS — roadmapping can happen at ANY point (even the greeting) and
+      more than once. Attach roadmap credit to any choice with:
+          credits:[{stage:"roadmap", points:10}]
+
+  FIELD GUIDE
+  -----------
+    STAGE  : id, name, max, strength (shown at end if done well),
+             improvement (shown at end if missed/partial).
+    SCREEN : stage, gate, speaker (caller line), prompt, choices[].
+    CHOICE : text, verdict ("correct"|"partial"|"incorrect"), points, goTo,
+             credits[] (optional extra stage credit, e.g. floating roadmap),
+             retry / capIfRetried (optional, user-prompted retry),
+             consequence (optional in-character caller reaction),
+             stageOverride (optional, credit a different stage).
+==================================================================================
+-->
+<style>
+  :root{
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    --ink:#202124; --muted:#5f6368; --line:#dadce0; --accent:#1155CC;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);margin:0;background:#f5f6f8}
+  .wrap{max-width:1040px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 250px;gap:20px}
+  .stage{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px;min-height:360px}
+  .intro{font-size:13px;color:var(--muted);margin:0 0 10px}
+  .badge{display:inline-block;font-size:12px;font-weight:bold;color:#fff;background:var(--accent);padding:3px 10px;border-radius:20px;letter-spacing:.02em}
+  .badge.open{background:#674EA7}
+  .speaker{background:#FFF2CC;border-left:4px solid #bf9000;padding:12px 14px;border-radius:6px;margin:14px 0;font-size:15px}
+  .prompt{font-weight:bold;font-size:16px;margin:14px 0 8px}
+  .choice{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:12px 14px;margin:8px 0;font-size:14px;cursor:pointer;transition:.15s}
+  .choice:hover:not(:disabled){border-color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .choice:disabled{opacity:.5;cursor:not-allowed}
+  .next{margin-top:16px;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:bold;cursor:pointer}
+  /* side: neutral progress only (no scores) while playing */
+  .side{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;align-self:start}
+  .side h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .pbar{height:8px;background:#eceef1;border-radius:6px;overflow:hidden}
+  .pfill{height:100%;background:var(--accent);border-radius:6px;transition:width .25s}
+  .pnote{font-size:12px;color:var(--muted);margin-top:8px}
+  /* live chat (accumulating, scrollable — the learner can scroll up to re-read) */
+  .chathead{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+  .chathead .intro{margin:0}
+  .chat{max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px 4px}
+  .b{max-width:82%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.42}
+  .b-caller{align-self:flex-start;background:#FFF2CC;border:1px solid #efe0a6;border-bottom-left-radius:3px}
+  .b-you{align-self:flex-end;background:#e7f0ff;border:1px solid #cfe0ff;border-bottom-right-radius:3px}
+  .b-you .who{display:block;font-size:11px;color:var(--accent);font-weight:bold;margin-bottom:2px}
+  .b-system{align-self:center;max-width:100%;background:transparent;color:var(--muted);font-style:italic;font-size:13px;padding:2px}
+  .composer{border-top:1px solid var(--line);margin-top:6px;padding-top:12px}
+  /* helper buttons + modal */
+  .helperbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+  .hbtn{font-size:12px;font-weight:bold;padding:6px 11px;border-radius:16px;border:1px solid var(--accent);background:#fff;color:var(--accent);cursor:pointer}
+  .hbtn:hover{background:#eef3ff}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
+  .modal{background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:82vh;overflow-y:auto;padding:18px 20px}
+  .modal h3{margin:0}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .mx{border:0;background:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted)}
+  .mopt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:10px 12px;margin:0 0 8px;font-size:14px;cursor:pointer}
+  .mopt:hover{border-color:var(--accent)}
+  .tabrow{display:flex;gap:6px;margin-bottom:10px}
+  .tab{font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer}
+  .tab.active{border-color:var(--accent);color:var(--accent);font-weight:bold}
+  .article-body{white-space:pre-wrap;font-size:14px;background:#f7f8fa;border-radius:8px;padding:12px;min-height:80px}
+  .mnote{font-size:12.5px;color:var(--muted);margin-top:6px}
+  /* end review */
+  .final .big{font-size:44px;font-weight:bold}
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:13px;font-weight:bold}
+  .pass{background:var(--correct-bg);color:var(--correct)} .fail{background:var(--incorrect-bg);color:var(--incorrect)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:16px}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:6px 0;border-bottom:1px dashed #eee}
+  .sdot{width:9px;height:9px;border-radius:50%;margin-right:9px;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .list{margin:8px 0 0;padding-left:0;list-style:none}
+  .list li{padding:8px 0 8px 26px;position:relative;font-size:14px;border-bottom:1px solid #f1f1f1}
+  .list.str li:before{content:"✓";position:absolute;left:4px;color:var(--correct);font-weight:bold}
+  .list.imp li:before{content:"→";position:absolute;left:4px;color:var(--partial);font-weight:bold}
+  .pick{font-size:12.5px;color:var(--muted);margin-top:5px;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+  .ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);margin-right:8px}
+  .tbeat{padding:9px 0;border-bottom:1px solid #f1f1f1}
+  .tspk{background:#FFF6D9;border-left:3px solid #e8c14a;padding:7px 10px;border-radius:5px;font-size:13px;margin:3px 0}
+  .tyou{padding:7px 10px;font-size:13px;color:var(--accent);font-weight:bold}
+  h2{margin:.2em 0 .4em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="stageHost" class="stage"></div>
+  <aside class="side" id="side">
+    <h3>Progress</h3>
+    <div id="progress"></div>
+  </aside>
+</div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Practice Call — Wix Editor: Sub-pages",
+  userBio: "Meet Sam — new to the Wix Editor, stuck for an hour trying to add sub-pages to the menu.",
+
+  // Optional on-screen helpers. The engine renders these as buttons; scoring mirrors PS1.
+  // (Telemetry for helper use goes through the same no-op logEvent seam.)
+  helpers: {
+    tools: {                       // "Other Tools" — neutral workspace lookup, NO scoring effect
+      title: "Other Tools",
+      note: "Reference only — opening these doesn't change your score.",
+      items: [
+        "User Manager — look up the account and open the user's site list",
+        "Copilot — AI assist on the case",
+        "CSI search — official Wix support articles",
+        "SBS · Impersonate · User Events"
+      ]
+    },
+    colleague: {                   // "Ask a Colleague" — using a hint caps the Solve stage
+      title: "Ask a Colleague",
+      capStage: "solve", capTo: 10,
+      hints: [
+        { pick:"I'm not sure what to ask first",        hint:"Find out what kind of menu they've got — that's usually where this one hides.", topic:"clarify" },
+        { pick:"I can't find the right article",         hint:"Compare the two menu articles and use the one that explains why sub-pages fail.", topic:"article" },
+        { pick:"I'm not sure how to check their site",   hint:"Clone their site in User Manager and try it yourself.", topic:"recreate" },
+        { pick:"I don't know how to explain the fix",    hint:"Tell them the cause, then the steps, then what happens next.", topic:"solve" }
+      ]
+    },
+    articles: {                    // "Check the Articles" — credit for genuinely checking, not claiming
+      title: "Check the Articles",
+      stage: "article", capIfUnchecked: 10,
+      items: [
+        { title:"Wix Editor: Troubleshooting Common Issues — Site Menu Issues", correct:true,
+          body:"Sub-pages won't sit under another page. Sites using the older horizontal menu can't hold sub-pages.\n\nTo fix it:\n1. Click the menu in the Wix Editor.\n2. Open Settings and set the menu to Advanced.\n3. If that option isn't there, the menu is too old — delete it and add a new horizontal menu from Add Elements." },
+        { title:"Wix Editor: Adding and Setting Up Your Menu", correct:false,
+          body:"Adding a page to your menu.\n1. Click Pages in the Wix Editor.\n2. Click + Add Page.\n3. Drag the page underneath another page to make it a sub-page.\n\nNote: not all menus support sub-pages." }
+      ]
+    }
+  },
+
+  // The 8-behavior rubric. 'strength'/'improvement' are the END feedback lines.
+  stages: [
+    { id:"open", name:"Opening & closing", max:5,
+      strength:"you greeted the user, reassured them, and closed warmly.",
+      improvement:"open with a greeting and a little reassurance, and close with a recap before ending." },
+    { id:"dynamics", name:"Use Dynamics", max:10,
+      strength:"you used User Manager to see the site yourself instead of relying on the user.",
+      improvement:"reach for Dynamics/User Manager to see what the user sees, rather than asking them to describe it." },
+    { id:"familiarize", name:"Familiarize", max:10,
+      strength:"you got oriented to the user's site and setup before troubleshooting.",
+      improvement:"take a moment to familiarize yourself with the user's site before troubleshooting." },
+    { id:"clarify", name:"Clarify the issue", max:15,
+      strength:"you confirmed the real problem before proposing a fix.",
+      improvement:"clarify and confirm the issue before jumping to solutions or an article search." },
+    { id:"roadmap", name:"Roadmapping", max:10,
+      strength:"you set clear expectations about what you'd do next.",
+      improvement:"tell the user your plan — what you'll check and do next — so they're not left guessing." },
+    { id:"article", name:"Article / Copilot", max:20,
+      strength:"you went to the official CSI source of truth rather than memory or old posts.",
+      improvement:"locate the right official article / use Copilot instead of relying on memory or forum posts." },
+    { id:"recreate", name:"Recreate the issue", max:10,
+      strength:"you reproduced the issue to confirm the cause before promising a fix.",
+      improvement:"recreate the issue to confirm the cause before giving the user a solution." },
+    { id:"solve", name:"Solve the issue", max:20,
+      strength:"you gave a correct fix in clear steps.",
+      improvement:"make sure the fix matches the confirmed cause and is given in clear steps." }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open", gate:true,
+      speaker:"“Hi — I’m trying to add sub-pages to my menu and it’s just not working. I’ve been at this an hour.”",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“Sure — go into menu settings and switch it to Advanced.”",
+          verdict:"incorrect", points:0, goTo:"s_dynamics",
+          consequence:"Sam: “Wait — I don’t have anything called Advanced. Where am I meant to be looking?”" },
+        { id:"B", text:"“What’s the email on your account?”",
+          verdict:"partial", points:3, goTo:"s_dynamics" },
+        { id:"C", text:"“Hi, you’re through to Wix Support, this is [name]. Sorry you’ve been stuck — let’s sort it together: I’ll check our guide, recreate it, then walk you through the fix.”",
+          verdict:"correct", points:5, goTo:"s_dynamics",
+          credits:[{stage:"roadmap", points:4, verdict:"partial"}] }
+      ]
+    },
+
+    s_dynamics: {
+      stage:"dynamics", gate:true,
+      prompt:"What’s your next step?",
+      choices:[
+        { id:"A", text:"Ask Sam to describe what they see.",
+          verdict:"incorrect", points:0, goTo:"s_familiarize" },
+        { id:"B", text:"“Actually, can you confirm the email on your account?” — then look them up in User Manager to open their site list.",
+          verdict:"correct", points:10, goTo:"s_familiarize",
+          consequence:"Sam: “Sure — it’s sam.trent@gmail.com.”" }
+      ]
+    },
+
+    s_familiarize: {
+      stage:"familiarize", gate:true,
+      speaker:"“It’s my consulting business site — the main one.”",
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"Open Sam’s site in the Editor and note the menu type and page structure.",
+          verdict:"correct", points:10, goTo:"s_clarify" },
+        { id:"B", text:"Assume it’s a standard setup and move on.",
+          verdict:"incorrect", points:0, goTo:"s_clarify" }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify", gate:true,
+      speaker:"“I’ve got a page for each service and I want them tucked under one heading.”",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"Jump in: “Just drag the pages under the heading in the menu panel.”",
+          verdict:"incorrect", points:0, retry:true, capIfRetried:8, goTo:"s_open_choice",
+          consequence:"Sam: “I don’t have a menu panel like that… are we looking at the same thing?”" },
+        { id:"B", text:"Confirm first: “Got it — is your menu the newer drop-down type, or an older horizontal bar?”",
+          verdict:"correct", points:15, goTo:"s_open_choice" }
+      ]
+    },
+
+    s_open_choice: {
+      stage:"roadmap", gate:false,
+      speaker:"“Okay… so what now?”",
+      prompt:"How do you proceed?",
+      choices:[
+        { id:"A", text:"Roadmap it: “Here’s the plan — I’ll check our guide, recreate it on my side, then walk you through the fix.”",
+          verdict:"correct", points:10, goTo:"s_article" },
+        { id:"B", text:"Go straight to the CSI article without saying anything.",
+          verdict:"partial", points:5, goTo:"s_article" }
+      ]
+    },
+
+    s_article: {
+      stage:"article", gate:true,
+      speaker:"(You open CSI.)",
+      prompt:"Which result do you open?",
+      choices:[
+        { id:"A", text:"“Wix Editor: Troubleshooting Common Issues — Site Menu Issues.”",
+          verdict:"correct", points:20, goTo:"s_recreate" },
+        { id:"B", text:"A community forum post from 2019.",
+          verdict:"incorrect", points:0, goTo:"s_recreate" }
+      ]
+    },
+
+    s_recreate: {
+      stage:"recreate", gate:true,
+      speaker:"“Okay, I’m watching.”",
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"Recreate it on Sam’s cloned site to confirm the old menu type blocks sub-pages.",
+          verdict:"correct", points:10, goTo:"s_solve" },
+        { id:"B", text:"Tell Sam the fix without checking.",
+          verdict:"incorrect", points:0, goTo:"s_solve" }
+      ]
+    },
+
+    s_solve: {
+      stage:"solve", gate:true,
+      speaker:"“Okay, I’m in the menu settings now.”",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“Switch the menu to the newer type, then drag your service pages under the heading to make them sub-pages.”",
+          verdict:"correct", points:20, goTo:"s_close" },
+        { id:"B", text:"“Try reinstalling the Editor.”",
+          verdict:"incorrect", points:0, goTo:"s_close" }
+      ]
+    },
+
+    s_close: {
+      stage:"open", gate:true,
+      speaker:"“That did it — thank you!”",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"End the chat.",
+          verdict:"incorrect", points:0, goTo:"__end__" },
+        { id:"B", text:"“Glad that’s sorted! Your services now sit under the one heading. Anything else before you go?”",
+          verdict:"correct", points:5, goTo:"__end__" }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const host = document.getElementById('stageHost');
+  const progEl = document.getElementById('progress');
+
+  const earned = {};        // stageId -> best points (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response that set that stage's score
+  const transcript = [];    // ordered record of the whole conversation
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+
+  // Screens live in a keyed map; stamp each with its own id so retry can re-open it.
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  // Telemetry seam. In the SHIPPING build this posts each decision to the Google
+  // Sheet (proven implementation: rise-branching-scenario/index.html). Left as a
+  // no-op here so this stakeholder-review template stays free of plumbing.
+  function logEvent(evt){ /* no-op in template; wired to Google Sheet in the production build */ }
+
+  // Persistent chat shell: an accumulating, scrollable transcript the learner can
+  // scroll up through (like a real support chat), plus a composer at the bottom that
+  // holds the current prompt + choices.
+  host.innerHTML =
+    `<div class="chathead"><span class="badge">Live chat</span>
+       <span class="intro">${escapeHtml(S.title)} — ${escapeHtml(S.userBio)}</span></div>
+     <div id="helperbar" class="helperbar"></div>
+     <div id="chat" class="chat" aria-live="polite"></div>
+     <div id="composer" class="composer"></div>`;
+  const chatEl = document.getElementById('chat');
+  const composerEl = document.getElementById('composer');
+  const helperEl = document.getElementById('helperbar');
+
+  // Helper state (mirrors PS1): did the learner lean on help / genuinely check the source?
+  const help = { used:false, checkedCorrectArticle:false };
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  // Append one message bubble and keep the view pinned to the newest line.
+  function appendBubble(kind, text){
+    const div = document.createElement('div');
+    div.className = 'b b-' + kind;
+    div.innerHTML = (kind==='you' ? '<span class="who">You</span>' : '') + escapeHtml(text);
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+  function setComposer(html){ composerEl.innerHTML = html; }
+  // A caller line like "(You open CSI.)" is stage direction — show it as centered narration.
+  function callerKind(line){ return /^\s*\(/.test(line) ? 'system' : 'caller'; }
+
+  // ---- Helper buttons: Check the Articles / Other Tools / Ask a Colleague ----
+  function closeModal(){ var m=document.getElementById('modal'); if(m) m.remove(); }
+  function openModal(title, node){
+    closeModal();
+    var bg=document.createElement('div'); bg.className='modal-bg'; bg.id='modal';
+    var m=document.createElement('div'); m.className='modal';
+    var head=document.createElement('div'); head.className='mhead';
+    head.innerHTML='<h3>'+escapeHtml(title)+'</h3>';
+    var x=document.createElement('button'); x.className='mx'; x.innerHTML='&times;'; x.onclick=closeModal;
+    head.appendChild(x); m.appendChild(head); m.appendChild(node);
+    bg.appendChild(m); bg.onclick=function(e){ if(e.target===bg) closeModal(); };
+    document.body.appendChild(bg);
+  }
+  function renderHelpers(){
+    if(!S.helpers){ helperEl.style.display='none'; return; }
+    helperEl.innerHTML='';
+    var defs=[];
+    if(S.helpers.articles) defs.push([S.helpers.articles.title||'Check the Articles', openArticles]);
+    if(S.helpers.tools)    defs.push([S.helpers.tools.title||'Other Tools', openTools]);
+    if(S.helpers.colleague)defs.push([S.helpers.colleague.title||'Ask a Colleague', openColleague]);
+    defs.forEach(function(d){ var b=document.createElement('button'); b.className='hbtn'; b.textContent=d[0]; b.onclick=d[1]; helperEl.appendChild(b); });
+  }
+  function openTools(){
+    var t=S.helpers.tools, wrap=document.createElement('div');
+    wrap.innerHTML='<ul style="margin:0;padding-left:18px;font-size:14px">'+
+      t.items.map(function(i){return '<li style="margin-bottom:6px">'+escapeHtml(i)+'</li>';}).join('')+'</ul>'+
+      (t.note?'<div class="mnote">'+escapeHtml(t.note)+'</div>':'');
+    logEvent({type:'helper', helper:'tools'});
+    openModal(t.title||'Other Tools', wrap);
+  }
+  function openColleague(){
+    var c=S.helpers.colleague, wrap=document.createElement('div');
+    wrap.innerHTML='<div style="font-size:14px;margin-bottom:10px">What do you need a hand with?</div>';
+    c.hints.forEach(function(h){
+      var b=document.createElement('button'); b.className='mopt'; b.textContent=h.pick;
+      b.onclick=function(){
+        help.used=true;
+        logEvent({type:'helper', helper:'colleague', topic:h.topic});
+        transcript.push({ speaker:null, picked:'[Asked a colleague: '+h.pick+']', consequence:h.hint });
+        var out=document.createElement('div');
+        out.innerHTML='<div class="speaker">'+escapeHtml(h.hint)+'</div>'+
+          '<div class="mnote">Noted as solved with assistance — caps the Solve stage.</div>';
+        var ok=document.createElement('button'); ok.className='hbtn'; ok.style.marginTop='10px'; ok.textContent='Got it'; ok.onclick=closeModal;
+        out.appendChild(ok);
+        openModal(c.title||'Ask a Colleague', out);
+      };
+      wrap.appendChild(b);
+    });
+    var nm=document.createElement('button'); nm.className='mopt'; nm.style.borderStyle='dashed'; nm.style.color='var(--muted)'; nm.textContent='Never mind'; nm.onclick=closeModal;
+    wrap.appendChild(nm);
+    openModal(c.title||'Ask a Colleague', wrap);
+  }
+  function openArticles(){
+    var a=S.helpers.articles, wrap=document.createElement('div');
+    logEvent({type:'helper', helper:'articles', action:'open'});
+    wrap.innerHTML='<div class="mnote" style="margin:0 0 10px">Read both and decide which one explains why sub-pages fail on this menu.</div>';
+    var tabs=document.createElement('div'); tabs.className='tabrow';
+    var body=document.createElement('div'); body.className='article-body'; body.textContent='Select an article to read.';
+    a.items.forEach(function(it,idx){
+      var t=document.createElement('button'); t.className='tab'; t.textContent='Article '+(idx+1);
+      t.onclick=function(){
+        [].forEach.call(tabs.children,function(x){x.classList.remove('active');}); t.classList.add('active');
+        body.textContent=it.title+'\n\n'+it.body;
+        if(it.correct){ help.checkedCorrectArticle=true; logEvent({type:'helper', helper:'articles', action:'viewed-correct'}); }
+        else logEvent({type:'helper', helper:'articles', action:'viewed-other'});
+      };
+      tabs.appendChild(t);
+    });
+    wrap.appendChild(tabs); wrap.appendChild(body);
+    openModal(a.title||'Check the Articles', wrap);
+  }
+
+  // ---- neutral progress (NO scores AND NO stage names shown during play) ----
+  function paintProgress(){
+    const total = Object.keys(S.screens).length;
+    const pct = Math.round(visitedScreens.size / total * 100);
+    progEl.innerHTML =
+      `<div class="pbar"><div class="pfill" style="width:${pct}%"></div></div>
+       <div class="pnote">Chat in progress</div>`;
+  }
+
+  function applyCredit(stg, pts, verdict, pickText){
+    if(!(stg in earned)) return;
+    // Remember the response that determined this stage's score (best; first if all 0).
+    if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+    if(pts > earned[stg]) earned[stg] = pts;              // best attempt wins
+    if(verdict==='correct') status[stg]='done';
+    else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+  }
+
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text));
+  }
+
+  function renderScreen(id, retriedIds, cap, skipSpeaker){
+    retriedIds = retriedIds || [];
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    // Append the caller's new line into the running chat (skip on a retry re-open —
+    // that line is already above). The stage name is never shown during play.
+    if(scr.speaker && !skipSpeaker) appendBubble(callerKind(scr.speaker), scr.speaker);
+    setComposer(`<div class="prompt">${escapeHtml(scr.prompt)}</div><div id="choices"></div>`);
+    const cWrap = document.getElementById('choices');
+    scr.choices.forEach(ch=>{
+      const b=document.createElement('button');
+      b.className='choice'; b.textContent=ch.text;
+      if(retriedIds.includes(ch.id)) b.disabled=true;   // used-up (wrong) retry option
+      b.onclick=()=>choose(scr,ch,retriedIds,cap);
+      cWrap.appendChild(b);
+    });
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    appendBubble('you', ch.text);            // the learner's reply enters the chat
+
+    // RETRY ONLY IF THE USER PROMPTS: the caller pushes back and re-opens the screen.
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      transcript.push({ speaker:scr.speaker, picked:ch.text, consequence:ch.consequence });
+      logEvent({ type:'choice', stage:scr.stage, screen:scr.id, text:ch.text, verdict:ch.verdict, points:0, retry:true });
+      if(ch.consequence) appendBubble(callerKind(ch.consequence), ch.consequence);
+      setComposer(`<button class="next" id="next">Try again →</button>`);
+      document.getElementById('next').onclick =
+        ()=>renderScreen(scr.id, retriedIds.concat(ch.id), ch.capIfRetried, true);
+      return;
+    }
+    // Score silently (no feedback shown now). Cap points if this was a retry attempt.
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+    logEvent({ type:'choice', stage:scr.stage, screen:scr.id, text:ch.text, verdict:ch.verdict, points:pts });
+    // Record this beat (skip repeating the caller's line on a retry attempt).
+    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, consequence:ch.consequence });
+
+    // In-character caller reaction (if any) appends to the chat, then Continue advances.
+    if(ch.consequence){
+      appendBubble(callerKind(ch.consequence), ch.consequence);
+      setComposer(`<button class="next" id="next">Continue →</button>`);
+      document.getElementById('next').onclick = ()=>renderScreen(ch.goTo, [], undefined, false);
+    } else {
+      renderScreen(ch.goTo, [], undefined, false);
+    }
+  }
+
+  // ---- END: reveal score, scorecard, strengths, areas ----
+  function renderFinal(){
+    document.querySelector('.wrap').style.gridTemplateColumns = '1fr';
+    document.getElementById('side').style.display = 'none';
+
+    // Apply PS1-style helper penalties before tallying.
+    const helpNotes = [];
+    if(S.helpers){
+      const col = S.helpers.colleague;
+      if(col && help.used && (col.capStage in earned) && earned[col.capStage] > col.capTo){
+        earned[col.capStage] = col.capTo;
+        helpNotes.push("You solved this with a colleague’s help — on the scorecard that’s “solved with assistance,” worth less than solving it yourself.");
+      }
+      const art = S.helpers.articles;
+      if(art && !help.checkedCorrectArticle && (art.stage in earned) && earned[art.stage] > art.capIfUnchecked){
+        earned[art.stage] = art.capIfUnchecked;
+        helpNotes.push("You reached the right answer, but didn’t verify it in the source article — checking the article is the skill, not remembering.");
+      }
+    }
+    // Re-derive status after capping (a capped stage is no longer full 'done').
+    S.stages.forEach(st=>{ if(earned[st.id] >= st.max) status[st.id]='done'; else if(earned[st.id] > 0 && status[st.id]==='done') status[st.id]='partial'; });
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+    // NO pass/fail is shown — only the per-stage scorecard + total out of 100. (Design decision.)
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span>${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    // Cite the exact response the learner chose for each stage.
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      return p ? `<div class="pick">Your response: “${p.text}”</div>`
+               : `<div class="pick miss">You didn’t reach this step.</div>`;
+    };
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=>`<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`).join('');
+
+    host.innerHTML = `
+      <div class="final">
+        <h2>Interaction complete</h2>
+        <div class="big">${sum}<span style="font-size:20px;color:#5f6368">/${maxTotal}</span></div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Scorecard</h3>${rows}
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--correct)">Top strengths</h3>
+          <ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--partial)">Areas for improvement</h3>
+          <ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>
+        </div>
+
+        ${helpNotes.length ? `<div class="card"><h3 style="margin-top:0">Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
+
+        <button class="next ghost" id="txBtn">View conversation transcript</button>
+        <button class="next" onclick="location.reload()">Restart</button>
+        <div id="tx" class="card" style="display:none"></div>
+      </div>`;
+
+    // Wire the transcript toggle: a full replay of the conversation as it happened.
+    document.getElementById('txBtn').onclick = () => {
+      const tx = document.getElementById('tx'), btn = document.getElementById('txBtn');
+      if(tx.style.display==='none'){
+        tx.innerHTML = `<h3 style="margin-top:0">Conversation transcript</h3>` +
+          transcript.map(t=>
+            `<div class="tbeat">${t.speaker?`<div class="tspk">${t.speaker}</div>`:''}
+             <div class="tyou">You: ${t.picked}</div>
+             ${t.consequence?`<div class="tspk">${t.consequence}</div>`:''}</div>`).join('');
+        tx.style.display='block'; btn.textContent='Hide conversation transcript';
+      } else { tx.style.display='none'; btn.textContent='View conversation transcript'; }
+    };
+  }
+
+  function stageName(id){ const s=S.stages.find(x=>x.id===id); return s?s.name:id; }
+
+  renderHelpers();
+  paintProgress();
+  renderScreen(S.start, [], undefined);
+})();
+</script>
+</body>
+</html>

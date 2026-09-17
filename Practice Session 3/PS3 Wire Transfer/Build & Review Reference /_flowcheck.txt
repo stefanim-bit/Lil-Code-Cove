@@ -1,0 +1,123 @@
+=== STRUCTURE ===
+total max: 100 OK
+per-stage achievable: open:5/5  dynamics:10/10  familiarize:10/10  clarify:15/15  roadmap:10/10  article:20/20  recreate:10/10  solve:20/20
+reachable: 10/10
+ERRORS: none
+
+=== FLOW (read for coherence) ===
+
+[s_open] stage=open
+  CALLER: Hi! I want to pay for my Premium plan by wire transfer but it just won't let me. I've been trying for ages.
+  PROMPT: How do you respond?
+   (P 2) [say] “Hey! Try disabling your antivirus and reloading the checkout, then tell me if the option shows up.”
+        -> CALLER: Lena: “Just tried it… still no wire transfer option anywhere.”  [neg]
+        -> goTo s_dynamics
+   (I 0) [say] “Are you getting an error, or is the option just not appearing at checkout? I want to point you the right way.”
+        +credit: clarify 8
+        -> CALLER: Lena: “No error, the option just isn't there at all.”  [neutral]
+        -> goTo s_dynamics
+   (P 3) [say] “Thanks for reaching out! Which country is your account based in? Payment options can vary by region.”
+        +credit: clarify 8
+        -> CALLER: Lena: “I'm in Germany.”  [neutral]
+        -> goTo s_dynamics
+   (C 5) [say] “Hi, you're through to Wix Support, I'm [name]. Sorry you've been stuck! Let's sort this out.”
+        +credit: roadmap 4
+        -> goTo s_dynamics
+
+[s_dynamics] stage=dynamics
+  PROMPT: What's your next step?
+   (P 3) [do] Ask Lena to screenshot her checkout page and describe each payment option she can currently see.
+        -> goTo s_familiarize
+   (C 10) [do] Confirm her email, then open her User Manager profile to see her plan, country and saved methods.
+        -> CALLER: Lena: “Sure, it's lena.b@gmail.com.”  [neutral]
+        -> goTo s_familiarize
+   (I 0) [do] Search the Help Center for “wire transfer” before opening her account.
+        -> goTo s_familiarize
+
+[s_familiarize] stage=familiarize
+  PROMPT: How do you respond?
+   (C 10) [say] “Very exciting that you're getting a Premium plan, by the way! Are you looking to use it for a specific feature, or just an overall upgrade?”
+        -> CALLER: Lena: “Just an overall upgrade really. I'm trying to get my photography portfolio live this weekend, so I need it sorted today.”  [neutral]
+        -> goTo s_clarify
+   (P 4) [say] “So what kind of site are you building, what's the business?”
+        -> CALLER: Lena: “It's a photography business.”  [neutral]
+        -> goTo s_clarify
+   (I 0) [do] Assume a standard setup and move straight to the payment options.
+        -> goTo s_clarify
+
+[s_clarify] stage=clarify
+  CALLER: I just want to pay by wire transfer, like I do for my other business tools.
+  PROMPT: How do you respond?
+   (I 0) [say] “You can switch the method under Billing & Payments to wire transfer.”
+        -> CALLER: Lena: “There's no wire transfer option there at all. That's the whole problem.”  [neg]
+        -> RETRY cap 8
+        -> goTo s_roadmap
+   (C 15) [say] “Which country is your account billed in? Options really vary by region.”
+        -> CALLER: Lena: “I'm in Germany.”  [neutral]
+        -> goTo s_roadmap
+   (P 8) [say] “Is a card giving you trouble, or is it wire transfer specifically that you're set on using?”
+        -> CALLER: Lena: “A card's fine, I just specifically want to pay by wire transfer.”  [neutral]
+        -> goTo s_roadmap
+
+[s_roadmap] stage=roadmap (open)
+  CALLER: Okay… so what happens now?
+  PROMPT: How do you proceed?
+   (C 10) [say] “Here's my plan. I'll check what works for Germany, then walk you through the best option.”
+        -> goTo s_article
+   (P 5) [say] “Give me a moment while I look into which payment options are actually available on your account.”
+        -> goTo s_article
+
+[s_article] stage=article
+  PROMPT: What do you do next?
+   (I 0) [do] You've handled this before, so just tell Lena wire transfer isn't available and move on.
+        -> goTo s_recreate
+   (P 10) [do] Open “Billing German: Market-Specific Topics” to check her region's rules.
+        -> goTo s_recreate
+   (C 20) [do] Open “Wire Transfers For Wix Services” to confirm wire transfer isn't possible.
+        -> goTo s_recreate
+   (C 20) [do] Open “Payment Methods” to confirm the payment methods Lena can use instead.
+        -> goTo s_recreate
+
+[s_recreate] stage=recreate
+  CALLER: Are you sure it's not just a glitch on my end?
+  PROMPT: What do you do next?
+   (C 10) [do] Open Lena's checkout on your side to confirm the wire transfer option genuinely isn't there.
+        -> goTo s_solve
+   (P 5) [say] “Can you tell me exactly which payment options you see at checkout right now?”
+        -> CALLER: Lena: “Just card and PayPal, no bank option.”  [neutral]
+        -> goTo s_solve
+   (I 0) [say] “It's definitely not a glitch, wire transfer just isn't offered.”
+        -> goTo s_solve
+
+[s_solve] stage=solve
+  CALLER: So… can I actually pay by bank transfer, or not?
+  PROMPT: How do you respond?
+   (I 0) [say] “No need to worry, I can set up a wire transfer on our end for you right now.”
+        -> CALLER: Lena: “Oh, great, so it does work after all?”  [neg]
+        -> goTo s_close
+   (P 10) [say] “Paying by wire transfer isn't available, so you'll need another method. Was there anything else?”
+        -> goTo s_close
+   (P 10) [say] “Paying by wire transfer isn't available here, but let's get you sorted. Do you have SEPA saved already? It can't be newly added and only covers Premium plans and domains. Otherwise a card or PayPal will get you paid today.”
+        -> CALLER: Lena: “No, I've never set that up here. A card's fine, thanks.”  [neutral]
+        -> goTo s_escalate
+
+[s_escalate] stage=solve
+  CALLER: Thanks. Can you still note that I wanted to pay by wire transfer, though?
+  PROMPT: How do you respond?
+   (I 0) [do] Attach the “Wire Transfers For Wix Services” article to her case, then transfer her to the specialist team.
+        -> goTo s_close
+   (C 20) [say] “Of course. I'll add a note with everything you've shared and connect you with a specialized team who can go over your options for this.”
+        -> goTo s_close
+   (I 0) [say] “I'm sorry, but there's really nothing more we can do about wire transfer.”
+        -> CALLER: Lena: “So that's it? You won't even pass it on?”  [neg]
+        -> goTo s_close
+
+[s_close] stage=open
+  CALLER: Okay, thanks for looking into it.
+  PROMPT: How do you wrap up?
+   (P 2) [say] “No problem at all, thanks for your patience! Have a lovely rest of your day.”
+        -> goTo __end__
+   (C 5) [say] “Quick recap: paying by wire transfer isn't available, so I've noted your request and passed it to a specialist team who'll follow up. Meanwhile a card, PayPal, or saved SEPA will get you paid right away. Anything else I can help with?”
+        -> goTo __end__
+   (I 0) [say] “Great, thanks for contacting Wix.”
+        -> goTo __end__

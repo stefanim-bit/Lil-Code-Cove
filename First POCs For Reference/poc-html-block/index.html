@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sheet Telemetry POC — Web Object</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Arial, sans-serif;
+    margin: 0;
+    padding: 16px;
+    background: #f7f7f8;
+    color: #222;
+    font-size: 14px;
+  }
+  h1 { font-size: 15px; margin: 0 0 10px; }
+  button {
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1px solid #999;
+    background: #2a6df4;
+    color: #fff;
+    cursor: pointer;
+  }
+  button:active { background: #1b52c0; }
+  #log {
+    margin-top: 12px;
+    background: #111;
+    color: #b6ffb6;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    height: 220px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  .row { margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Sheet Telemetry POC (Web Object, not Execute-JS trigger)</h1>
+<div class="row"><button id="sendBtn">Send test row</button></div>
+<div id="log">(log output)</div>
+
+<script>
+/*
+ * Purpose: prove that a click handler inside a Storyline Web Object (a plain
+ * iframe loading this static file) can reliably run JS and POST to the Google
+ * Form sink, in an environment where Storyline's own Execute-JavaScript-on-click
+ * trigger could not ("Script2 is not defined" — a Storyline publish/compiler bug,
+ * see HANDOFF-storyline-sheets-telemetry.md). This file never goes through that
+ * compiler; it's just a browser loading a script tag.
+ *
+ * Same transport already proven working from the handoff:
+ *   - Google Form formResponse endpoint (anonymous POST, no-cors, urlencoded)
+ *   - SCORM cmi.core.student_id / cmi.learner_id walked up parent frames
+ */
+
+var ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSegiZwFV7DN-wwWsqnBbrqzJ5yEK-3lk8Zl182M0fMNFYH5hg/formResponse';
+
+var FIELD_IDS = {
+  learner_email:    'entry.1276253364',
+  learner_name:      'entry.2005409239',
+  attempt_id:        'entry.1673953677',
+  course:            'entry.2010105379',
+  scene:             'entry.1283761747',
+  interaction:       'entry.1781563601',
+  question:          'entry.786197073',
+  response:          'entry.2057562952',
+  correct:           'entry.1897805741',
+  points:            'entry.1780599104',
+  time_on_step_sec:  'entry.1327709145',
+  notes:             'entry.1963386753'
+};
+
+var logEl = document.getElementById('log');
+function log(msg) {
+  var t = new Date().toLocaleTimeString();
+  logEl.textContent += '[' + t + '] ' + msg + '\n';
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// Standard ADL "find API" walk — climbs parent frames looking for the LMS API,
+// same pattern SCORM wrapper libraries use. Storyline's own iframe nesting
+// (and a Web Object nested inside that) is exactly why this needs to search
+// up multiple levels rather than assume window.parent.
+function findAPI(win, depthLimit) {
+  var depth = 0;
+  while (win && depth < depthLimit) {
+    if (win.API_1484_11) return { api: win.API_1484_11, version: '2004' };
+    if (win.API) return { api: win.API, version: '1.2' };
+    if (win.parent && win.parent !== win) {
+      win = win.parent;
+    } else if (win.opener) {
+      win = win.opener;
+    } else {
+      break;
+    }
+    depth++;
+  }
+  return null;
+}
+
+function lmsGetValue(found, key2004, key12) {
+  if (!found) return '';
+  try {
+    if (found.version === '2004') return found.api.GetValue(key2004) || '';
+    return found.api.LMSGetValue(key12) || '';
+  } catch (e) {
+    log('lmsGetValue error: ' + e.message);
+    return '';
+  }
+}
+
+var learnerEmail = 'NO-API';
+var learnerName = '';
+var attemptId = '';
+
+function initLms() {
+  log('Searching for SCORM API in ancestor frames...');
+  var found = findAPI(window, 8);
+  if (!found) {
+    log('No SCORM API found within 8 frame levels. learner_email = NO-API.');
+    attemptId = 'anon-' + Date.now();
+    return;
+  }
+  log('Found SCORM ' + found.version + ' API.');
+  var email = lmsGetValue(found, 'cmi.learner_id', 'cmi.core.student_id');
+  var name  = lmsGetValue(found, 'cmi.learner_name', 'cmi.core.student_name');
+  learnerEmail = email || 'NO-API';
+  learnerName = name || '';
+  attemptId = (email || 'anon') + '-' + Date.now();
+  log('learner_email = ' + learnerEmail);
+  log('learner_name  = ' + learnerName);
+}
+
+function sendRow() {
+  log('Button click registered.');
+
+  var fields = {};
+  fields[FIELD_IDS.learner_email]   = learnerEmail;
+  fields[FIELD_IDS.learner_name]    = learnerName;
+  fields[FIELD_IDS.attempt_id]      = attemptId;
+  fields[FIELD_IDS.course]          = 'Onboarding Sim v1 - POC-webobject';
+  fields[FIELD_IDS.scene]           = 'poc-webobject';
+  fields[FIELD_IDS.interaction]     = 'button-click';
+  fields[FIELD_IDS.question]        = 'n/a';
+  fields[FIELD_IDS.response]        = 'clicked';
+  fields[FIELD_IDS.correct]         = '';
+  fields[FIELD_IDS.points]          = '';
+  fields[FIELD_IDS.time_on_step_sec] = '';
+  fields[FIELD_IDS.notes]           = 'web-object POC';
+
+  var body = [];
+  for (var k in fields) {
+    if (Object.prototype.hasOwnProperty.call(fields, k)) {
+      var v = fields[k];
+      body.push(k + '=' + encodeURIComponent(v == null ? '' : v));
+    }
+  }
+
+  log('Posting to Google Form endpoint (no-cors, so no readable status)...');
+  fetch(ENDPOINT, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body: body.join('&')
+  }).then(function () {
+    log('fetch() resolved (no-cors always resolves like this on success OR failure — check the Sheet to confirm the row landed).');
+  }).catch(function (e) {
+    log('fetch() threw: ' + e.message);
+  });
+}
+
+document.getElementById('sendBtn').addEventListener('click', sendRow);
+
+log('Web Object loaded. window === window.top: ' + (window === window.top));
+initLms();
+</script>
+
+</body>
+</html>

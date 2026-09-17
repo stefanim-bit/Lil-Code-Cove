@@ -1,0 +1,1331 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Session — Interactive Scenario (Rise Code Block Template · v2 · RISE BUILD)</title>
+
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION  ·  INTERACTIVE SCENARIO TEMPLATE  (Rise Code Block)
+  v2 — Wix-branded redesign. SAME interaction/scoring model as v1; look only.
+==================================================================================
+
+  HOW TO READ THIS FILE (for stakeholders / non-coders)
+  -----------------------------------------------------
+  Two parts, on purpose:
+    1) THE SCENARIO  (<script id="scenario">) — the CONTENT. Reads like a table.
+    2) THE ENGINE    (<script id="engine">)   — the machinery that plays ANY scenario.
+
+  WHAT CHANGED IN v2 (design only — the model below is unchanged)
+  --------------------------------------------------------------
+    • Wix Madefor typography (Display for headings, Text for body) via Google Fonts.
+    • Three phases in one self-contained embed: MEET THE USER → LIVE CHAT → COMPLETE.
+    • The live chat mirrors the real Wix Communication Panel: gray customer bubbles
+      (left), blue agent bubbles (right), a call timer, and a red "End" button.
+      (No sentiment chip — deliberately omitted.)
+    • Brand palette applied. The END scorecard keeps the locked correctness legend
+      (green / amber / red · done / partial / missed) — unchanged.
+    • Helper pop-ups use the native <dialog> element (MDN-recommended for modals).
+
+  THE INTERACTION MODEL (unchanged from v1)
+  -----------------------------------------
+  Each scenario mirrors a real Expert <-> user interaction across eight graded
+  behaviors (the rubric, 100 pts):
+     open(5) · dynamics(10) · familiarize(10) · clarify(15)
+     roadmap(10) · article(20) · recreate(10) · solve(20)
+
+  Rules:
+    • FEEDBACK IS SAVED FOR THE END. No grade, no correctness colors, no running
+      score during play. Choosing an answer simply advances the call.
+    • IN-CHARACTER REACTIONS ARE NOT FEEDBACK. A weak choice may draw a caller
+      reaction in dialogue; that line is part of the sim, not a grade.
+    • MOSTLY GATED, SOME FREEDOM — "gate:true" screens must be finished to advance.
+    • RETRY ONLY IF THE USER PROMPTS — a choice marked "retry:true" re-opens the
+      screen because the caller pushed back; the retry is capped by "capIfRetried".
+    • SKIPS ARE RECOVERABLE — each stage keeps its own best score.
+    • ROADMAP FLOATS — attach roadmap credit to any choice via credits:[...].
+
+  FIELD GUIDE
+  -----------
+    user   : { name, image, bio } — shown on the MEET screen and in the call header.
+    STAGE  : id, name, max, strength (shown at end if done), improvement (if missed).
+    SCREEN : stage, gate, speaker (caller line), prompt, choices[].
+    CHOICE : text, verdict, points, goTo, credits[], retry/capIfRetried,
+             consequence, stageOverride.
+==================================================================================
+-->
+
+<link rel="preconnect" href="https://static.parastorage.com">
+<link href="https://static.parastorage.com/fonts/v2/f73e760d-c6b3-4659-9a8c-9ce1d76c1173/madefor-text.var.original.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="https://static.parastorage.com/fonts/v2/26656ec7-c27d-4bdc-a9f4-6b498bbfad69/madefor-display.var.original.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: 'Wix Madefor Text';
+    src: url('https://static.parastorage.com/fonts/v2/f73e760d-c6b3-4659-9a8c-9ce1d76c1173/madefor-text.var.original.woff2') format('woff2-variations');
+    font-weight: 100 900;
+  }
+  @font-face {
+    font-family: 'Wix Madefor Display';
+    src: url('https://static.parastorage.com/fonts/v2/26656ec7-c27d-4bdc-a9f4-6b498bbfad69/madefor-display.var.original.woff2') format('woff2-variations');
+    font-weight: 100 900;
+  }
+</style>
+
+<style>
+  :root{
+    /* ---- Brand palette (the exact hexes supplied) ---- */
+    --ink:#242424; --ink-2:#424242; --muted:#707070;
+    --line:#E0E0E0; --line-2:#D1D1D1; --bg:#F5F5F5; --paper:#ffffff;
+    --brand:#DA3B01;                 /* Wix orange-red — the End button + accents   */
+    --agent:#0F62E6; --agent-deep:#1464A0;  /* agent (you) blue                     */
+    --positive:#5BBE7E;
+    --agent-bubble:#EAF1FE; --agent-bubble-line:#CFE0FF;
+    /* ---- LOCKED end-screen correctness legend (scorecard only) ---- */
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    /* ---- shape ---- */
+    --r-lg:1.25rem; --r-md:0.875rem; --r-sm:0.625rem;
+    --shadow:0 0.625rem 1.875rem rgba(20,24,40,.10);
+    --font-display:'Wix Madefor Display','Wix Madefor Text',system-ui,Arial,sans-serif;
+    --font-text:'Wix Madefor Text',system-ui,Arial,Helvetica,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  html{font-size:16px}
+  html,body{margin:0}
+  body{
+    font-family:var(--font-text); color:var(--ink); line-height:1.5;
+    background:
+      radial-gradient(68.75rem 31.25rem at 12% -10%, #EEF3FF 0%, rgba(238,243,255,0) 60%),
+      radial-gradient(56.25rem 31.25rem at 105% 0%, #F3F0FA 0%, rgba(243,240,250,0) 55%),
+      var(--bg);
+    min-height:100vh;
+  }
+  .app{max-width:66.25rem;margin:0 auto;padding:1.5rem 1.25rem}
+  h1,h2,h3{font-family:var(--font-display);letter-spacing:-.01em;margin:0}
+  .display{font-weight:800;line-height:1.05}
+
+  /* ============================ MEET THE USER ============================ */
+  .meet{
+    display:grid;grid-template-columns:0.37fr 0.65fr;gap:0;
+    background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow);overflow:hidden;height:37.5rem;
+  }
+  .meet .portrait{
+    position:relative;
+    background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);
+    display:flex;align-items:flex-end;justify-content:center;padding:0;
+    overflow:hidden;min-height:0;
+  }
+  /* Sarah's artwork is a full-body cutout, so it's shown whole (contain) on a
+     soft background rather than full-bleed cropped. */
+  .meet .portrait img{width:100%;height:100%;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 1rem 1.375rem rgba(20,24,40,.16))}
+  .meet .portrait .noimg{align-self:center;color:var(--muted);font-size:0.875rem;text-align:center;padding:1.5rem}
+  .meet .body{padding:2.5rem 3.75rem;display:flex;flex-direction:column;justify-content:center}
+  .eyebrow{font-size:0.75rem;font-weight:700;color:#101585;text-transform:uppercase;letter-spacing:0;margin-bottom:0.625rem}
+  .meet .body h1{font-weight:400;font-size:2.5rem;line-height:2.625rem;margin-bottom:1.125rem;color:#000000}
+  .meet .body p{font-size:1rem;color:#000000;line-height:1.5rem;margin:0 0 1.75rem;max-width:65ch}
+
+  /* black pill buttons — matches the Rise course (Get Started / Next / Restart) */
+  .btn{font-family:var(--font-text);font-weight:500;font-size:0.875rem;cursor:pointer;border:0;border-radius:18.75rem;padding:0.375rem 1.5rem;transition:transform .12s ease, box-shadow .12s ease, background .12s ease, padding .12s ease;display:flex;align-items:center;justify-content:center;white-space:nowrap;position:relative}
+  .btn-dark{background:#000000;color:#fff;width:126px;height:32px;padding:0.375rem 1.5rem}
+  .btn-dark:hover{background:#000;padding:0.375rem 1rem}
+  .btn-arrow{width:11px;height:8px;opacity:0;margin-left:-11px;transition:opacity 200ms ease-out, margin-left 200ms ease-out;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+  .btn-arrow svg{width:100%;height:100%;display:block}
+  .btn-dark:hover .btn-arrow{opacity:1;margin-left:0.3125rem}
+  .btn-ghost{background:var(--paper);color:var(--ink);border:0.0625rem solid var(--line-2)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  /* ============================ THE CALL (Communication Panel) ============================ */
+  .panel{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1.125rem;border-bottom:0.0625rem solid var(--line);background:#fff}
+  .avatar{width:2.375rem;height:2.375rem;border-radius:50%;background:var(--agent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.9375rem;flex:0 0 auto}
+  .who-name{font-weight:700;font-size:0.9375rem}
+  .who-sub{display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.78125rem;margin-top:0.0625rem}
+  .livedot{width:0.5rem;height:0.5rem;border-radius:50%;background:var(--positive);display:inline-block;box-shadow:0 0 0 0.1875rem rgba(91,190,126,.20)}
+  .timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
+  .head-spacer{flex:1}
+  .helperbar-head{display:flex;gap:0.5rem;margin-right:0.5rem}
+  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.8125rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
+  .btn-end:hover{filter:brightness(.94)}
+
+
+  /* Fixed height so the chat window stays the SAME SIZE for the whole call —
+     it no longer grows message-by-message; overflow scrolls internally. */
+  /* Fixed-height chat window: it stays ONE consistent size on every screen and
+     scrolls internally, so the response options below always sit on screen and
+     can be read in full without scrolling the page. 40vh is tuned so the
+     options fit for the common (≤4 option) screens. */
+  .chat{padding:1rem 1.125rem 0.375rem;display:flex;flex-direction:column;gap:0.875rem;height:40vh;overflow-y:auto}
+  .msg{display:flex;flex-direction:column;max-width:78%}
+  .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
+  .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
+  .msg.caller{align-self:flex-start;align-items:flex-start}
+  .msg.caller .bubble{background:var(--bg);border:0.0625rem solid var(--line);border-top-left-radius:0.3125rem;color:var(--ink)}
+  .msg.you{align-self:flex-end;align-items:flex-end}
+  .msg.you .meta{text-align:right;color:var(--agent-deep)}
+  .msg.you .bubble{background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-top-right-radius:0.3125rem;color:var(--ink)}
+  .msg.system{align-self:center;max-width:90%;align-items:center}
+  .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:italic;font-size:0.8125rem;padding:0.125rem 0.375rem;text-align:center}
+  /* Inline screenshot figure (Layers panel, Accessibility Wizard, etc.) */
+  .msg.system .screenshot{margin:0.25rem 0;max-width:100%;display:flex;flex-direction:column;align-items:center}
+  .msg.system .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
+
+  /* Lightbox: click-to-enlarge overlay for inline screenshots */
+  .lightbox{border:0;padding:0;background:transparent;max-width:95vw;max-height:95vh}
+  .lightbox::backdrop{background:rgba(15,17,25,0.82)}
+  .lightbox img{display:block;max-width:95vw;max-height:95vh;object-fit:contain;border-radius:0.5rem;box-shadow:0 1.5rem 3rem rgba(0,0,0,0.35)}
+  .lightbox-close{position:fixed;top:1rem;right:1.5rem;background:rgba(255,255,255,0.92);border:0;border-radius:50%;width:2.5rem;height:2.5rem;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink)}
+  .lightbox-close:hover{background:#fff}
+  .msg.system .screenshot figcaption{font-size:0.6875rem;color:var(--muted);font-style:italic;margin-top:0.375rem;text-align:center}
+  .msg.system .screenshot .noimg{color:var(--muted);font-size:0.8125rem;padding:1rem;border:0.0625rem dashed var(--line);border-radius:0.5rem}
+
+  /* [Action] choices render their result as an inline centered system note in the
+     chat stream (reusing .msg.system), so there's no separate action bar. */
+  .msg.system .bubble.action{font-style:normal;color:var(--agent);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:62.4375rem;padding:0.25rem 0.75rem}
+
+  /* Inline notes — the centered "system" bubbles only: an action you take
+     ("You clone the site…") or a thing you find ("(You find…)"). These are the
+     ONLY lines painted green; caller replies are untouched. */
+  .msg.reaction .bubble,
+  .msg.reaction .bubble.action{color:#5BBE7E !important}
+
+  /* "Click to view fullscreen" control in the sim header */
+  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.78125rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
+  .btn-fs:hover{color:var(--agent);background:var(--agent-bubble)}
+  .panel:fullscreen{border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .panel:fullscreen .chat{min-height:0;flex:1}
+
+  /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
+     from spoken replies, right inside the choice button. */
+  .cbadge{display:inline-block;font-weight:700;font-size:0.625rem;text-transform:uppercase;letter-spacing:.05em;color:var(--agent-deep);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:0.375rem;padding:0.0625rem 0.375rem;margin-right:0.5rem;vertical-align:0.05rem}
+
+  /* composer / decision area — where the real panel's message box sits */
+  .composer{border-top:0.0625rem solid var(--line);background:#FBFBFC;padding:0.875rem 1.125rem 1.125rem}
+  .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
+  .hbtn{font-size:0.78125rem;font-weight:600;padding:0.4375rem 0.8125rem;border-radius:62.4375rem;border:0.0625rem solid var(--line-2);background:#fff;color:var(--ink-2);cursor:pointer}
+  .hbtn:hover{border-color:var(--agent);color:var(--agent)}
+  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0.125rem 0 0.625rem}
+  .choice{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.8125rem 0.9375rem;margin:0.5rem 0;font-size:0.90625rem;font-family:var(--font-text);color:var(--ink);cursor:pointer;transition:border-color .12s ease, box-shadow .12s ease, background .12s ease}
+  .choice:hover:not(:disabled){border-color:var(--agent);box-shadow:0 0.125rem 0.625rem rgba(15,98,230,.10);background:#fff}
+  .choice:disabled{opacity:.45;cursor:not-allowed}
+  .next{margin-top:0.75rem}
+
+  /* typing awareness indicator (TAI) — the user "typing…" bubble before a reply */
+  .msg.typing .bubble{display:inline-flex;align-items:center;gap:0.3125rem;padding:0.8125rem 0.9375rem}
+  .tai-dot{width:0.4375rem;height:0.4375rem;border-radius:50%;background:var(--muted);opacity:.4;animation:tai-blink 1.2s infinite ease-in-out}
+  .tai-dot:nth-child(2){animation-delay:.2s}
+  .tai-dot:nth-child(3){animation-delay:.4s}
+  @keyframes tai-blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:.9;transform:translateY(-0.125rem)}}
+
+  /* learner name field on the Meet screen */
+  .namefield{display:flex;flex-direction:column;gap:0.3125rem;margin:0 0 1.5rem;max-width:21.25rem}
+  .namefield label{font-size:0.875rem;font-weight:400;color:#000000}
+  .nameinput{font-family:var(--font-text);font-size:1rem;padding:0.375rem 0.375rem;border:0.0625rem solid #D6E6FE;border-radius:0.375rem;color:var(--ink);background:#fff}
+  .nameinput::placeholder{color:#868AA5;font-size:1rem}
+  .nameinput:focus{outline:none;border-color:#116DFF}
+  .nameinput.invalid{border-color:#E62214}
+  .nameerror{font-size:0.75rem;color:#44485F;opacity:0;visibility:hidden;transition:opacity 200ms ease-out, visibility 200ms ease-out}
+  .nameerror.show{opacity:1;visibility:visible}
+
+  /* ============================ COMPLETE ============================ */
+  .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
+  .complete-hero .portrait{background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;min-height:0}
+  .complete-hero .portrait img{width:auto;height:auto;max-width:100%;max-height:21.25rem;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 1rem 1.375rem rgba(20,24,40,.16))}
+  .complete-hero .body{padding:2.5rem 2.75rem;display:flex;flex-direction:column;justify-content:center}
+  .complete-hero h1{font-size:3rem;margin-bottom:0.75rem}
+  .complete-hero .lead{font-size:1rem;color:var(--ink-2);margin:0 0 1.375rem;max-width:46ch}
+  .scorenum{font-family:var(--font-display);font-weight:800;font-size:3.5rem;line-height:1}
+  .scorenum small{font-size:1.375rem;color:var(--muted);font-weight:700}
+
+  .card{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);padding:1.25rem 1.375rem;margin-top:1rem;box-shadow:0 0.25rem 1rem rgba(20,24,40,.05)}
+  .card h3{font-size:0.9375rem;margin:0 0 0.5rem}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;padding:0.5625rem 0;border-bottom:0.0625rem solid #F1F1F1}
+  .srow:last-child{border-bottom:0}
+  .sdot{width:0.5625rem;height:0.5625rem;border-radius:50%;margin-right:0.5625rem;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .sval{font-variant-numeric:tabular-nums;font-weight:600}
+  .list{margin:0.5rem 0 0;padding-left:0;list-style:none}
+  .list li{padding:0.5625rem 0 0.5625rem 1.625rem;position:relative;font-size:0.875rem;border-bottom:0.0625rem solid #F4F4F4}
+  .list li:last-child{border-bottom:0}
+  .list.str li:before{content:"✓";position:absolute;left:0.125rem;color:var(--correct);font-weight:800}
+  .list.imp li:before{content:"→";position:absolute;left:0.125rem;color:var(--partial);font-weight:800}
+  .pick{font-size:0.78125rem;color:var(--muted);margin-top:0.3125rem;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+
+  /* ---- End-screen accordion — mirrors wix.com "Website builder FAQs" ----
+     Flat list of rows with divider lines and a +/× toggle. Each row opens
+     independently (multiple can be open at once). All start collapsed so the
+     completion gate below is meaningful. */
+  .acc{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);box-shadow:0 0.25rem 1rem rgba(20,24,40,.05);margin-top:1rem;overflow:hidden}
+  .acc-item{border-top:0.0625rem solid var(--line)}
+  .acc-item:first-child{border-top:0}
+  .acc-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:none;border:0;cursor:pointer;font-family:var(--font-display);font-size:1.0625rem;font-weight:500;letter-spacing:-.01em;color:var(--ink);text-align:left;padding:1.125rem 1.375rem}
+  .acc-head:hover{color:#000}
+  .acc-head:focus-visible{outline:0.125rem solid var(--agent);outline-offset:-0.125rem}
+  .acc-icon{position:relative;width:1rem;height:1rem;flex:0 0 auto;transition:transform .2s ease}
+  .acc-icon::before,.acc-icon::after{content:"";position:absolute;background:var(--ink)}
+  .acc-icon::before{left:0;top:calc(50% - 0.03125rem);width:1rem;height:0.0625rem}
+  .acc-icon::after{top:0;left:calc(50% - 0.03125rem);width:0.0625rem;height:1rem}
+  .acc-item.open .acc-icon{transform:rotate(45deg)}
+  .acc-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+  .acc-item.open .acc-panel{grid-template-rows:1fr}
+  .acc-clip{overflow:hidden;min-height:0}
+  .acc-inner{padding:0.25rem 1.375rem 1.25rem}
+  .acc-inner .list{margin-top:0}
+  .acc-inner .srow:last-child{border-bottom:0}
+
+  /* completion gate */
+  .gate{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:1.125rem}
+  .gate .hint{font-size:0.8125rem;color:var(--muted)}
+  .gate .hint.ready{color:var(--correct);font-weight:600}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;pointer-events:none}
+  .btn.done{background:var(--correct);color:#fff;cursor:default;pointer-events:none;opacity:1;width:auto;padding:0.375rem 1.25rem}
+
+  .actions{display:flex;gap:0.625rem;flex-wrap:wrap;margin-top:1.125rem}
+  /* end-screen transcript reuses the LIVE chat bubbles (.msg/.bubble) so it
+     mirrors the simulation exactly — gray Sarah left, blue Expert right,
+     centered action/system notes. */
+  .txchat{display:flex;flex-direction:column;gap:0.75rem;padding:0.5rem 0 0.25rem}
+
+  /* ============================ helper <dialog> ============================ */
+  dialog.modal{border:0;border-radius:var(--r-md);max-width:35rem;width:calc(100% - 2rem);padding:0;box-shadow:0 1.5rem 3.75rem rgba(20,24,40,.28)}
+  dialog.modal::backdrop{background:rgba(20,24,40,.45)}
+  .modal-inner{padding:1.25rem 1.375rem 1.375rem}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+  .mhead h3{font-size:1.0625rem}
+  .mx{border:0;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--muted)}
+  .mx:hover{color:var(--ink)}
+  .mopt{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.6875rem 0.8125rem;margin:0 0 0.5rem;font-size:0.875rem;font-family:var(--font-text);color:var(--ink);cursor:pointer}
+  .mopt:hover{border-color:var(--agent)}
+  .tabrow{display:flex;gap:0.375rem;margin-bottom:0.625rem}
+  .tab{font-size:0.8125rem;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:0.0625rem solid var(--line-2);background:#fff;font-family:var(--font-text);cursor:pointer}
+  .tab.active{border-color:var(--agent);color:var(--agent);font-weight:700}
+  .article-body{white-space:pre-wrap;font-size:0.875rem;background:var(--bg);border-radius:var(--r-sm);padding:0.8125rem;min-height:5.625rem;line-height:1.5}
+  .mnote{font-size:0.78125rem;color:var(--muted);margin-top:0.5rem}
+  .speakerbox{background:var(--bg);border:0.0625rem solid var(--line);padding:0.6875rem 0.8125rem;border-radius:var(--r-sm);font-size:0.875rem}
+
+  /* MDN: honour users who prefer less motion */
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important}
+  }
+  @media (max-width:45rem){
+    .meet,.complete-hero{grid-template-columns:1fr}
+    .meet .portrait,.complete-hero .portrait{min-height:16.25rem}
+    .meet .body{padding:1.75rem 1.5rem 2rem}
+    .meet .body h1{font-size:2.125rem}
+    .complete-hero .body{padding:1.75rem 1.5rem}
+    .msg{max-width:88%}
+  }
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Practice Call — Wix Editor: Adding Sub-Pages to a Menu",
+
+  user: {
+    name: "Sarah",
+    image: "Sarah/sarah_960.png",
+    completeImage: "Sarah/sarah_960.png",
+    bio: "Sarah is trying to add sub-pages to her site menu and has been stuck for an hour trying to get it working."
+  },
+
+  resources: {
+    title: "Check Resources",
+    stage: "article", capIfUnchecked: 10,
+    note: "Open the resources below. Checking the right one before you answer is the skill — not remembering it.",
+    items: [
+      { label:"Wix Editor: Menus, Anchors & Backgrounds", url:"https://csinternal.wixanswers.com/kb/en/article/wix-editor-menus-anchors-backgrounds", correct:true },
+      { label:"Wix Editor: Menu Issues", url:"http://support.wix.com/en/article/wix-editor-menu-issues", correct:true },
+      { label:"Studio Editor: Menus, Dropdowns, and Anchor Navigation", url:"https://csinternal.wixanswers.com/kb/en/article/studio-editor-menus-dropdowns-and-anchor-navigation" },
+      { label:"Mobile Editor: Live Site Issues", url:"https://csinternal.wixanswers.com/kb/en/article/mobile-editor-live-site-issues" },
+      { label:"Wix Stores — Category Menu Display and Layout Issues", url:"https://csinternal.wixanswers.com/kb/en/article/wix-stores-%E2%80%94-category-menu-display-and-layout-issues" }
+    ]
+  },
+
+  stages: [
+    { id:"open", name:"Opening & closing", max:5,
+      strength:"You greeted Sarah using proper opening and closing etiquette including key elements.",
+      improvement:"Greet and close the conversation with Sarah using proper opening/closing etiquette such as greeting, verification, next steps or farewell." },
+    { id:"dynamics", name:"Use Dynamics", max:10,
+      strength:"You used Dynamics for Sarah's account verification and to clone her site.",
+      improvement:"Use Dynamics to find the necessary information or features to help Sarah." },
+    { id:"familiarize", name:"Familiarize", max:10,
+      strength:"You asked a question to understand more about Sarah's services to give you context about her sub-page issue.",
+      improvement:"Ask a question that links Sarah's issue to what the user is reaching out about, or personalize the interaction, rather than giving a generic experience." },
+    { id:"clarify", name:"Clarify the issue", max:15,
+      strength:"You clarified what Sarah's issue is and identified her menu type before drawing conclusions.",
+      improvement:"Confirm the menu type and its settings before you conclude anything." },
+    { id:"roadmap", name:"Roadmapping", max:10,
+      strength:"You told Sarah your plan for what you'd check and do next.",
+      improvement:"Tell the user your plan, what you'll check and do next, so they're not left guessing." },
+    { id:"article", name:"Article / Copilot", max:20,
+      strength:"You confirmed the fix in the correct resource instead of relying on memory.",
+      improvement:"Open the right source to confirm the menu rule instead of relying on guesswork or memory." },
+    { id:"recreate", name:"Recreate the issue", max:10,
+      strength:"You cloned the site and confirmed the old menu type and the settings in Menu Settings before explaining anything.",
+      improvement:"Clone the site in User Manager and confirm the menu type in Menu Settings before you explain the fix." },
+    { id:"solve", name:"Solve the issue", max:20,
+      strength:"You upgraded the menu with 'Set to Advanced,' then walked Sarah through adding the sub-pages.",
+      improvement:"Lead with 'Set to Advanced' to upgrade, replace the menu only if it can't upgrade, then walk the user through adding the sub-pages." }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open", gate:true,
+      speaker:"Hi, I’m trying to add sub-pages to my menu and it’s just not working. I’ve been at it for an hour.",
+      prompt:"How do you open the conversation?",
+      choices:[
+        { id:"A", text:"Hey, I gotcha, this is an easy fix! Go into your menu settings and switch it to Advanced.",
+          verdict:"incorrect", points:0, goTo:"s_dynamics",
+          consequence:"Sarah: Wait, I don’t have anything called Advanced. Where am I meant to be looking?\n\nExpert: Actually, let's start with your email so I'm looking at the right account." },
+        { id:"B", text:"Hi Sarah, I can help. What’s the email on your account?",
+          verdict:"partial", points:3, goTo:"s_dynamics" },
+        { id:"C", text:"Hi, you’ve reached Wix Customer Care, I’m [name].\nSarah, can we start with the email on your account?",
+          verdict:"correct", points:5, goTo:"s_dynamics",
+          credits:[{stage:"roadmap", points:4, verdict:"partial"}] }
+      ]
+    },
+
+    s_dynamics: {
+      stage:"dynamics", gate:true,
+      speaker:"My email is Sarah.trent@gmail.com.",
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"Thank you Sarah. Can you describe what you can see on your screen?",
+          verdict:"incorrect", points:0, goTo:"s_familiarize",
+          consequence:"Sarah: Um, just my menu and the pages panel." },
+        { id:"B", text:"[Action] Look Sarah up in User Manager.",
+          verdict:"correct", points:10, goTo:"s_familiarize",
+          consequence:"(The email Sarah provided matches the email associated with the Wix account.)\n\nExpert: Perfect, I’ve pulled up your account details. Thanks for that." },
+        { id:"C", text:"[Action] Compare with the email listed in the Overview Tab Manager.",
+          verdict:"correct", points:10, goTo:"s_familiarize",
+          consequence:"(The email Sarah provided matches the email associated with the Wix account.)\n\nExpert: Perfect, I’ve pulled up your account details. Thanks for that." },
+        { id:"D", text:"[Action] Check Case History for related tickets from Sarah.",
+          verdict:"partial", points:5, goTo:"s_familiarize",
+          consequence:"(There aren’t any linked cases in Case History.)\n\nExpert: Perfect, I’ve pulled up your account details. Thanks for that." }
+      ]
+    },
+
+    s_familiarize: {
+      stage:"familiarize", gate:true,
+      speaker:"I’ve got a page for each service and I want them tucked under one heading so the menu isn’t so long.",
+      prompt:"What do you say?",
+      choices:[
+        { id:"A", text:"Nice. Grouping your services under one heading will tidy that up. What kind of services do you offer?",
+          verdict:"correct", points:10, goTo:"s_clarify",
+          consequence:"Sarah: Photography, portraits and events.\n\nExpert: That sounds fun. I’ve always wanted to get into photography!\n\nSarah: I definitely love what I do." },
+        { id:"B", text:"I hear you. How many services do you offer?",
+          verdict:"partial", points:5, goTo:"s_clarify",
+          consequence:"Sarah: Six!\n\nExpert: Nice, great for you. Let me take a look at the menu.\n\nSarah: Thanks." },
+        { id:"C", text:"That makes sense. Let’s have a look at your menu.",
+          verdict:"incorrect", points:0, goTo:"s_clarify",
+          consequence:"Thanks." }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify", gate:true,
+      speaker:"So, when I click add page, it shows up, but it won’t go underneath the other one.",
+      prompt:"What do you ask?",
+      choices:[
+        { id:"A", text:"Have you tried refreshing the Editor?",
+          verdict:"incorrect", points:0, goTo:"s_roadmap",
+          consequence:"I’ve refreshed it about 10 times and nothing. I’m not sure how to make it go underneath the other one.\n\nI want the sub-page name to be under the corresponding product name in the menu heading." },
+        { id:"B", text:"What do you mean by underneath the other one?",
+          verdict:"correct", points:15, goTo:"s_roadmap",
+          consequence:"I want the sub-page name to be under the corresponding product name in the menu heading." },
+        { id:"C", text:"What does your menu look like? Is it in a row across the top, or down the side?",
+          verdict:"correct", points:15, goTo:"s_roadmap",
+          consequence:"In a row across the top. I’ve had it since I built the site, three or four years ago." },
+        { id:"D", text:"Okay, so you want a drop-down. Let me talk you through it.",
+          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:8,
+          consequence:"No I don’t think it's a drop down, that’s not what I mean. I want the sub-page name to be under the corresponding product name in the menu heading." }
+      ]
+    },
+
+    s_roadmap: {
+      stage:"roadmap", gate:false,
+      speaker:"Expert: Got it, thank you for clarifying!\n\nSarah: You bet. So what now?",
+      prompt:"What's next?",
+      choices:[
+        { id:"A", text:"[Action] Take a moment to quickly look into this before you reply.",
+          verdict:"incorrect", points:0, goTo:"s_recreate" },
+        { id:"B", text:"Give me 2-3 minutes while I look into this before I reply.",
+          verdict:"partial", points:5, goTo:"s_recreate",
+          consequence:"Sure, take your time." },
+        { id:"C", text:"I’ll open your site, double-check the menu type and then I’ll see what’s needed to get this sorted for you. I’ll place you on a brief hold for 3-5 minutes.",
+          verdict:"correct", points:10, goTo:"s_recreate",
+          consequence:"Sure, take your time." }
+      ]
+    },
+
+    s_recreate: {
+      stage:"recreate", gate:true,
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"[Action] Tell Sarah to check if it’s an old menu type.",
+          verdict:"incorrect", points:0, goTo:"s_solve", retry:true, capIfRetried:8,
+          consequence:"(That’s not it. Try again.)" },
+        { id:"B", text:"[Action] Ask Sarah to open Menu Settings and read out the buttons she sees.",
+          verdict:"partial", points:5, goTo:"s_article",
+          consequence:"There’s one that says Set to Advanced." },
+        { id:"C", text:"[Action] Clone Sarah’s site in User Manager, Impersonate, open the menu, and check Menu Settings.",
+          verdict:"correct", points:10, goTo:"s_article",
+          consequence:"(You find there’s a button that says \"Set to Advanced\".)" },
+        { id:"D", text:"[Action] Search Help Center and find an article describing this exact issue.",
+          verdict:"incorrect", points:0, goTo:"s_article" }
+      ]
+    },
+
+    s_article: {
+      stage:"article", gate:true,
+      speaker:"(You open CSI.)", speakerIf:"resourceOpened",
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"[Action] Tell Sarah it’s just the old menu type.",
+          say:"It’s just the old menu type.",
+          verdict:"incorrect", points:0, goTo:"s_solve" },
+        { id:"B", text:"[Action] Reply using “Wix Editor: Menu Issues”.",
+          verdict:"correct", points:20, goTo:"s_solve" },
+        { id:"C", text:"[Action] Reply using “Studio Editor: Menus, Dropdowns, and Anchor Navigation.”",
+          verdict:"incorrect", points:0, goTo:"s_solve" },
+        { id:"D", text:"[Action] Reply using “Wix Editor: Menus, Anchors, Backgrounds”.",
+          verdict:"correct", points:20, goTo:"s_solve" },
+        { id:"E", text:"[Action] Reply using “Mobile Editor: Live Site Issues”.",
+          verdict:"incorrect", points:0, goTo:"s_solve" },
+        { id:"F", text:"[Action] Reply using “Wix Stores — Category Menu Display and Layout Issues”.",
+          verdict:"incorrect", points:0, goTo:"s_solve" }
+      ]
+    },
+
+    s_solve: {
+      stage:"solve", gate:true,
+      speaker:"So what do I do to fix it?",
+      prompt:"What do you tell Sarah?",
+      choices:[
+        { id:"A", text:"Check the Inspector tabs for the affected element and its parent elements. The cause is often inherited from a parent, not the element itself. Let me walk you through how to do this now.",
+          verdict:"correct", points:20, goTo:"s_close",
+          consequence:"Interesting.… Thanks." },
+        { id:"B", text:"I got a great Help Center article that summarizes everything you need to upgrade your menu. I’ll send you the link and you can follow along step by step!",
+          verdict:"incorrect", points:0, goTo:"s_close",
+          consequence:"Sarah: So what was it? Also, I was hoping you could just show me.\n\nExpert: Your menu won’t hold sub-pages because it’s an older type. To upgrade it:\n- Click your menu, open Menu Settings and click \"Set to Advanced\".\n- If it won’t upgrade, we’ll delete it and add a fresh horizontal menu from the Add panel.\n\nI’ll stay on while you do it and we’ll publish and check it together.\n\nSarah: Brilliant, that’s working now. Thanks." },
+        { id:"C", text:"Hidden elements, menu not showing on pages with no header or footer is a clear indication that this is a local issue, so I don’t have a clear solution at this time.",
+          verdict:"incorrect", points:0, goTo:"s_close",
+          consequence:"Aw ok. Thanks anyways." },
+        { id:"D", text:"Your menu won’t hold sub-pages because it’s an older type. To upgrade it:\n- Click your menu, open Menu Settings and click \"Set to Advanced\".\n- If it won’t upgrade, we’ll delete it and add a fresh horizontal menu from the Add panel.\n\nI’ll stay on while you do it and we’ll make sure you can add the sub-pages.",
+          verdict:"correct", points:20, goTo:"s_close",
+          consequence:"Brilliant! I completed those steps and I’m finally able to add sub-pages. Thanks." }
+      ]
+    },
+
+    s_close: {
+      stage:"open", gate:true,
+      prompt:"How do you close?",
+      choices:[
+        { id:"A", text:"Glad that’s sorted. If anything shifts after you publish, don’t hesitate to reach out to us. Have a good afternoon.",
+          verdict:"correct", points:5, goTo:"__end__" },
+        { id:"B", text:"Glad we got an answer for you. Have a good day.",
+          verdict:"partial", points:3, goTo:"__end__" },
+        { id:"C", text:"No problem!",
+          verdict:"incorrect", points:0, goTo:"__end__" }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const app = document.getElementById('app');
+  const U = S.user || { name:(S.userBio? "the user":"User"), image:null, bio:S.userBio||"" };
+
+  const earned = {};        // stageId -> best points (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response that set that stage's score
+  const transcript = [];    // ordered record of the whole conversation
+  const stageCfg = {};      // stageId -> stage config (for additive/max lookups)
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; stageCfg[st.id]=st; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+  const help = { used:false, checkedCorrectArticle:false, openedAnyResourceLink:false, openedLabels:new Set() };
+  // Whether the CURRENT screen's speaker line actually played (passed its
+  // speakerIf gate) — read when the choice is recorded so the end-of-call
+  // transcript replay matches exactly what the learner saw live.
+  let currentSpeakerShown = false;
+
+  /* ---- learner name ----------------------------------------------------
+     Captured on the Meet screen (learners enter their FULL name). During the
+     simulation, the Expert is shown by FIRST NAME ONLY — this applies both to
+     (a) the label on the learner's own chat bubbles and (b) the [name] token
+     substituted anywhere in scenario text (e.g. "I'm [name]"). The full name
+     is still pushed to the Rise/Storyline "learner_name" variable and sent to
+     telemetry unchanged. */
+  let learner_name = "";
+  function firstName(){ return (learner_name || "").trim().split(/\s+/)[0] || ""; }
+  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, firstName() || "you"); }
+  function setLearnerName(v){
+    learner_name = (v||"").trim();
+    pushRiseVar("learner_name", learner_name);
+  }
+
+  /* ---- learner email ---------------------------------------------------
+     Also captured on the Meet screen (required, basic format check). Unlike
+     the name, it is NOT pushed to a Rise/Storyline variable — it is only
+     sent to the telemetry Form (see FIELD_IDS.learner_email below). */
+  let learner_email = "";
+  function setLearnerEmail(v){ learner_email = (v||"").trim(); }
+
+  // Best-effort write to the host course's variable. Storyline exposes
+  // GetPlayer(); Rise/other hosts can listen for the postMessage below.
+  function pushRiseVar(name, value){
+    try {
+      const p = (window.parent && window.parent.GetPlayer && window.parent.GetPlayer())
+             || (window.top && window.top.GetPlayer && window.top.GetPlayer());
+      if(p && p.SetVar) p.SetVar(name, value);
+    } catch(e){}
+    try { window.parent && window.parent.postMessage({ type:'setVar', name:name, value:value }, '*'); } catch(e){}
+  }
+
+  // Stamp each screen with its own id so retry can re-open it.
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  /* =========================== TELEMETRY ===========================
+     Posts one row per learner action to a Google Form, whose responses feed
+     the Sheet. A Google Form's formResponse endpoint accepts anonymous,
+     cross-origin POSTs with no auth, no deployment permissions, and no shared
+     key — which is why this works where the Apps Script Web App returned 401.
+     (This is the same mechanism proven in the working Rise POC.)
+
+     Each field is addressed by its Form `entry.NNN` id, not by column name.
+     Body is application/x-www-form-urlencoded (entry.123=value&...). If the
+     Form's questions ever change, refresh the ids in FIELD_IDS below by
+     opening the live form's prefilled-link tool or viewing its HTML source.
+
+     mode:'no-cors' makes the response opaque, so a rejected/misrouted write is
+     invisible here and fails silently. Verify the first run by watching rows
+     actually land in the Sheet.
+
+     learner_email IS collected on the Meet screen in this scenario and sent to
+     the Form's learner_email field (entry.1276253364). All other values are
+     derived dynamically from the scenario/screen, so every scenario self-labels
+     with no per-scenario editing here. */
+  const TELEMETRY_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSegiZwFV7DN-wwWsqnBbrqzJ5yEK-3lk8Zl182M0fMNFYH5hg/formResponse';
+  const FIELD_IDS = {
+    learner_email:    'entry.1276253364',
+    learner_name:     'entry.2005409239',
+    attempt_id:       'entry.1673953677',
+    course:           'entry.2010105379',
+    scene:            'entry.1283761747',
+    interaction:      'entry.1781563601',
+    question:         'entry.786197073',
+    response:         'entry.2057562952',
+    correct:          'entry.1897805741',
+    points:           'entry.1780599104',
+    time_on_step_sec: 'entry.1327709145',
+    notes:            'entry.1963386753'
+  };
+  const TELEMETRY_COURSE = S.title;           // written to the `course` field
+
+  // One id per play-through, so a learner's rows can be grouped in the Sheet.
+  const attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // `time_on_step_sec` — seconds between a screen appearing and the learner acting.
+  let stepStartedAt = null;
+  function markStepStart(){ stepStartedAt = callSeconds; }
+  function secondsOnStep(){ return stepStartedAt==null ? '' : Math.max(0, callSeconds - stepStartedAt); }
+
+  // Same idea for the Check Resources modal: seconds since it was opened, not the call clock.
+  let resourcesOpenedAt = null;
+  function secondsOnResources(){ return resourcesOpenedAt==null ? '' : Math.max(0, callSeconds - resourcesOpenedAt); }
+
+  // verdict -> the `correct` field
+  function correctCol(verdict){
+    if(verdict==='correct')   return 'yes';
+    if(verdict==='partial')   return 'partial';
+    if(verdict==='incorrect') return 'no';
+    return '';
+  }
+
+  function logEvent(evt){
+    evt = evt || {};
+    // Map this event onto the Form fields.
+    const row = {
+      learner_email:    learner_email,
+      learner_name:     learner_name,
+      attempt_id:       attemptId,
+      course:           TELEMETRY_COURSE,
+      scene:            evt.screen   || '',
+      interaction:      evt.stage    || evt.helper || evt.type || '',
+      question:         evt.question || '',
+      response:         evt.text     || evt.action || '',
+      correct:          correctCol(evt.verdict),
+      points:           evt.points  == null ? '' : evt.points,
+      time_on_step_sec: evt.seconds == null ? '' : evt.seconds,
+      notes:            evt.notes    || ''
+    };
+    // Build the urlencoded body keyed by Form entry ids.
+    const body = [];
+    for(const k in row){
+      if(!FIELD_IDS[k]) continue;              // skip any field without an entry id
+      const v = row[k];
+      body.push(FIELD_IDS[k] + '=' + encodeURIComponent(v == null ? '' : v));
+    }
+    try{
+      fetch(TELEMETRY_ENDPOINT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body: body.join('&')
+      }).catch(()=>{});  // best-effort telemetry; never blocks the learner's flow
+    } catch(e){}
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---- call timer (authentic Communication-Panel touch) ---- */
+  let callSeconds = 0, timerHandle = null;
+  function mmss(t){ const m=Math.floor(t/60), s=t%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+  function startTimer(){ const el=()=>document.getElementById('timer');
+    timerHandle = setInterval(()=>{ callSeconds++; const e=el(); if(e) e.textContent=mmss(callSeconds); }, 1000); }
+  function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
+
+  let chatEl, composerEl;
+
+  /* =================== PHASE 1 — MEET THE USER =================== */
+  function renderMeet(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}"
+             onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'noimg\\'>[ ${escapeHtml(U.name)} ]<br><span style=&quot;font-size:0.75rem&quot;>character image not found</span></div>')">`
+      : `<div class="noimg">[ ${escapeHtml(U.name)} ]</div>`;
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Practice Session · User Scenario</div>
+          <h1 class="display">Meet ${escapeHtml(U.name)}</h1>
+          <p>${escapeHtml(U.bio)}</p>
+          <div class="namefield">
+            <label for="learnerName">Full Name</label>
+            <input class="nameinput" id="learnerName" type="text" autocomplete="name"
+                   placeholder="Enter your full name" value="${escapeHtml(learner_name)}">
+            <div class="nameerror" id="nameError">Please enter your name to continue.</div>
+          </div>
+          <div class="namefield">
+            <label for="learnerEmail">Wix Email</label>
+            <input class="nameinput" id="learnerEmail" type="email" autocomplete="email"
+                   placeholder="Enter your Wix email" value="${escapeHtml(learner_email)}">
+            <div class="nameerror" id="emailError">Please enter a valid email to continue.</div>
+          </div>
+          <div><button class="btn btn-dark" id="startBtn">Get Started<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button></div>
+        </div>
+      </section>`;
+    const nameInput  = document.getElementById('learnerName');
+    const nameError  = document.getElementById('nameError');
+    const emailInput = document.getElementById('learnerEmail');
+    const emailError = document.getElementById('emailError');
+    const emailOk = v => /^\S+@\S+\.\S+$/.test((v||'').trim());
+    nameInput.addEventListener('input', e => {
+      setLearnerName(e.target.value);
+      if(learner_name) { nameError.classList.remove('show'); nameInput.classList.remove('invalid'); }
+    });
+    emailInput.addEventListener('input', e => {
+      setLearnerEmail(e.target.value);
+      if(emailOk(learner_email)) { emailError.classList.remove('show'); emailInput.classList.remove('invalid'); }
+    });
+    document.getElementById('startBtn').onclick = () => {
+      setLearnerName(nameInput.value);
+      setLearnerEmail(emailInput.value);
+      let bad = false;
+      if(!learner_name){
+        nameError.classList.add('show'); nameInput.classList.add('invalid'); bad = true;
+      }
+      if(!emailOk(learner_email)){
+        emailError.classList.add('show'); emailInput.classList.add('invalid'); bad = true;
+      }
+      if(bad){ (!learner_name ? nameInput : emailInput).focus(); return; }
+      startCall();
+    };
+  }
+
+  /* =================== PHASE 2 — THE LIVE CALL =================== */
+  function startCall(){
+    const initial = (U.name||'?').trim().charAt(0).toUpperCase();
+    app.innerHTML = `
+      <section class="panel" id="sim">
+        <div class="panel-head">
+          <div class="avatar">${escapeHtml(initial)}</div>
+          <div>
+            <div class="who-name">${escapeHtml(U.name)}</div>
+            <div class="who-sub"><span class="livedot"></span> Live chat · <span class="timer" id="timer">00:00</span></div>
+          </div>
+          <div class="head-spacer"></div>
+          <button class="btn-fs" id="fsBtn" type="button" title="Click to view fullscreen">⤢ Click to view fullscreen</button>
+          <div class="helperbar-head" id="helperbar"></div>
+          <button class="btn-end" id="endBtn">End</button>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="composer">
+          <div id="composer"></div>
+        </div>
+      </section>`;
+    chatEl = document.getElementById('chat');
+    composerEl = document.getElementById('composer');
+    document.getElementById('endBtn').onclick = confirmEnd;
+    // "Click to view fullscreen" — expand the whole sim panel via the Fullscreen API.
+    const fsBtn = document.getElementById('fsBtn'), sim = document.getElementById('sim');
+    if(fsBtn && sim && document.fullscreenEnabled){
+      fsBtn.onclick = ()=>{
+        if(document.fullscreenElement) document.exitFullscreen();
+        else sim.requestFullscreen().catch(()=>{});
+      };
+      document.addEventListener('fullscreenchange', ()=>{
+        fsBtn.innerHTML = document.fullscreenElement===sim ? '⤡ Exit fullscreen' : '⤢ Click to view fullscreen';
+      });
+    } else if(fsBtn){ fsBtn.style.display='none'; }
+    renderHelpers();
+    startTimer();
+    renderScreen(S.start, { animateSpeaker:false });  // first line appears immediately
+  }
+
+  function confirmEnd(){
+    // Ending early is allowed — skips are recoverable, unreached stages simply score 0.
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>End the chat?</h3></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">You'll go straight to your results. Anything you haven't done yet won't score.</p>
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="endYes">End &amp; see results</button>
+          <button class="btn btn-ghost" id="endNo">Keep going</button>
+        </div></div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.querySelector('#endNo').onclick = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#endYes').onclick = ()=>{ dlg.close(); dlg.remove(); renderFinal(); };
+  }
+
+  /* ---- Bubble markup (shared by the LIVE chat and the END transcript) ----
+     'system' bubbles are inline notes (pill), used for both tool/observation
+     lines and action notes — anything that isn't a direct spoken quote. */
+  function bubbleMarkup(kind, text, metaText, reaction){
+    const meta = metaText ? `<div class="meta">${escapeHtml(metaText)}</div>` : '';
+    const cls  = 'bubble' + (kind==='system' ? ' action' : '');
+    const msgCls = 'msg ' + kind + (reaction ? ' reaction' : '');
+    const body = escapeHtml(px(text)).replace(/\n/g,'<br>');
+    return `<div class="${msgCls}">${meta}<div class="${cls}">${body}</div></div>`;
+  }
+  function appendNode(html){
+    const tmp = document.createElement('div'); tmp.innerHTML = html;
+    const node = tmp.firstElementChild;
+    chatEl.appendChild(node); chatEl.scrollTop = chatEl.scrollHeight;
+    return node;
+  }
+  function appendBubble(kind, text, reaction){
+    const meta = kind==='system' ? '' :
+      `${kind==='you' ? (firstName()||'You') : U.name} · ${mmss(callSeconds)}`;
+    return appendNode(bubbleMarkup(kind, text, meta, reaction));
+  }
+  /* Inline action note: an "[Action]" choice is something the Expert DOES, shown
+     as a centered system note in the stream (e.g. "You open User Manager."). */
+  function actionNoteText(raw){
+    const t = stripAction(px(raw)).trim().replace(/\s+/g,' ');
+    const note = 'You ' + t.charAt(0).toLowerCase() + t.slice(1);
+    return /[.!?]$/.test(note) ? note : note + '.';
+  }
+  function appendActionNote(text){ return appendBubble('system', text, true); }
+
+  /* Inline screen image: a screenshot shown in the stream for a given screen
+     (e.g. the Layers panel or the Accessibility Wizard). `img` is {src, alt,
+     caption}. Rendered as a full-width figure so learners see the same thing
+     the Expert would be looking at. Broken/absent sources hide gracefully. */
+  function appendImage(img){
+    if(!img || !img.src) return null;
+    const alt = escapeHtml(img.alt || '');
+    // No caption — learners read the screenshot and locate the info themselves.
+    // Click (or Enter/Space) opens the image in a full-screen zoom lightbox.
+    return appendNode(
+      `<div class="msg system"><figure class="screenshot">`+
+      `<img src="${escapeHtml(img.src)}" alt="${alt}" loading="lazy" tabindex="0" role="button" `+
+      `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
+      `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}" `+
+      `onerror="this.closest('figure').innerHTML='<div class=\\'noimg\\'>[ screenshot not found ]</div>'">`+
+      `</figure></div>`);
+  }
+
+  /* ---- Lightbox: click any inline screenshot to view it enlarged ---- */
+  function openLightbox(src, alt){
+    const dlg = document.createElement('dialog'); dlg.className='lightbox';
+    dlg.innerHTML = `<button class="lightbox-close" aria-label="Close">&times;</button>`+
+      `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt||'')}">`;
+    document.body.appendChild(dlg); dlg.showModal();
+    const close = ()=>{ try{dlg.close();}catch(e){} dlg.remove(); };
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) close(); });
+    dlg.querySelector('.lightbox-close').onclick = close;
+  }
+  window.__openLightbox = openLightbox;
+
+  function setComposer(html){ composerEl.innerHTML = html; }
+
+  /* "[Action] ..." choices are actions, not spoken replies. */
+  const ACTION_RE = /^\s*\[Action\]\s*/i;
+  function isAction(text){ return ACTION_RE.test(text||''); }
+  function stripAction(text){ return (text||'').replace(ACTION_RE, ''); }
+
+  /* ---- Split a scripted line (speaker OR consequence) into ordered segments,
+     one bubble per speaker. Segments break ONLY at a speaker label at the start
+     of a line — NOT at blank lines — so a single message that contains its own
+     paragraph break (e.g. the "Set to Advanced" upgrade steps) stays one bubble.
+       "Expert:"            -> your blue bubble (right)
+       "Sarah:"/name/caller -> gray caller bubble (left)
+       "(...)"              -> inline system note (tool result / stage direction)
+       unlabeled            -> caller (spoken) by default
+     Speaker labels, wrapping quotes, and the ( ) around system notes are
+     stripped so bubbles read as clean chat. ---- */
+  const YOU_LABEL = /^\s*expert\s*[:：]\s*/i;
+  function callerLabelRe(){
+    const nm = (U.name||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return new RegExp('^\\s*(?:' + (nm?nm+'|':'') + 'sarah|caller|customer)\\s*[:：]\\s*','i');
+  }
+  function stripQuotes(s){ return s.replace(/^\s*["'“”‘’]+/,'').replace(/["'“”‘’]+\s*$/,'').trim(); }
+  function splitDialogue(text){
+    if(!text) return [];
+    const clr = callerLabelRe(); const segs=[]; let cur=null;
+    String(text).split('\n').forEach(line=>{
+      if(YOU_LABEL.test(line)){ cur={kind:'you',    text:line.replace(YOU_LABEL,'')}; segs.push(cur); }
+      else if(clr.test(line)){  cur={kind:'caller', text:line.replace(clr,'')};        segs.push(cur); }
+      else if(!cur && /^\s*\(/.test(line)){ cur={kind:'system', text:line};            segs.push(cur); }
+      else if(!cur){            cur={kind:'caller', text:line};                         segs.push(cur); }
+      else cur.text += '\n' + line;
+    });
+    return segs.map(s=>{
+      let t = s.kind==='system' ? s.text.replace(/^\s*\(/,'').replace(/\)\s*$/,'') : s.text;
+      return { kind:s.kind, text:stripQuotes(t) };
+    }).filter(s=>s.text.length);
+  }
+  /* transcript bubbles: same markup, name label only (no live timer) */
+  function segMarkup(kind, text){
+    const who = kind==='system' ? '' : (kind==='you' ? (firstName()||'You') : U.name);
+    return bubbleMarkup(kind, text, who);
+  }
+
+  /* ---- Typing indicator + auto-advance reveal ----
+     Sarah's "typing…" dots show before her first reply to a pick; follow-on
+     caller lines in the same beat use a shorter delay; your/system lines appear
+     after a short beat. animate=false reveals everything at once (first load). */
+  const TAI_MS = 5000, TAI_FOLLOW_MS = 1500, YOU_MS = 700, SYS_MS = 500;
+  // Consequence beats:
+  //  • inline notes (centered system bubbles) reveal 2s apart;
+  //  • spoken consequence lines (Samantha OR the Expert) show a 5s typing
+  //    indicator before landing.
+  const REACT_INLINE_MS = 2000, REACT_TYPING_MS = 5000;
+  function typingBubble(kind){
+    const you = kind==='you';
+    const side = you ? 'you' : 'caller';
+    const who  = you ? (firstName()||'You') : U.name;
+    return appendNode(
+      `<div class="msg typing ${side}"><div class="meta">${escapeHtml(who)} · typing…</div>`+
+      `<div class="bubble"><span class="tai-dot"></span><span class="tai-dot"></span><span class="tai-dot"></span></div></div>`);
+  }
+  function revealSegments(segs, animate, done, opts){
+    opts = opts || {};
+    const reaction = !!opts.reaction;
+    let i=0, sawCaller=false;
+    (function next(){
+      if(i>=segs.length){ if(done) done(); return; }
+      const s=segs[i++];
+      // In a consequence (reaction) reveal:
+      //  • centered inline notes (system) turn green and reveal 2s apart;
+      //  • spoken lines — Samantha (caller) OR the Expert (you) — show a 5s
+      //    typing indicator, then land.
+      const inlineNote = reaction && s.kind==='system';
+      if(!animate){ appendBubble(s.kind, s.text, inlineNote); return next(); }
+      if(inlineNote){
+        setTimeout(()=>{ appendBubble('system', s.text, true); next(); }, REACT_INLINE_MS);
+      } else if(reaction && (s.kind==='caller' || s.kind==='you')){
+        const dots=typingBubble(s.kind);
+        setTimeout(()=>{ dots.remove(); appendBubble(s.kind, s.text); next(); }, REACT_TYPING_MS);
+      } else if(s.kind==='caller'){
+        const t = sawCaller ? TAI_FOLLOW_MS : TAI_MS; sawCaller=true;
+        const dots=typingBubble();
+        setTimeout(()=>{ dots.remove(); appendBubble('caller', s.text); next(); }, t);
+      } else {
+        setTimeout(()=>{ appendBubble(s.kind, s.text); next(); }, s.kind==='you'?YOU_MS:SYS_MS);
+      }
+    })();
+  }
+
+  /* ---- Helper buttons (native <dialog>) ---- */
+  function openModal(title, node){
+    const dlg = document.createElement('dialog'); dlg.className='modal'; dlg.id='modal';
+    const inner = document.createElement('div'); inner.className='modal-inner';
+    const head = document.createElement('div'); head.className='mhead';
+    head.innerHTML = `<h3>${escapeHtml(title)}</h3>`;
+    const x = document.createElement('button'); x.className='mx'; x.innerHTML='&times;'; x.setAttribute('aria-label','Close');
+    x.onclick = closeModal; head.appendChild(x);
+    inner.appendChild(head); inner.appendChild(node); dlg.appendChild(inner);
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) closeModal(); });  // backdrop click
+  }
+  function closeModal(){ const m=document.getElementById('modal'); if(m){ try{m.close();}catch(e){} m.remove(); } }
+
+  function renderHelpers(){
+    const bar = document.getElementById('helperbar');
+    if(!S.resources){ bar.style.display='none'; return; }
+    bar.innerHTML='';
+    const b=document.createElement('button');
+    b.className='hbtn';
+    b.textContent = S.resources.title || 'Check Resources';
+    b.onclick = openResources;
+    bar.appendChild(b);
+  }
+  /* Opens the scenario's dynamic links in a modal. Opening the resource
+     marked correct:true is what lifts the article-stage cap in renderFinal —
+     but only if it happens at/after RESOURCE_CREDIT_MIN_SECONDS into the call.
+     Opening it earlier doesn't count; the learner can still open it again
+     later (any time before ending the chat) to earn credit. */
+  const RESOURCE_CREDIT_MIN_SECONDS = 30;
+  function openResources(){
+    const r=S.resources, wrap=document.createElement('div');
+    resourcesOpenedAt = callSeconds;   // start the clock for this modal's dwell time
+    logEvent({type:'helper', helper:'resources', action:'opened Check Resources', seconds:0});
+    if(r.note) wrap.innerHTML='<div class="mnote" style="margin:0 0 0.625rem">'+escapeHtml(r.note)+'</div>';
+    (r.items||[]).forEach(it=>{
+      const a=document.createElement('a');
+      a.className='mopt'; a.href=it.url||'#'; a.target='_blank'; a.rel='noopener noreferrer';
+      a.textContent=it.label + '  ↗';
+      a.onclick=()=>{
+        // Any resource link click (correct or distractor) counts as "opened a
+        // resource" — this gates speaker lines like "(You open CSI.)" that
+        // should only appear if the learner actually looked something up.
+        help.openedAnyResourceLink = true;
+        help.openedLabels.add((it.label||'').trim().toLowerCase());
+        if(it.correct){
+          if(callSeconds >= RESOURCE_CREDIT_MIN_SECONDS){
+            help.checkedCorrectArticle=true;
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      verdict:'correct', seconds:secondsOnResources(), notes:'opened the correct resource'});
+          } else {
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      seconds:secondsOnResources(), notes:'opened the correct resource too early to earn credit (before '+RESOURCE_CREDIT_MIN_SECONDS+'s)'});
+          }
+        } else logEvent({type:'helper', helper:'resources', action:it.label,
+                         verdict:'incorrect', seconds:secondsOnResources(), notes:'opened a distractor resource'});
+      };
+      wrap.appendChild(a);
+    });
+    openModal(r.title||'Check Resources', wrap);
+    document.getElementById('modal').addEventListener('close', ()=>{
+      logEvent({type:'helper', helper:'resources', action:'closed Check Resources', seconds:secondsOnResources()});
+    }, {once:true});
+  }
+
+  /* Centered in-sim notice (styled like the Check Resources panel) shown when a
+     learner tries to reply from an article they never opened in Check Resources —
+     replaces the old browser alert(). */
+  function notifyResourceNotOpened(){
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<div class="mnote" style="margin:0;font-size:0.875rem;color:var(--ink-2)">'
+      + 'It looks like you didn’t open this article using Check Resources. '
+      + 'Remember to always check the resource before answering from memory.</div>';
+    openModal('Check the resource first', wrap);
+  }
+
+  /* Progress bar removed — kept as a no-op so existing call sites are harmless. */
+  function paintProgress(){}
+
+  function applyCredit(stg, pts, verdict, pickText){
+    if(!(stg in earned)) return;
+    const cfg = stageCfg[stg] || {};
+    if(cfg.additive){
+      // Stage spans more than one screen (e.g. solve = s_solve + s_solve2):
+      // sum contributions, capped at the stage max, rather than taking the best.
+      const next = Math.min(cfg.max==null ? Infinity : cfg.max, earned[stg] + Math.max(0, pts));
+      if(pts > 0 || !(stg in decisivePick)) decisivePick[stg] = {text:pickText, verdict:verdict, points:next};
+      earned[stg] = next;
+      if(verdict==='correct') status[stg]='done';
+      else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+      return;
+    }
+    if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+    if(pts > earned[stg]) earned[stg] = pts;
+    if(verdict==='correct') status[stg]='done';
+    else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+  }
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text));
+  }
+
+  function renderScreen(id, opts){
+    opts = opts || {};
+    const retriedIds = opts.retriedIds || [];
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    setComposer('');   // choices appear only AFTER the caller's line has landed
+
+    const showChoices = ()=>{
+      // (Screen screenshots are no longer shown automatically — they now reveal
+      //  only when the learner picks the choice flagged with caption:"Samantha's Layers panel…".)
+      setComposer(`<div class="prompt">${escapeHtml(px(scr.prompt))}</div><div id="choices"></div>`);
+      const cWrap = document.getElementById('choices');
+      scr.choices.forEach(ch=>{
+        const b=document.createElement('button');
+        // A choice with `say` is the Expert SPEAKING (rendered as a bubble), so
+        // it isn't a tool action — no badge, even if its label reads "[Action]".
+        const badge = isAction(ch.text) && !ch.say;
+        b.className = 'choice' + (badge ? ' choice-action' : '');
+        b.innerHTML = (badge ? '<span class="cbadge">Action</span>' : '')
+                    + escapeHtml(stripAction(px(ch.text)));
+        if(retriedIds.includes(ch.id)) b.disabled=true;
+        b.onclick=()=>choose(scr,ch,retriedIds,opts.cap);
+        cWrap.appendChild(b);
+      });
+      markStepStart();   // start the clock for this screen's time_on_step_sec
+    };
+
+    // The caller line (which may itself contain Expert:/Sarah: parts) is split
+    // into its own bubbles. On auto-advance it animates in with typing dots.
+    currentSpeakerShown = !!(scr.speaker && !opts.skipSpeaker && speakerGateMet(scr));
+    if(currentSpeakerShown){
+      revealSegments(splitDialogue(scr.speaker), !!opts.animateSpeaker, showChoices);
+    } else {
+      showChoices();
+    }
+  }
+
+  /* Some speaker lines only make sense if the learner actually did something
+     first. `speakerIf:"resourceOpened"` on a screen gates its speaker line so
+     it's skipped entirely unless the learner clicked a resource link in Check
+     Resources at some point in the call. Add more gate keys here as needed. */
+  function speakerGateMet(scr){
+    if(!scr.speakerIf) return true;
+    if(scr.speakerIf === 'resourceOpened') return !!help.openedAnyResourceLink;
+    return true;
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    // Stage lock: a choice phrased "Reply using …" / "Provide a response using …"
+    // requires the learner to have opened the quoted article(s) in Check
+    // Resources first. Matching is normalized (case/punctuation/&-and, plus a
+    // prefix-tolerant substring test) and ALL quoted articles must be opened.
+    if(/\b(?:reply using|provide a response using)\b/i.test(px(ch.text)||'')){
+      const toks = s => new Set((s||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean));
+      const subset = (a,b) => [...a].every(t => b.has(t));   // a ⊆ b
+      const opened = [...help.openedLabels].map(toks).filter(s => s.size);
+      const needed = (px(ch.text).match(/["“”'‘’]([^"“”'‘’]+)["“”'‘’]/g)||[])
+                       .map(q => toks(q.replace(/["“”'‘’]/g,''))).filter(s => s.size);
+      const missing = needed.some(n => !opened.some(o => subset(n,o) || subset(o,n)));
+      if(!needed.length || missing){
+        notifyResourceNotOpened();
+        return;
+      }
+    }
+    [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    // The learner's pick renders as:
+    //   • `say` present  -> a blue Expert bubble of the spoken words ("Tell Sarah…")
+    //   • an [Action]    -> an inline "You …" note (a tool action)
+    //   • otherwise      -> a blue reply bubble of the choice text
+    if(ch.say) appendBubble('you', ch.say);
+    else if(isAction(ch.text)) appendActionNote(actionNoteText(ch.text));
+    else appendBubble('you', ch.text);
+
+    // Choice-gated screenshot: shows immediately on selection, before the reply.
+    if(ch.showsImage && (ch.image||scr.image)) appendImage(ch.image||scr.image);
+    // Deferred screenshot: shown AFTER the consequence (reply) finishes revealing.
+    const showImageAfter = ()=>{ if(ch.showsImageAfter && (ch.image||scr.image)) appendImage(ch.image||scr.image); };
+    const segs = splitDialogue(ch.consequence);
+
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
+      logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+                 text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
+                 notes:'first attempt — caller pushed back, screen re-opened for a retry (capped at '+ch.capIfRetried+')' });
+      setComposer('');
+      // Auto-advance: once the pushback lands, re-open the same screen (no button).
+      revealSegments(segs, true, ()=>renderScreen(scr.id,
+        { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true }), { reaction:true });
+      return;
+    }
+
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+    logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+               text:stripAction(px(ch.text)), verdict:ch.verdict, points:pts, seconds:secondsOnStep(),
+               notes:(isAction(ch.text) ? 'action' : 'reply')
+                     + (typeof cap==='number' ? '; retry attempt, capped at '+cap : '') });
+    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, say:ch.say, consequence:ch.consequence });
+
+    setComposer('');
+    // Auto-advance to the next screen — NO Continue button. The next caller line
+    // arrives via its own typing indicator, straight into the next choices.
+    revealSegments(segs, true, ()=>{
+      showImageAfter();
+      if(ch.goTo==='__end__') renderFinal();
+      else renderScreen(ch.goTo, { animateSpeaker:true });
+    }, { reaction:true });
+  }
+
+  /* =================== PHASE 3 — COMPLETE =================== */
+  function renderFinal(){
+    stopTimer();
+
+    // Apply the Check-Resources penalty before tallying (same rule the old
+    // "Check the Articles" used: no verify of the correct resource → capped).
+    const helpNotes = [];
+    const res = S.resources;
+    if(res && !help.checkedCorrectArticle && (res.stage in earned) && earned[res.stage] > res.capIfUnchecked){
+      earned[res.stage] = res.capIfUnchecked;
+      helpNotes.push("You reached the right answer, but didn't verify it in the source resource — checking the resource is the skill, not remembering.");
+    }
+    S.stages.forEach(st=>{ if(earned[st.id] >= st.max) status[st.id]='done'; else if(earned[st.id] > 0 && status[st.id]==='done') status[st.id]='partial'; });
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+
+    // One summary row per attempt: the total score only.
+    logEvent({ type:'final', points:sum, seconds:callSeconds,
+               notes:'final score ' + sum + ' / ' + maxTotal });
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span class="sval">${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      return p ? `<div class="pick">Your response: “${escapeHtml(p.text)}”</div>`
+               : `<div class="pick miss">You didn't reach this step.</div>`;
+    };
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=>`<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`).join('');
+
+    // One collapsible row, styled like the wix.com "Website builder FAQs".
+    const accItem = (id, title, inner) => `
+      <div class="acc-item" data-acc="${id}">
+        <button class="acc-head" type="button" aria-expanded="false" aria-controls="accp-${id}">
+          <span>${title}</span><span class="acc-icon" aria-hidden="true"></span>
+        </button>
+        <div class="acc-panel" id="accp-${id}" role="region">
+          <div class="acc-clip"><div class="acc-inner">${inner}</div></div>
+        </div>
+      </div>`;
+
+    const completeImg = U.completeImage || U.image;
+    const portrait = completeImg
+      ? `<img src="${escapeHtml(completeImg)}" alt="" onerror="this.style.display='none'">` : '';
+
+    app.innerHTML = `
+      <section class="complete-hero">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <h1 class="display">Complete!</h1>
+          <p class="lead">Here's how the chat went, stage by stage — with the exact response that set each score.</p>
+          <div class="scorenum">${sum}<small> / ${maxTotal}</small></div>
+        </div>
+      </section>
+
+      <div class="acc">
+        ${accItem('scorecard','Scorecard', rows)}
+        ${accItem('strengths','Top strengths', `<ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>`)}
+        ${accItem('areas','Areas for improvement', `<ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>`)}
+      </div>
+
+      ${helpNotes.length ? `<div class="card"><h3>Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
+
+      <div class="gate">
+        <button class="btn btn-dark" id="finishBtn" type="button" disabled>Finish</button>
+        <span class="hint" id="gateHint">Open all three sections to finish.</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="txBtn">View conversation transcript</button>
+        <button class="btn btn-dark" onclick="location.reload()">Restart</button>
+      </div>
+      <div id="tx" class="card" style="display:none"></div>`;
+
+    // ---- Accordion toggle + completion gate ----------------------------------
+    // Each row opens independently (mirrors the Wix FAQ). The Finish button
+    // unlocks only once all three rows have each been opened at least once;
+    // re-collapsing a row does not re-lock it. Finishing pushes the Rise/
+    // Storyline variable that marks the activity complete.
+    const needIds = ['scorecard','strengths','areas'];
+    const opened  = new Set();
+    const finishBtn = document.getElementById('finishBtn');
+    const gateHint  = document.getElementById('gateHint');
+    let finished = false;
+
+    app.querySelectorAll('.acc-head').forEach(head=>{
+      head.onclick = () => {
+        const item = head.closest('.acc-item');
+        const isOpen = item.classList.toggle('open');
+        head.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if(isOpen){
+          opened.add(item.getAttribute('data-acc'));
+          if(!finished && needIds.every(id=>opened.has(id))){
+            finishBtn.disabled = false;
+            gateHint.textContent = 'All sections reviewed — you can finish.';
+            gateHint.classList.add('ready');
+          }
+        }
+      };
+    });
+
+    finishBtn.onclick = () => {
+      if(finishBtn.disabled || finished) return;
+      finished = true;
+      pushRiseVar('activity_complete', 'true');
+      logEvent({ type:'complete', points:sum, seconds:callSeconds,
+                 notes:'learner reviewed all end-screen sections and finished — ' + sum + ' / ' + maxTotal });
+      finishBtn.classList.remove('btn-dark');
+      finishBtn.classList.add('done');
+      finishBtn.textContent = 'Completed ✓';
+      gateHint.textContent = 'Marked complete.';
+      gateHint.classList.add('ready');
+    };
+
+    document.getElementById('txBtn').onclick = () => {
+      const tx = document.getElementById('tx'), btn = document.getElementById('txBtn');
+      if(tx.style.display==='none'){
+        // Mirror the live chat: split speaker/consequence into speaker bubbles,
+        // render the pick as an action note or a blue reply bubble.
+        tx.innerHTML = `<h3 style="margin-bottom:0.375rem">Conversation transcript</h3>` +
+          `<div class="chat txchat">` +
+          transcript.map(t=>{
+            let h='';
+            if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=segMarkup(s.kind, s.text));
+            h += t.say ? segMarkup('you', t.say)
+               : isAction(t.picked) ? bubbleMarkup('system', actionNoteText(t.picked), '')
+               : segMarkup('you', t.picked);
+            if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=segMarkup(s.kind, s.text));
+            return h;
+          }).join('') + `</div>`;
+        tx.style.display='block'; btn.textContent='Hide conversation transcript';
+      } else { tx.style.display='none'; btn.textContent='View conversation transcript'; }
+    };
+  }
+
+  /* ---- boot ---- */
+  renderMeet();
+
+  /* Signal the Rise 360 code block that the project has loaded and can display. */
+  try { window.parent.postMessage({ type: 'complete' }, '*'); } catch(e){}
+})();
+</script>
+</body>
+</html>

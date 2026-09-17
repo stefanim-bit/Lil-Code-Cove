@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Session 3 · Billing: Wire Transfer (Rise Code Block Template)</title>
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION 3  ·  BILLING: WIRE TRANSFER  (Rise Code Block)
+==================================================================================
+  CONVERSATION VIEW: the call renders as a running chat thread the learner can
+  scroll back through, so earlier caller lines and the learner's own replies stay on
+  screen for reference. Feedback is still saved for the END (no grade/colors while
+  playing). In-character caller reactions are part of the sim, not a grade.
+
+  CHOICE DESIGN: options are balanced in length and realism. The "best" answer is
+  not the longest or most obvious one. Several choices do some things well and miss
+  others, so the learner must discriminate. Partial credit + floating credits reward
+  good-but-incomplete moves (e.g. asking region inside the greeting).
+
+  SOURCE OF TRUTH (Copilot/Dynamics CSI + public Wix Help Center):
+    • Wire/direct bank transfer is NOT supported for Wix services, any region/plan/term.
+    • SEPA: usable only if already saved (can't be newly added for first-time
+      purchases) and only for Premium plans + domains; else credit/debit card or PayPal.
+    • Solve: HALF = say it's not possible + share the feature-request vote link;
+      FULL = that PLUS offer the payment methods that fit the user's location.
+      (No escalation, not in CSI.)
+==================================================================================
+-->
+<style>
+  :root{
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    --ink:#202124; --muted:#5f6368; --line:#dadce0; --accent:#1155CC;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);margin:0;background:#f5f6f8}
+  .wrap{max-width:1040px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 250px;gap:20px}
+  .stage{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px;min-height:360px;display:flex;flex-direction:column}
+  .intro{font-size:13px;color:var(--muted);margin:0 0 12px}
+  .badge{display:inline-block;font-size:12px;font-weight:bold;color:#fff;background:var(--accent);padding:3px 10px;border-radius:20px;letter-spacing:.02em;margin-bottom:10px;align-self:flex-start}
+  /* running conversation thread */
+  .thread{display:flex;flex-direction:column;gap:9px;max-height:340px;overflow-y:auto;padding:4px 2px 8px;margin-bottom:14px;border-bottom:1px solid #eee}
+  .msg{max-width:82%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.45}
+  .msg .who{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+  .msg.caller{align-self:flex-start;background:#FFF2CC;border:1px solid #f0e2b0;border-bottom-left-radius:3px}
+  .msg.you{align-self:flex-end;background:#E8EEFB;border:1px solid #cdddf7;border-bottom-right-radius:3px}
+  .msg.you .who{color:var(--accent)}
+  .current{margin-top:auto}
+  .prompt{font-weight:bold;font-size:15px;margin:4px 0 8px;color:var(--muted)}
+  .choice{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:12px 14px;margin:8px 0;font-size:14px;cursor:pointer;transition:.15s}
+  .choice:hover:not(:disabled){border-color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .choice:disabled{opacity:.45;cursor:not-allowed}
+  .next{margin-top:8px;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:bold;cursor:pointer}
+  /* side: neutral progress only (no scores) while playing */
+  .side{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;align-self:start}
+  .side h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .pbar{height:8px;background:#eceef1;border-radius:6px;overflow:hidden}
+  .pfill{height:100%;background:var(--accent);border-radius:6px;transition:width .25s}
+  .pnote{font-size:12px;color:var(--muted);margin-top:8px}
+  /* end review */
+  .final .big{font-size:44px;font-weight:bold}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:16px}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:6px 0;border-bottom:1px dashed #eee}
+  .sdot{width:9px;height:9px;border-radius:50%;margin-right:9px;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .list{margin:8px 0 0;padding-left:0;list-style:none}
+  .list li{padding:8px 0 8px 26px;position:relative;font-size:14px;border-bottom:1px solid #f1f1f1}
+  .list.str li:before{content:"\2713";position:absolute;left:4px;color:var(--correct);font-weight:bold}
+  .list.imp li:before{content:"\2192";position:absolute;left:4px;color:var(--partial);font-weight:bold}
+  .pick{font-size:12.5px;color:var(--muted);margin-top:5px;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+  h2{margin:.2em 0 .4em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="stageHost" class="stage">
+    <span class="badge">Live call</span>
+    <p class="intro" id="intro"></p>
+    <div class="thread" id="thread"></div>
+    <div class="current" id="current"></div>
+  </div>
+  <aside class="side" id="side">
+    <h3>Progress</h3>
+    <div id="progress"></div>
+  </aside>
+</div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Practice Call: Billing (Double Charge on a Monthly Plan)",
+  callerName: "Danny",
+  userBio: "Meet Danny, who thinks he's been charged twice for his Wix Light Plan and is confused by two charges on his card.",
+
+  // Reference resources (travels with the file). The Article stage is scored through
+  // the s_article screen choices below; this list mirrors those values for reviewers.
+  resources: {
+    items: [
+      { title:"Billing Common Scenarios", url:"https://csinternal.wixanswers.com/kb/en/article/billing-common-scenarios", points:20, note:"CSI source of truth for renewal versus duplicate" },
+      { title:"Understanding How Wix Processes Payments for Our Services", url:"https://support.wix.com/en/article/understanding-how-wix-processes-payments-for-our-services", points:10, note:"general renewal timing, partial" },
+      { title:"Changing the Subscription Period of Your Premium Plan", url:"https://support.wix.com/en/article/changing-the-subscription-period-of-your-premium-plan", points:0, note:"off topic distractor, cycle change" }
+    ]
+  },
+
+  // The 8-behaviour rubric. 'strength'/'improvement' are the end-of-call coaching lines.
+  // Dynamics and Solve are additive: both parts are needed for full marks, one part is partial.
+  stages: [
+    { id:"open", name:"Opening & closing", max:5,
+      strength:"you greeted Danny, acknowledged the confusion, and closed with a clear recap.",
+      improvement:"open with a greeting and a little reassurance, and close with a recap of what each charge was." },
+    { id:"dynamics", name:"Use Dynamics", max:10, additive:true,
+      strength:"you verified the payment method and, since Danny was on a different email, collected the card details before looking the charge up in SBS.",
+      improvement:"verify the payment method first, and when the caller is on a different email than the card, collect the card details before you look up the charge." },
+    { id:"familiarize", name:"Familiarize", max:10,
+      strength:"you asked a contextual question that put Danny at ease and gave you useful background.",
+      improvement:"ask an impactful question that puts the caller at ease and gives you context, rather than a generic or account-only question." },
+    { id:"clarify", name:"Clarify the issue", max:15,
+      strength:"you pinned down the exact dates and amounts, and checked for other services, before drawing any conclusion.",
+      improvement:"confirm the exact dates and amounts, and check for other services, before you conclude it's a duplicate." },
+    { id:"roadmap", name:"Roadmapping", max:10,
+      strength:"you told Danny your plan for what you'd check and do next.",
+      improvement:"tell the caller your plan, what you'll check and do next, so they're not left guessing." },
+    { id:"article", name:"Article / Copilot", max:20,
+      strength:"you confirmed the answer in Billing Common Scenarios instead of relying on memory.",
+      improvement:"open the right source of truth, Billing Common Scenarios, to confirm renewal versus duplicate instead of relying on memory." },
+    { id:"recreate", name:"Recreate the issue", max:10, additive:true,
+      strength:"you confirmed the two separate renewals yourself, reviewing the plan in User Manager and comparing the invoice billing periods in SBS, before explaining.",
+      improvement:"confirm the two charges yourself, review the plan in User Manager and compare the invoice billing periods in SBS, before you explain the outcome." },
+    { id:"solve", name:"Solve the issue", max:20, additive:true,
+      strength:"you explained clearly that it wasn't a duplicate with the invoice details, and documented your findings in the internal note.",
+      improvement:"explain that it isn't a duplicate using the invoice details, and document your findings in the internal note before you close." }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open", gate:true,
+      speaker:"Hi, I think I've been charged twice for my monthly plan, there's two charges on my card and I've only got one site.",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“Oh no, charged twice, that's really not right. Let me cancel the duplicate straight away and get that extra charge put back on your card right now, so it's completely sorted for you.”",
+          verdict:"incorrect", points:0, goTo:"s_roadmap", negative:true,
+          consequence:"Danny: “Oh, okay, but which one's even the extra one?”" },
+        { id:"B", text:"“What's the email on your account?”",
+          verdict:"partial", points:3, goTo:"s_roadmap" },
+        { id:"C", text:"“Hi, you're through to Wix Support, I'm [name]. Sorry for the confusion, let's look into it together and I'll explain exactly what each charge is.”",
+          verdict:"correct", points:5, goTo:"s_roadmap",
+          credits:[{stage:"roadmap", points:4, verdict:"partial"}] }
+      ]
+    },
+
+    s_roadmap: {
+      stage:"roadmap", gate:true,
+      speaker:"Okay, so what happens now?",
+      prompt:"How do you proceed?",
+      choices:[
+        { id:"A", text:"“Give me a moment while I look into these charges for you, I just want to go through everything properly before I say anything.”",
+          verdict:"partial", points:5, goTo:"s_verify_email" },
+        { id:"B", text:"“Here's my plan: I'll verify a couple of details, pull up your billing history, then explain what both charges are.”",
+          verdict:"correct", points:10, goTo:"s_verify_email" }
+      ]
+    },
+
+    s_verify_email: {
+      stage:"dynamics", gate:true,
+      prompt:"What's your next step?",
+      choices:[
+        { id:"A", text:"“Can you give me the email on your account?”",
+          verdict:"partial", points:2, goTo:"s_verify_card",
+          consequence:"Danny: “Sure, well, I'm actually writing from my work email, the plan's on my personal one.”" },
+        { id:"B", text:"“Quick check first, is the email you're writing from the same one that's on the account?”",
+          verdict:"correct", points:5, goTo:"s_verify_card",
+          consequence:"Danny: “Ah, no, this is my work email. The plan's on my personal account.”" },
+        { id:"C", text:"Look up the work email he's writing from in User Manager (UM) and open whichever account comes up first, then start checking the charges from there.",
+          verdict:"incorrect", points:0, goTo:"s_verify_card" }
+      ]
+    },
+
+    s_verify_card: {
+      stage:"dynamics", gate:true,
+      prompt:"How do you handle the different email?",
+      choices:[
+        { id:"A", text:"“To make sure your details are correct before we go on, can you share the card's last 4 digits, the cardholder's name, the expiry, and the card type? Then I'll find the charge in SBS.”",
+          verdict:"correct", points:5, goTo:"s_familiarize",
+          consequence:"Danny: “Sure, it's a Visa ending 4417, Danny Owens, expires 09/27.”" },
+        { id:"B", text:"Send Danny the Charge Locator link so he can look the charge up himself.",
+          verdict:"partial", points:2, goTo:"s_familiarize" },
+        { id:"C", text:"Search SBS for the charge without confirming any card details.",
+          verdict:"incorrect", points:0, goTo:"s_familiarize" }
+      ]
+    },
+
+    s_familiarize: {
+      stage:"familiarize", gate:true,
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“What kind of site do you run?”",
+          verdict:"partial", points:4, goTo:"s_clarify",
+          consequence:"Danny: “It's a little shop site.”" },
+        { id:"B", text:"“It's just the standard Wix Light Plan renewing like normal, these things usually balance out on their own, so I wouldn't worry too much about it.”",
+          verdict:"incorrect", points:0, goTo:"s_clarify" },
+        { id:"C", text:"“Before we dig in, is this the first time the billing's caught you off guard, or has it been on your mind for a while?”",
+          verdict:"correct", points:10, goTo:"s_clarify",
+          consequence:"Danny: “First time really, I just saw two charges and panicked.”" }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify", gate:true,
+      speaker:"There's just two charges, same-ish amount? It's confusing.",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“Are both charges definitely not from the same monthly subscription?”",
+          verdict:"partial", points:8, goTo:"s_roadmap2",
+          consequence:"Danny: “I'm not sure, that's kind of why I'm asking.”" },
+        { id:"B", text:"“What are the two dates, and the exact amount next to each charge?”",
+          verdict:"correct", points:15, goTo:"s_roadmap2",
+          consequence:"Danny: “One's the 3rd of last month, one's the 3rd of this month, both about $17. I haven't changed my plan or anything.”" },
+        { id:"C", text:"“Do you pay for any other Wix products or services, like a domain, business email, or paid apps?”",
+          verdict:"correct", points:15, goTo:"s_roadmap2",
+          consequence:"Danny: “No, just the one plan for the one site.”" },
+        { id:"D", text:"“So this is definitely a duplicate then, no question about it, let me go ahead and start the refund for the extra charge right now.”",
+          verdict:"incorrect", points:0, retry:true, capIfRetried:8, goTo:"s_roadmap2", negative:true,
+          consequence:"Danny: “Well, I'm not sure it is, that's why I'm asking you.”" }
+      ]
+    },
+
+    s_roadmap2: {
+      stage:"roadmap", gate:true,
+      speaker:"So what will you do to sort it out?",
+      prompt:"How do you proceed?",
+      choices:[
+        { id:"A", text:"“Here's my plan: I'll open your billing history, check each invoice, then explain exactly what both charges are.”",
+          verdict:"correct", points:10, goTo:"s_article" },
+        { id:"B", text:"“Let me take a closer look at your billing history and go through your recent invoices, and I'll come back to you once I've been through everything.”",
+          verdict:"partial", points:5, goTo:"s_article" }
+      ]
+    },
+
+    s_article: {
+      stage:"article", gate:true,
+      prompt:"Where do you check before you explain the charges?",
+      choices:[
+        { id:"A", text:"You've handled plenty of these before, so just tell Danny it's almost certainly two renewals and move the conversation along.",
+          verdict:"incorrect", points:0, goTo:"s_recreate_um" },
+        { id:"B", text:"Open “Double Charge Appearing on Your Bank Statement”.",
+          verdict:"partial", points:10, goTo:"s_recreate_um" },
+        { id:"C", text:"Open “Understanding How Wix Processes Payments for Our Services”.",
+          verdict:"partial", points:10, goTo:"s_recreate_um" },
+        { id:"D", text:"Open “Billing Common Scenarios” to confirm how to tell a renewal from a duplicate.",
+          verdict:"correct", points:20, goTo:"s_recreate_um" },
+        { id:"E", text:"Open “Changing the Subscription Period of Your Premium Plan”.",
+          verdict:"incorrect", points:0, goTo:"s_recreate_um" }
+      ]
+    },
+
+    s_recreate_um: {
+      stage:"recreate", gate:true,
+      speaker:"Are you sure you can even see my charges?",
+      prompt:"What do you do first to confirm the charges?",
+      choices:[
+        { id:"A", text:"Tell Danny it's almost certainly just two renewals based on what he's described, and reassure him there's no need to open the account.",
+          verdict:"incorrect", points:0, goTo:"s_recreate_sbs" },
+        { id:"B", text:"In User Manager, open Danny's plan and review its renewal and payment history.",
+          verdict:"correct", points:5, goTo:"s_recreate_sbs" },
+        { id:"C", text:"Ask Danny to screenshot his bank statement instead.",
+          verdict:"partial", points:2, goTo:"s_recreate_sbs",
+          consequence:"Danny: “Okay, hang on, let me find it.”" }
+      ]
+    },
+
+    s_recreate_sbs: {
+      stage:"recreate", gate:true,
+      prompt:"What do you check next to confirm the charges?",
+      choices:[
+        { id:"A", text:"Open the SBS Invoices tab and check only that the two amounts match, then move on.",
+          verdict:"partial", points:2, goTo:"s_solve" },
+        { id:"B", text:"In SBS, open the Invoices tab and compare the Billing Period on each invoice, reviewing both to confirm they cover two different periods, last month's renewal and this month's, for the same Wix Light Plan.",
+          verdict:"correct", points:5, goTo:"s_solve" },
+        { id:"C", text:"Glance at the totals in SBS and assume the two charges match.",
+          verdict:"incorrect", points:0, goTo:"s_solve" }
+      ]
+    },
+
+    s_solve: {
+      stage:"solve", gate:true,
+      speaker:"So, did you charge me twice or not?",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“You know what, looking at it again it does seem like a duplicate after all, so let me just go ahead and refund one of the two charges for you now.”",
+          verdict:"incorrect", points:0, goTo:"s_document", negative:true,
+          consequence:"Danny: “Wait, so which is it?”" },
+        { id:"B", text:"“Ah, I think what's happened here is that you switched over to a yearly plan at some point, and that second charge is the yearly one.”",
+          verdict:"incorrect", points:0, goTo:"s_document", negative:true,
+          consequence:"Danny: “I never changed anything though.”" },
+        { id:"C", text:"“Good news, it's not a duplicate. These are two separate monthly renewals of your Wix Light Plan, one for last month's billing period and one for this month's, each about $17. I can share the service, amount, date, payment method, subscription period, and invoice number for each.”",
+          verdict:"correct", points:10, goTo:"s_document",
+          consequence:"Danny: “Oh, so both are just my normal plan. That's a relief.”" }
+      ]
+    },
+
+    s_document: {
+      stage:"solve", gate:true,
+      prompt:"How do you wrap up the case internally?",
+      choices:[
+        { id:"A", text:"Close the case now that Danny understands the charges, since he sounds happy and there's nothing left to sort out.",
+          verdict:"incorrect", points:0, goTo:"s_close" },
+        { id:"B", text:"Document your findings in the internal note, then close the case.",
+          verdict:"correct", points:10, goTo:"s_close" },
+        { id:"C", text:"“I'll attach the article to your ticket so it's on record.”",
+          verdict:"incorrect", points:0, goTo:"s_close", negative:true,
+          consequence:"Danny: “Uh, sure, I don't really know what that means.”" }
+      ]
+    },
+
+    s_close: {
+      stage:"open", gate:true,
+      speaker:"Oh, that makes sense. Thanks.",
+      prompt:"How do you wrap up?",
+      choices:[
+        { id:"A", text:"“Great, thanks for contacting Wix.”",
+          verdict:"incorrect", points:0, goTo:"__end__" },
+        { id:"B", text:"“Glad that's cleared up! Quick recap: both charges are your normal monthly renewals for different billing periods, nothing was doubled, and no refund's needed. Anything else I can help with?”",
+          verdict:"correct", points:5, goTo:"__end__" }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const introEl = document.getElementById('intro');
+  const thread  = document.getElementById('thread');
+  const cur     = document.getElementById('current');
+  const progEl  = document.getElementById('progress');
+  const caller  = S.callerName || 'Caller';
+
+  const earned = {};        // stageId -> points earned (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response(s) that set that stage's score
+  // ADDED PER REQUEST: additive stages sum the best result from each contributing
+  // screen (capped at the stage max) instead of taking best-of, so a multi-part
+  // behaviour needs every part for full marks and one part alone earns partial.
+  // Stages without additive:true keep the original best-of behaviour, so earlier
+  // scenarios (e.g. Session 3) are unaffected.
+  const additive = {};      // stageId -> bool
+  const partScores = {};    // stageId -> { screenId: bestPointsFromThatScreen }
+  const stMax = {};         // stageId -> max
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; additive[st.id]=!!st.additive; partScores[st.id]={}; stMax[st.id]=st.max; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+
+  introEl.textContent = `${S.title} · ${S.userBio}`;
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  // ---- neutral progress (NO scores AND NO stage names shown during play) ----
+  function paintProgress(){
+    const total = Object.keys(S.screens).length;
+    const pct = Math.round(visitedScreens.size / total * 100);
+    progEl.innerHTML =
+      `<div class="pbar"><div class="pfill" style="width:${pct}%"></div></div>
+       <div class="pnote">Call in progress</div>`;
+  }
+
+  // ---- the running conversation thread ----
+  function pushMsg(kind, who, text){
+    const div = document.createElement('div');
+    div.className = 'msg ' + kind;
+    div.innerHTML = `<span class="who">${who}</span>${text}`;
+    thread.appendChild(div);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function applyCredit(stg, pts, verdict, pickText, screenId){
+    if(!(stg in earned)) return;
+    if(additive[stg]){
+      // Sum the best contribution from each distinct screen, capped at the stage max.
+      const parts = partScores[stg];
+      if(!(screenId in parts) || pts > parts[screenId]) parts[screenId] = pts;
+      earned[stg] = Math.min(stMax[stg], Object.values(parts).reduce((a,b)=>a+b,0));
+      // Cite the pick from each contributing screen (kept as an array for additive stages).
+      if(!Array.isArray(decisivePick[stg])) decisivePick[stg] = [];
+      const i = decisivePick[stg].findIndex(p=>p.screenId===screenId);
+      const entry = {text:pickText, verdict:verdict, points:pts, screenId:screenId};
+      if(i>=0){ if(pts >= decisivePick[stg][i].points) decisivePick[stg][i] = entry; }
+      else decisivePick[stg].push(entry);
+      status[stg] = earned[stg] >= stMax[stg] ? 'done' : (earned[stg] > 0 ? 'partial' : 'todo');
+    } else {
+      if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+      if(pts > earned[stg]) earned[stg] = pts;              // best attempt wins
+      if(verdict==='correct') status[stg]='done';
+      else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+    }
+  }
+
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text, screen.id);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text, screen.id));
+  }
+
+  function renderScreen(id){
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    if(scr.speaker) pushMsg('caller', caller, scr.speaker);
+    renderChoices(scr, [], undefined);
+  }
+
+  function renderChoices(scr, retriedIds, cap){
+    cur.innerHTML = `<div class="prompt">${scr.prompt}</div><div id="choices"></div>`;
+    const cWrap = document.getElementById('choices');
+    scr.choices.forEach(ch=>{
+      const b=document.createElement('button');
+      b.className='choice'; b.textContent=ch.text;
+      if(retriedIds.includes(ch.id)) b.disabled=true;   // used-up (wrong) retry option
+      b.onclick=()=>choose(scr,ch,retriedIds,cap);
+      cWrap.appendChild(b);
+    });
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    [...document.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    // Spoken lines (quoted) show in the chat as the Expert's message. Actions
+    // (e.g. "Open User Manager") are collected and scored but NOT shown as a chat
+    // line. Auto-detected by a leading quote; force with choice.action:true/false.
+    const spoken = (ch.action===true) ? false
+                 : (ch.action===false ? true : /^\s*[“"']/.test(ch.text));
+    if(spoken) pushMsg('you', 'You', ch.text);
+
+    // RETRY ONLY IF THE USER PROMPTS: the caller pushes back and re-opens the screen.
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      if(ch.consequence) pushMsg('caller', caller, ch.consequence);
+      renderChoices(scr, retriedIds.concat(ch.id), ch.capIfRetried);
+      return;
+    }
+
+    // Score silently (no feedback shown now). Cap points if this was a retry attempt.
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+
+    // In-character caller reaction (NOT a grade) pauses on a Continue; else advance.
+    if(ch.consequence){
+      pushMsg('caller', caller, ch.consequence);
+      cur.innerHTML = `<button class="next" id="next">Continue →</button>`;
+      document.getElementById('next').onclick = ()=>renderScreen(ch.goTo);
+    } else {
+      renderScreen(ch.goTo);
+    }
+  }
+
+  // ---- END: reveal score, scorecard, strengths, areas (thread stays visible above) ----
+  function renderFinal(){
+    document.querySelector('.wrap').style.gridTemplateColumns = '1fr';
+    document.getElementById('side').style.display = 'none';
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span>${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      if(Array.isArray(p)){
+        return p.length ? p.map(x=>`<div class="pick">Your response: “${x.text}”</div>`).join('')
+                        : `<div class="pick miss">You didn't reach this step.</div>`;
+      }
+      return p ? `<div class="pick">Your response: “${p.text}”</div>`
+               : `<div class="pick miss">You didn't reach this step.</div>`;
+    };
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b>: ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=>`<li><b>${st.name}</b>: ${st.improvement}${pickLine(st)}</li>`).join('');
+
+    cur.innerHTML = `
+      <div class="final">
+        <h2>Interaction complete</h2>
+        <div class="big">${sum}<span style="font-size:20px;color:#5f6368">/${maxTotal}</span></div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Scorecard</h3>${rows}
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--correct)">Top strengths</h3>
+          <ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--partial)">Areas for improvement</h3>
+          <ul class="list imp">${areas || '<li>Nothing flagged, a clean run.</li>'}</ul>
+        </div>
+
+        <button class="next" onclick="location.reload()">Restart</button>
+      </div>`;
+    cur.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  paintProgress();
+  renderScreen(S.start);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Session 3 · Billing: Wire Transfer (Rise Code Block Template)</title>
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION 3  ·  BILLING: WIRE TRANSFER  (Rise Code Block)
+==================================================================================
+  CONVERSATION VIEW: the call renders as a running chat thread the learner can
+  scroll back through, so earlier caller lines and the learner's own replies stay on
+  screen for reference. Feedback is still saved for the END (no grade/colors while
+  playing). In-character caller reactions are part of the sim, not a grade.
+
+  CHOICE DESIGN: options are balanced in length and realism. The "best" answer is
+  not the longest or most obvious one. Several choices do some things well and miss
+  others, so the learner must discriminate. Partial credit + floating credits reward
+  good-but-incomplete moves (e.g. asking region inside the greeting).
+
+  SOURCE OF TRUTH (Copilot/Dynamics CSI + public Wix Help Center):
+    • Wire/direct bank transfer is NOT supported for Wix services, any region/plan/term.
+    • SEPA: usable only if already saved (can't be newly added for first-time
+      purchases) and only for Premium plans + domains; else credit/debit card or PayPal.
+    • Solve: HALF = say it's not possible + share the feature-request vote link;
+      FULL = that PLUS offer the payment methods that fit the user's location.
+      (No escalation, not in CSI.)
+==================================================================================
+-->
+<style>
+  :root{
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    --ink:#202124; --muted:#5f6368; --line:#dadce0; --accent:#1155CC;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);margin:0;background:#f5f6f8}
+  .wrap{max-width:1040px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 250px;gap:20px}
+  .stage{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px;min-height:360px;display:flex;flex-direction:column}
+  .intro{font-size:13px;color:var(--muted);margin:0 0 12px}
+  .badge{display:inline-block;font-size:12px;font-weight:bold;color:#fff;background:var(--accent);padding:3px 10px;border-radius:20px;letter-spacing:.02em;margin-bottom:10px;align-self:flex-start}
+  /* running conversation thread */
+  .thread{display:flex;flex-direction:column;gap:9px;max-height:340px;overflow-y:auto;padding:4px 2px 8px;margin-bottom:14px;border-bottom:1px solid #eee}
+  .msg{max-width:82%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.45}
+  .msg .who{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+  .msg.caller{align-self:flex-start;background:#FFF2CC;border:1px solid #f0e2b0;border-bottom-left-radius:3px}
+  .msg.you{align-self:flex-end;background:#E8EEFB;border:1px solid #cdddf7;border-bottom-right-radius:3px}
+  .msg.you .who{color:var(--accent)}
+  .current{margin-top:auto}
+  .prompt{font-weight:bold;font-size:15px;margin:4px 0 8px;color:var(--muted)}
+  .choice{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:12px 14px;margin:8px 0;font-size:14px;cursor:pointer;transition:.15s}
+  .choice:hover:not(:disabled){border-color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .choice:disabled{opacity:.45;cursor:not-allowed}
+  .next{margin-top:8px;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:bold;cursor:pointer}
+  /* side: neutral progress only (no scores) while playing */
+  .side{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;align-self:start}
+  .side h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .pbar{height:8px;background:#eceef1;border-radius:6px;overflow:hidden}
+  .pfill{height:100%;background:var(--accent);border-radius:6px;transition:width .25s}
+  .pnote{font-size:12px;color:var(--muted);margin-top:8px}
+  /* end review */
+  .final .big{font-size:44px;font-weight:bold}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:16px}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:6px 0;border-bottom:1px dashed #eee}
+  .sdot{width:9px;height:9px;border-radius:50%;margin-right:9px;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .list{margin:8px 0 0;padding-left:0;list-style:none}
+  .list li{padding:8px 0 8px 26px;position:relative;font-size:14px;border-bottom:1px solid #f1f1f1}
+  .list.str li:before{content:"\2713";position:absolute;left:4px;color:var(--correct);font-weight:bold}
+  .list.imp li:before{content:"\2192";position:absolute;left:4px;color:var(--partial);font-weight:bold}
+  .pick{font-size:12.5px;color:var(--muted);margin-top:5px;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+  h2{margin:.2em 0 .4em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="stageHost" class="stage">
+    <span class="badge">Live call</span>
+    <p class="intro" id="intro"></p>
+    <div class="thread" id="thread"></div>
+    <div class="current" id="current"></div>
+  </div>
+  <aside class="side" id="side">
+    <h3>Progress</h3>
+    <div id="progress"></div>
+  </aside>
+</div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Practice Call: Billing (Wire Transfer)",
+  callerName: "Lena",
+  userBio: "Meet Lena, buying a yearly Wix Premium plan and stuck because she wants to pay by wire transfer.",
+
+  // Resources panel (reference list). The engine collects which links are opened and
+  // scores the Article stage: none opened = 0; opened only the market-specific answer
+  // (Billing German) = 10; opened the Wire Transfers article or Payment Methods (CSI) = 20.
+  // Authored for the ported helper.
+  resources: {
+    items: [
+      { title:"Payment Methods (CSI)", url:"https://csinternal.wixanswers.com/kb/en/article/payment-methods", points:20, note:"Best: also lists the alternative payment methods (SEPA / card / PayPal)." },
+      { title:"Billing German: Market-Specific Topics (CSI)", url:"https://csinternal.wixanswers.com/kb/en/article/billing-german-market-specific-topics", points:10, note:"Confirms wire transfer isn't possible, but not the alternatives." },
+      { title:"Wire Transfers For Wix Services (Help Center)", url:"https://support.wix.com/en/search?term=Wire+Transfers+For+Wix+Services&previousPageType=1", points:20, note:"Confirms wire transfer isn't possible and the escalation process." },
+      { title:"Managing Your Payment Methods for Wix Services (Help Center)", url:"https://support.wix.com/en/article/managing-your-payment-methods-for-wix-services", points:0 },
+      { title:"Available Payment Providers in Your Country (Help Center)", url:"https://support.wix.com/en/article/available-payment-providers-in-your-country", points:0 },
+      { title:"Billing French: Market-Specific Topics (CSI)", url:"https://csinternal.wixanswers.com/kb/en/article/billing-french-market-specific-topics", points:0 },
+      { title:"Upgrading a Premium Plan (Help Center)", url:"https://support.wix.com/en/article/upgrading-an-existing-premium-plan", points:0 }
+    ]
+  },
+
+  // The 8-behavior rubric. 'strength'/'improvement' are the END feedback lines.
+  stages: [
+    { id:"open", name:"Opening & closing", max:5,
+      strength:"you acknowledged Lena's problem, reassured her, and closed with a recap.",
+      improvement:"acknowledge the issue and reassure at the start, and close with a short recap of what happens next." },
+    { id:"dynamics", name:"Use Dynamics", max:10,
+      strength:"you used User Manager to see Lena's account, plan and country yourself.",
+      improvement:"use Dynamics/User Manager to see the account and payment methods yourself, rather than asking the user to describe them." },
+    { id:"familiarize", name:"Familiarize", max:10,
+      strength:"you asked an impactful question that connected the payment issue to what Lena is trying to achieve.",
+      improvement:"ask at least one impactful question that links the issue to the user's goal or use case, not a generic 'what's your business'." },
+    { id:"clarify", name:"Clarify the issue", max:15,
+      strength:"you asked the region, the detail that decides which options are available, before proposing anything.",
+      improvement:"confirm the real request and ask the account region, since payment options vary by country, before jumping to a fix." },
+    { id:"roadmap", name:"Roadmapping", max:10,
+      strength:"you told Lena your plan for what you'd check and do next.",
+      improvement:"tell the user your plan, what you'll check and do next, so they're not left guessing." },
+    { id:"article", name:"Article / Copilot", max:20,
+      strength:"you went to the official source to confirm how this works instead of answering from memory.",
+      improvement:"open the official source (the Wire Transfers article or Payment Methods) to confirm how this works, rather than answering from memory." },
+    { id:"recreate", name:"Recreate the issue", max:10,
+      strength:"you recreated the issue on the account to confirm the wire transfer option genuinely isn't offered before telling Lena.",
+      improvement:"recreate the issue on the account or checkout to confirm the wire transfer option isn't available before telling the user it's not possible." },
+    { id:"solve", name:"Solve the issue", max:20,
+      strength:"you let Lena know it isn't possible, offered a way to pay now, and warmly escalated the wire-transfer request to the specialist team.",
+      improvement:"let the user know it isn't possible, offer a way to pay now (saved SEPA, card or PayPal), and escalate the wire-transfer request to the Risk Premium team, framed positively and without linking an article first." }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open", gate:true,
+      speaker:"Hi! I want to pay for my Premium plan by wire transfer but it just won't let me. I've been trying for ages.",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“Hey! Try disabling your antivirus and reloading the checkout, then tell me if the option shows up.”",
+          verdict:"partial", points:2, goTo:"s_dynamics", negative:true,
+          consequence:"Lena: “Just tried it… still no wire transfer option anywhere.”" },
+        { id:"B", text:"“Are you getting an error, or is the option just not appearing at checkout? I want to point you the right way.”",
+          verdict:"incorrect", points:0, goTo:"s_dynamics",
+          credits:[{stage:"clarify", points:8, verdict:"partial"}],
+          consequence:"Lena: “No error, the option just isn't there at all.”" },
+        { id:"C", text:"“Thanks for reaching out! Which country is your account based in? Payment options can vary by region.”",
+          verdict:"partial", points:3, goTo:"s_dynamics",
+          credits:[{stage:"clarify", points:8, verdict:"partial"}],
+          consequence:"Lena: “I'm in Germany.”" },
+        { id:"D", text:"“Hi, you're through to Wix Support, I'm [name]. Sorry you've been stuck! Let's sort this out.”",
+          verdict:"correct", points:5, goTo:"s_dynamics",
+          credits:[{stage:"roadmap", points:4, verdict:"partial"}] }
+      ]
+    },
+
+    s_dynamics: {
+      stage:"dynamics", gate:true,
+      prompt:"What's your next step?",
+      choices:[
+        { id:"A", text:"Ask Lena to screenshot her checkout page and describe each payment option she can currently see.",
+          verdict:"partial", points:3, goTo:"s_familiarize" },
+        { id:"B", text:"Confirm her email, then open her User Manager profile to see her plan, country and saved methods.",
+          verdict:"correct", points:10, goTo:"s_familiarize",
+          consequence:"Lena: “Sure, it's lena.b@gmail.com.”" },
+        { id:"C", text:"Search the Help Center for “wire transfer” before opening her account.",
+          verdict:"incorrect", points:0, goTo:"s_familiarize" }
+      ]
+    },
+
+    s_familiarize: {
+      stage:"familiarize", gate:true,
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“Very exciting that you're getting a Premium plan, by the way! Are you looking to use it for a specific feature, or just an overall upgrade?”",
+          verdict:"correct", points:10, goTo:"s_clarify",
+          consequence:"Lena: “Just an overall upgrade really. I'm trying to get my photography portfolio live this weekend, so I need it sorted today.”" },
+        { id:"B", text:"“So what kind of site are you building? What's the business?”",
+          verdict:"partial", points:4, goTo:"s_clarify",
+          consequence:"Lena: “It's a photography business.”" },
+        { id:"C", text:"Assume a standard setup and move straight to the payment options.",
+          verdict:"incorrect", points:0, goTo:"s_clarify" }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify", gate:true,
+      speaker:"I just want to pay by wire transfer, like I do for my other business tools.",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“You can switch the method under Billing & Payments to wire transfer.”",
+          verdict:"incorrect", points:0, retry:true, capIfRetried:8, goTo:"s_roadmap", negative:true,
+          consequence:"Lena: “There's no wire transfer option there at all. That's the whole problem.”" },
+        { id:"B", text:"“Which country is your account billed in? Options really vary by region.”",
+          verdict:"correct", points:15, goTo:"s_roadmap",
+          consequence:"Lena: “I'm in Germany.”" },
+        { id:"C", text:"“Is a card giving you trouble, or is it wire transfer specifically that you're set on using?”",
+          verdict:"partial", points:8, goTo:"s_roadmap",
+          consequence:"Lena: “A card's fine, but I really want to pay by wire transfer.”" }
+      ]
+    },
+
+    s_roadmap: {
+      stage:"roadmap", gate:false,
+      speaker:"Okay… so what happens now?",
+      prompt:"How do you proceed?",
+      choices:[
+        { id:"A", text:"“Here's my plan. I'll check what works for Germany, then walk you through the best option.”",
+          verdict:"correct", points:10, goTo:"s_article" },
+        { id:"B", text:"“Give me a moment while I look into which payment options are actually available on your account.”",
+          verdict:"partial", points:5, goTo:"s_article" }
+      ]
+    },
+
+    s_article: {
+      stage:"article", gate:true,
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"You've handled this before, so just tell Lena wire transfer isn't available and move on.",
+          verdict:"incorrect", points:0, goTo:"s_recreate" },
+        { id:"B", text:"Open “Billing German: Market-Specific Topics” to check her region's rules.",
+          verdict:"partial", points:10, goTo:"s_recreate" },
+        { id:"C", text:"Open “Wire Transfers For Wix Services” to confirm wire transfer isn't possible.",
+          verdict:"correct", points:20, goTo:"s_recreate" },
+        { id:"D", text:"Open “Payment Methods” to confirm the payment methods Lena can use instead.",
+          verdict:"correct", points:20, goTo:"s_recreate" }
+      ]
+    },
+
+    s_recreate: {
+      stage:"recreate", gate:true,
+      speaker:"Are you sure it's not just a glitch on my end?",
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"Open Lena's checkout on your side to confirm the wire transfer option genuinely isn't there.",
+          verdict:"correct", points:10, goTo:"s_solve" },
+        { id:"B", text:"“Can you tell me exactly which payment options you see at checkout right now?”",
+          verdict:"partial", points:5, goTo:"s_solve",
+          consequence:"Lena: “Just card and PayPal, no bank option.”" },
+        { id:"C", text:"“It's definitely not a glitch, wire transfer just isn't offered.”",
+          verdict:"incorrect", points:0, goTo:"s_solve" }
+      ]
+    },
+
+    s_solve: {
+      stage:"solve", gate:true,
+      speaker:"So… can I actually pay by bank transfer, or not?",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"“No need to worry, I can set up a wire transfer on our end for you right now.”",
+          verdict:"incorrect", points:0, goTo:"s_close", negative:true,
+          consequence:"Lena: “Oh, great, so it does work after all?”" },
+        { id:"B", text:"“Paying by wire transfer isn't available, so you'll need another method. Is there anything else?”",
+          verdict:"partial", points:10, goTo:"s_close" },
+        { id:"C", text:"“Paying by wire transfer isn't available here, but let's get you sorted. Do you have SEPA saved already? It can't be newly added and only covers Premium plans and domains. Otherwise a card or PayPal will get you paid today.”",
+          verdict:"partial", points:10, goTo:"s_escalate",
+          consequence:"Lena: “No, I've never set that up here. A card's fine, thanks.”" }
+      ]
+    },
+
+    s_escalate: {
+      stage:"solve", gate:true,
+      speaker:"Thanks. Can you still note that I wanted to pay by wire transfer, though?",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"Attach the “Wire Transfers For Wix Services” article to her case, then transfer her to the specialist team.",
+          verdict:"incorrect", points:0, goTo:"s_close" },
+        { id:"B", text:"“Of course. I'll add a note with everything you've shared and connect you with a specialized team who can go over your options for this.”",
+          verdict:"correct", points:20, goTo:"s_close" },
+        { id:"C", text:"“I'm sorry, but there's really nothing more we can do about wire transfer.”",
+          verdict:"incorrect", points:0, goTo:"s_close", negative:true,
+          consequence:"Lena: “So that's it? You won't even pass it on?”" }
+      ]
+    },
+
+    s_close: {
+      stage:"open", gate:true,
+      speaker:"Okay, thanks for looking into it.",
+      prompt:"How do you wrap up?",
+      choices:[
+        { id:"A", text:"“No problem at all, thanks for your patience! Have a lovely rest of your day.”",
+          verdict:"partial", points:2, goTo:"__end__" },
+        { id:"B", text:"“Quick recap: paying by wire transfer isn't available, so I've noted your request and passed it to a specialist team who'll follow up. Meanwhile a card, PayPal, or saved SEPA will get you paid right away. Anything else I can help with?”",
+          verdict:"correct", points:5, goTo:"__end__" },
+        { id:"C", text:"“Great, thanks for contacting Wix.”",
+          verdict:"incorrect", points:0, goTo:"__end__" }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const introEl = document.getElementById('intro');
+  const thread  = document.getElementById('thread');
+  const cur     = document.getElementById('current');
+  const progEl  = document.getElementById('progress');
+  const caller  = S.callerName || 'Caller';
+
+  const earned = {};        // stageId -> best points (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response that set that stage's score
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+
+  introEl.textContent = `${S.title} · ${S.userBio}`;
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  // ---- neutral progress (NO scores AND NO stage names shown during play) ----
+  function paintProgress(){
+    const total = Object.keys(S.screens).length;
+    const pct = Math.round(visitedScreens.size / total * 100);
+    progEl.innerHTML =
+      `<div class="pbar"><div class="pfill" style="width:${pct}%"></div></div>
+       <div class="pnote">Call in progress</div>`;
+  }
+
+  // ---- the running conversation thread ----
+  function pushMsg(kind, who, text){
+    const div = document.createElement('div');
+    div.className = 'msg ' + kind;
+    div.innerHTML = `<span class="who">${who}</span>${text}`;
+    thread.appendChild(div);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function applyCredit(stg, pts, verdict, pickText){
+    if(!(stg in earned)) return;
+    if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+    if(pts > earned[stg]) earned[stg] = pts;              // best attempt wins
+    if(verdict==='correct') status[stg]='done';
+    else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+  }
+
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text));
+  }
+
+  function renderScreen(id){
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    if(scr.speaker) pushMsg('caller', caller, scr.speaker);
+    renderChoices(scr, [], undefined);
+  }
+
+  function renderChoices(scr, retriedIds, cap){
+    cur.innerHTML = `<div class="prompt">${scr.prompt}</div><div id="choices"></div>`;
+    const cWrap = document.getElementById('choices');
+    scr.choices.forEach(ch=>{
+      const b=document.createElement('button');
+      b.className='choice'; b.textContent=ch.text;
+      if(retriedIds.includes(ch.id)) b.disabled=true;   // used-up (wrong) retry option
+      b.onclick=()=>choose(scr,ch,retriedIds,cap);
+      cWrap.appendChild(b);
+    });
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    [...document.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    // Spoken lines (quoted) show in the chat as the Expert's message. Actions
+    // (e.g. "Open User Manager") are collected and scored but NOT shown as a chat
+    // line. Auto-detected by a leading quote; force with choice.action:true/false.
+    const spoken = (ch.action===true) ? false
+                 : (ch.action===false ? true : /^\s*[“"']/.test(ch.text));
+    if(spoken) pushMsg('you', 'You', ch.text);
+
+    // RETRY ONLY IF THE USER PROMPTS: the caller pushes back and re-opens the screen.
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      if(ch.consequence) pushMsg('caller', caller, ch.consequence);
+      renderChoices(scr, retriedIds.concat(ch.id), ch.capIfRetried);
+      return;
+    }
+
+    // Score silently (no feedback shown now). Cap points if this was a retry attempt.
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+
+    // In-character caller reaction (NOT a grade) pauses on a Continue; else advance.
+    if(ch.consequence){
+      pushMsg('caller', caller, ch.consequence);
+      cur.innerHTML = `<button class="next" id="next">Continue →</button>`;
+      document.getElementById('next').onclick = ()=>renderScreen(ch.goTo);
+    } else {
+      renderScreen(ch.goTo);
+    }
+  }
+
+  // ---- END: reveal score, scorecard, strengths, areas (thread stays visible above) ----
+  function renderFinal(){
+    document.querySelector('.wrap').style.gridTemplateColumns = '1fr';
+    document.getElementById('side').style.display = 'none';
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span>${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      return p ? `<div class="pick">Your response: “${p.text}”</div>`
+               : `<div class="pick miss">You didn't reach this step.</div>`;
+    };
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b>: ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=>`<li><b>${st.name}</b>: ${st.improvement}${pickLine(st)}</li>`).join('');
+
+    cur.innerHTML = `
+      <div class="final">
+        <h2>Interaction complete</h2>
+        <div class="big">${sum}<span style="font-size:20px;color:#5f6368">/${maxTotal}</span></div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Scorecard</h3>${rows}
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--correct)">Top strengths</h3>
+          <ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--partial)">Areas for improvement</h3>
+          <ul class="list imp">${areas || '<li>Nothing flagged, a clean run.</li>'}</ul>
+        </div>
+
+        <button class="next" onclick="location.reload()">Restart</button>
+      </div>`;
+    cur.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  paintProgress();
+  renderScreen(S.start);
+})();
+</script>
+</body>
+</html>

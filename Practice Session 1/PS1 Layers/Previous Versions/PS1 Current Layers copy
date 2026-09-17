@@ -1,0 +1,1217 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Session — Interactive Scenario (Rise Code Block Template · v2 · RISE BUILD)</title>
+
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION  ·  INTERACTIVE SCENARIO TEMPLATE  (Rise Code Block)
+  v2 — Wix-branded redesign. SAME interaction/scoring model as v1; look only.
+==================================================================================
+
+  HOW TO READ THIS FILE (for stakeholders / non-coders)
+  -----------------------------------------------------
+  Two parts, on purpose:
+    1) THE SCENARIO  (<script id="scenario">) — the CONTENT. Reads like a table.
+    2) THE ENGINE    (<script id="engine">)   — the machinery that plays ANY scenario.
+
+  WHAT CHANGED IN v2 (design only — the model below is unchanged)
+  --------------------------------------------------------------
+    • Wix Madefor typography (Display for headings, Text for body) via Google Fonts.
+    • Three phases in one self-contained embed: MEET THE USER → LIVE CHAT → COMPLETE.
+    • The live chat mirrors the real Wix Communication Panel: gray customer bubbles
+      (left), blue agent bubbles (right), a call timer, and a red "End" button.
+      (No sentiment chip — deliberately omitted.)
+    • Brand palette applied. The END scorecard keeps the locked correctness legend
+      (green / amber / red · done / partial / missed) — unchanged.
+    • Helper pop-ups use the native <dialog> element (MDN-recommended for modals).
+
+  THE INTERACTION MODEL (unchanged from v1)
+  -----------------------------------------
+  Each scenario mirrors a real Expert <-> user interaction across eight graded
+  behaviors (the rubric, 100 pts):
+     open(5) · dynamics(10) · familiarize(10) · clarify(15)
+     roadmap(10) · article(20) · recreate(10) · solve(20)
+
+  Rules:
+    • FEEDBACK IS SAVED FOR THE END. No grade, no correctness colors, no running
+      score during play. Choosing an answer simply advances the call.
+    • IN-CHARACTER REACTIONS ARE NOT FEEDBACK. A weak choice may draw a caller
+      reaction in dialogue; that line is part of the sim, not a grade.
+    • MOSTLY GATED, SOME FREEDOM — "gate:true" screens must be finished to advance.
+    • RETRY ONLY IF THE USER PROMPTS — a choice marked "retry:true" re-opens the
+      screen because the caller pushed back; the retry is capped by "capIfRetried".
+    • SKIPS ARE RECOVERABLE — each stage keeps its own best score.
+    • ROADMAP FLOATS — attach roadmap credit to any choice via credits:[...].
+
+  FIELD GUIDE
+  -----------
+    user   : { name, image, bio } — shown on the MEET screen and in the call header.
+    STAGE  : id, name, max, strength (shown at end if done), improvement (if missed).
+    SCREEN : stage, gate, speaker (caller line), prompt, choices[].
+    CHOICE : text, verdict, points, goTo, credits[], retry/capIfRetried,
+             consequence, stageOverride.
+==================================================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@400;700;800&family=Wix+Madefor+Text:ital,wght@0,400;0,500;0,600;0,700;1,600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    /* ---- Brand palette (the exact hexes supplied) ---- */
+    --ink:#242424; --ink-2:#424242; --muted:#707070;
+    --line:#E0E0E0; --line-2:#D1D1D1; --bg:#F5F5F5; --paper:#ffffff;
+    --brand:#DA3B01;                 /* Wix orange-red — the End button + accents   */
+    --agent:#0F62E6; --agent-deep:#1464A0;  /* agent (you) blue                     */
+    --positive:#5BBE7E;
+    --agent-bubble:#EAF1FE; --agent-bubble-line:#CFE0FF;
+    /* ---- LOCKED end-screen correctness legend (scorecard only) ---- */
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    /* ---- shape ---- */
+    --r-lg:1.25rem; --r-md:0.875rem; --r-sm:0.625rem;
+    --shadow:0 0.625rem 1.875rem rgba(20,24,40,.10);
+    --font-display:'Wix Madefor Display','Wix Madefor Text',system-ui,Arial,sans-serif;
+    --font-text:'Wix Madefor Text',system-ui,Arial,Helvetica,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{font-size:16px}
+  html,body{margin:0}
+  body{
+    font-family:var(--font-text); color:var(--ink); line-height:1.5;
+    background:
+      radial-gradient(68.75rem 31.25rem at 12% -10%, #EEF3FF 0%, rgba(238,243,255,0) 60%),
+      radial-gradient(56.25rem 31.25rem at 105% 0%, #F3F0FA 0%, rgba(243,240,250,0) 55%),
+      var(--bg);
+    min-height:100vh;
+  }
+  .app{max-width:66.25rem;margin:0 auto;padding:1.5rem 1.25rem}
+  h1,h2,h3{font-family:var(--font-display);letter-spacing:-.01em;margin:0}
+  .display{font-weight:800;line-height:1.05}
+
+  /* ============================ MEET THE USER ============================ */
+  .meet{
+    display:grid;grid-template-columns:0.85fr 1.15fr;gap:0;
+    background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow);overflow:hidden;min-height:31.25rem;
+  }
+  .meet .portrait{
+    position:relative;
+    background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);
+    display:flex;align-items:flex-end;justify-content:center;padding:0 0.75rem;
+  }
+  .meet .portrait img{max-height:30rem;max-width:100%;object-fit:contain;filter:drop-shadow(0 1.125rem 1.5rem rgba(20,24,40,.16))}
+  .meet .portrait .noimg{align-self:center;color:var(--muted);font-size:0.875rem;text-align:center;padding:1.5rem}
+  .meet .body{padding:2.75rem 2.75rem 2.5rem;display:flex;flex-direction:column;justify-content:center}
+  .eyebrow{font-size:0.8125rem;font-weight:700;color:var(--agent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.625rem}
+  .meet .body h1{font-size:2.75rem;margin-bottom:1.125rem}
+  .meet .body p{font-size:1.0625rem;color:var(--ink-2);margin:0 0 1.75rem;max-width:44ch}
+
+  /* black pill buttons — matches the Rise course (Get Started / Next / Restart) */
+  .btn{font-family:var(--font-text);font-weight:700;font-size:0.9375rem;cursor:pointer;border:0;border-radius:62.4375rem;padding:0.8125rem 1.625rem;transition:transform .12s ease, box-shadow .12s ease, background .12s ease}
+  .btn:active{transform:translateY(0.0625rem)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{background:#000}
+  .btn-ghost{background:var(--paper);color:var(--ink);border:0.0625rem solid var(--line-2)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  /* ============================ THE CALL (Communication Panel) ============================ */
+  .panel{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1.125rem;border-bottom:0.0625rem solid var(--line);background:#fff}
+  .avatar{width:2.375rem;height:2.375rem;border-radius:50%;background:var(--agent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.9375rem;flex:0 0 auto}
+  .who-name{font-weight:700;font-size:0.9375rem}
+  .who-sub{display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.78125rem;margin-top:0.0625rem}
+  .livedot{width:0.5rem;height:0.5rem;border-radius:50%;background:var(--positive);display:inline-block;box-shadow:0 0 0 0.1875rem rgba(91,190,126,.20)}
+  .timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
+  .head-spacer{flex:1}
+  .helperbar-head{display:flex;gap:0.5rem;margin-right:0.5rem}
+  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.8125rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
+  .btn-end:hover{filter:brightness(.94)}
+
+
+  /* Fixed height so the chat window stays the SAME SIZE for the whole call —
+     it no longer grows message-by-message; overflow scrolls internally. */
+  /* Fixed-height chat window: it stays ONE consistent size on every screen and
+     scrolls internally, so the response options below always sit on screen and
+     can be read in full without scrolling the page. 40vh is tuned so the
+     options fit for the common (≤4 option) screens. */
+  .chat{padding:1rem 1.125rem 0.375rem;display:flex;flex-direction:column;gap:0.875rem;height:40vh;overflow-y:auto}
+  .msg{display:flex;flex-direction:column;max-width:78%}
+  .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
+  .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
+  .msg.caller{align-self:flex-start;align-items:flex-start}
+  .msg.caller .bubble{background:var(--bg);border:0.0625rem solid var(--line);border-top-left-radius:0.3125rem;color:var(--ink)}
+  .msg.you{align-self:flex-end;align-items:flex-end}
+  .msg.you .meta{text-align:right;color:var(--agent-deep)}
+  .msg.you .bubble{background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-top-right-radius:0.3125rem;color:var(--ink)}
+  .msg.system{align-self:center;max-width:90%;align-items:center}
+  .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:italic;font-size:0.8125rem;padding:0.125rem 0.375rem;text-align:center}
+  /* Inline screenshot figure (Layers panel, Accessibility Wizard, etc.) */
+  .msg.system .screenshot{margin:0.25rem 0;max-width:100%;display:flex;flex-direction:column;align-items:center}
+  .msg.system .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
+
+  /* Lightbox: click-to-enlarge overlay for inline screenshots */
+  .lightbox{border:0;padding:0;background:transparent;max-width:95vw;max-height:95vh}
+  .lightbox::backdrop{background:rgba(15,17,25,0.82)}
+  .lightbox img{display:block;max-width:95vw;max-height:95vh;object-fit:contain;border-radius:0.5rem;box-shadow:0 1.5rem 3rem rgba(0,0,0,0.35)}
+  .lightbox-close{position:fixed;top:1rem;right:1.5rem;background:rgba(255,255,255,0.92);border:0;border-radius:50%;width:2.5rem;height:2.5rem;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink)}
+  .lightbox-close:hover{background:#fff}
+  .msg.system .screenshot figcaption{font-size:0.6875rem;color:var(--muted);font-style:italic;margin-top:0.375rem;text-align:center}
+  .msg.system .screenshot .noimg{color:var(--muted);font-size:0.8125rem;padding:1rem;border:0.0625rem dashed var(--line);border-radius:0.5rem}
+
+  /* [Action] choices render their result as an inline centered system note in the
+     chat stream (reusing .msg.system), so there's no separate action bar. */
+  .msg.system .bubble.action{font-style:normal;color:var(--agent);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:62.4375rem;padding:0.25rem 0.75rem}
+
+  /* Inline notes — the centered "system" bubbles only: an action you take
+     ("You clone the site…") or a thing you find ("(You find…)"). These are the
+     ONLY lines painted green; caller replies are untouched. */
+  .msg.reaction .bubble,
+  .msg.reaction .bubble.action{color:#5BBE7E !important}
+
+  /* "Click to view fullscreen" control in the sim header */
+  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.78125rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
+  .btn-fs:hover{color:var(--agent);background:var(--agent-bubble)}
+  .panel:fullscreen{border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .panel:fullscreen .chat{min-height:0;flex:1}
+
+  /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
+     from spoken replies, right inside the choice button. */
+  .cbadge{display:inline-block;font-weight:700;font-size:0.625rem;text-transform:uppercase;letter-spacing:.05em;color:var(--agent-deep);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:0.375rem;padding:0.0625rem 0.375rem;margin-right:0.5rem;vertical-align:0.05rem}
+
+  /* composer / decision area — where the real panel's message box sits */
+  .composer{border-top:0.0625rem solid var(--line);background:#FBFBFC;padding:0.875rem 1.125rem 1.125rem}
+  .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
+  .hbtn{font-size:0.78125rem;font-weight:600;padding:0.4375rem 0.8125rem;border-radius:62.4375rem;border:0.0625rem solid var(--line-2);background:#fff;color:var(--ink-2);cursor:pointer}
+  .hbtn:hover{border-color:var(--agent);color:var(--agent)}
+  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0.125rem 0 0.625rem}
+  .choice{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.8125rem 0.9375rem;margin:0.5rem 0;font-size:0.90625rem;font-family:var(--font-text);color:var(--ink);cursor:pointer;transition:border-color .12s ease, box-shadow .12s ease, background .12s ease}
+  .choice:hover:not(:disabled){border-color:var(--agent);box-shadow:0 0.125rem 0.625rem rgba(15,98,230,.10);background:#fff}
+  .choice:disabled{opacity:.45;cursor:not-allowed}
+  .next{margin-top:0.75rem}
+
+  /* typing awareness indicator (TAI) — the user "typing…" bubble before a reply */
+  .msg.typing .bubble{display:inline-flex;align-items:center;gap:0.3125rem;padding:0.8125rem 0.9375rem}
+  .tai-dot{width:0.4375rem;height:0.4375rem;border-radius:50%;background:var(--muted);opacity:.4;animation:tai-blink 1.2s infinite ease-in-out}
+  .tai-dot:nth-child(2){animation-delay:.2s}
+  .tai-dot:nth-child(3){animation-delay:.4s}
+  @keyframes tai-blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:.9;transform:translateY(-0.125rem)}}
+
+  /* learner name field on the Meet screen */
+  .namefield{display:flex;flex-direction:column;gap:0.5rem;margin:0 0 1.5rem;max-width:21.25rem}
+  .namefield label{font-size:0.8125rem;font-weight:700;color:var(--ink-2)}
+  .nameinput{font-family:var(--font-text);font-size:0.9375rem;padding:0.75rem 0.875rem;border:0.0625rem solid var(--line-2);border-radius:var(--r-sm);color:var(--ink);background:#fff}
+  .nameinput:focus{outline:none;border-color:var(--agent);box-shadow:0 0 0 0.1875rem rgba(15,98,230,.12)}
+  .nameinput.invalid{border-color:#D64545}
+  .nameerror{font-size:0.78125rem;color:#D64545}
+
+  /* ============================ COMPLETE ============================ */
+  .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
+  .complete-hero .portrait{background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);display:flex;align-items:flex-end;justify-content:center}
+  .complete-hero .portrait img{max-height:21.25rem;max-width:100%;object-fit:contain;filter:drop-shadow(0 1rem 1.375rem rgba(20,24,40,.16))}
+  .complete-hero .body{padding:2.5rem 2.75rem;display:flex;flex-direction:column;justify-content:center}
+  .complete-hero h1{font-size:3rem;margin-bottom:0.75rem}
+  .complete-hero .lead{font-size:1rem;color:var(--ink-2);margin:0 0 1.375rem;max-width:46ch}
+  .scorenum{font-family:var(--font-display);font-weight:800;font-size:3.5rem;line-height:1}
+  .scorenum small{font-size:1.375rem;color:var(--muted);font-weight:700}
+
+  .card{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);padding:1.25rem 1.375rem;margin-top:1rem;box-shadow:0 0.25rem 1rem rgba(20,24,40,.05)}
+  .card h3{font-size:0.9375rem;margin:0 0 0.5rem}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;padding:0.5625rem 0;border-bottom:0.0625rem solid #F1F1F1}
+  .srow:last-child{border-bottom:0}
+  .sdot{width:0.5625rem;height:0.5625rem;border-radius:50%;margin-right:0.5625rem;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .sval{font-variant-numeric:tabular-nums;font-weight:600}
+  .list{margin:0.5rem 0 0;padding-left:0;list-style:none}
+  .list li{padding:0.5625rem 0 0.5625rem 1.625rem;position:relative;font-size:0.875rem;border-bottom:0.0625rem solid #F4F4F4}
+  .list li:last-child{border-bottom:0}
+  .list.str li:before{content:"✓";position:absolute;left:0.125rem;color:var(--correct);font-weight:800}
+  .list.imp li:before{content:"→";position:absolute;left:0.125rem;color:var(--partial);font-weight:800}
+  .pick{font-size:0.78125rem;color:var(--muted);margin-top:0.3125rem;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+  .actions{display:flex;gap:0.625rem;flex-wrap:wrap;margin-top:1.125rem}
+  /* end-screen transcript reuses the LIVE chat bubbles (.msg/.bubble) so it
+     mirrors the simulation exactly — gray Sarah left, blue Expert right,
+     centered action/system notes. */
+  .txchat{display:flex;flex-direction:column;gap:0.75rem;padding:0.5rem 0 0.25rem}
+
+  /* ============================ helper <dialog> ============================ */
+  dialog.modal{border:0;border-radius:var(--r-md);max-width:35rem;width:calc(100% - 2rem);padding:0;box-shadow:0 1.5rem 3.75rem rgba(20,24,40,.28)}
+  dialog.modal::backdrop{background:rgba(20,24,40,.45)}
+  .modal-inner{padding:1.25rem 1.375rem 1.375rem}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+  .mhead h3{font-size:1.0625rem}
+  .mx{border:0;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--muted)}
+  .mx:hover{color:var(--ink)}
+  .mopt{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.6875rem 0.8125rem;margin:0 0 0.5rem;font-size:0.875rem;font-family:var(--font-text);color:var(--ink);cursor:pointer}
+  .mopt:hover{border-color:var(--agent)}
+  .tabrow{display:flex;gap:0.375rem;margin-bottom:0.625rem}
+  .tab{font-size:0.8125rem;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:0.0625rem solid var(--line-2);background:#fff;font-family:var(--font-text);cursor:pointer}
+  .tab.active{border-color:var(--agent);color:var(--agent);font-weight:700}
+  .article-body{white-space:pre-wrap;font-size:0.875rem;background:var(--bg);border-radius:var(--r-sm);padding:0.8125rem;min-height:5.625rem;line-height:1.5}
+  .mnote{font-size:0.78125rem;color:var(--muted);margin-top:0.5rem}
+  .speakerbox{background:var(--bg);border:0.0625rem solid var(--line);padding:0.6875rem 0.8125rem;border-radius:var(--r-sm);font-size:0.875rem}
+
+  /* MDN: honour users who prefer less motion */
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important}
+  }
+  @media (max-width:45rem){
+    .meet,.complete-hero{grid-template-columns:1fr}
+    .meet .portrait,.complete-hero .portrait{min-height:16.25rem}
+    .meet .body{padding:1.75rem 1.5rem 2rem}
+    .meet .body h1{font-size:2.125rem}
+    .complete-hero .body{padding:1.75rem 1.5rem}
+    .msg{max-width:88%}
+  }
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Practice Call — Wix Editor: Layers",
+
+  user: {
+    name: "Samantha",
+    image: null,
+    bio: "Samantha made changes to her page layers and the changes are all out of place after saving. In this activity, you'll simulate a chat with her. Click “Resources” to view internal and external help documents at any point during the interaction. Let's begin!"
+  },
+
+  resources: {
+    title: "Check Resources",
+    stage: "article", capIfUnchecked: 10,
+    note: "Open the resources below. Checking the right ones before you answer is the skill — not remembering it.",
+    items: [
+      { label:"Wix Editor: Identifying Editor Elements", url:"https://csinternal.wixanswers.com/kb/en/article/wix-editor-identifying-editor-elements", correct:true },
+      { label:"Wix Editor: Elements, Text & Repeater Issues", url:"https://csinternal.wixanswers.com/kb/en/article/wix-editor-elements-text-repeater-issues", correct:true },
+      { label:"Products Crossover Guide", url:"https://csinternal.wixanswers.com/kb/en/article/products-crossover-guide" },
+      { label:"Wix Editor: Troubleshooting Common Issues (Elements Moving)", url:"https://csinternal.wixanswers.com/kb/en/article/wix-editor-troubleshooting-common-issues-elements-moving" },
+      { label:"Wix Editor: Menus, Anchors, Backgrounds", url:"https://support.wix.com/en/article/wix-editor-menus-anchors-backgrounds" },
+      { label:"Mobile Editor: Live Site Issues", url:"https://support.wix.com/en/article/mobile-editor-live-site-issues" }
+    ]
+  },
+
+  stages: [
+    { id:"open", name:"Opening & closing", max:5,
+      strength:"You greeted Samantha, acknowledged what she'd tried, and closed with a clear recap and an offer of more help.",
+      improvement:"Greet Samantha and acknowledge what she described, then close with a short recap and an offer of more help." },
+    { id:"dynamics", name:"Use Dynamics", max:10,
+      strength:"You looked Samantha up in User Manager to verify her account instead of asking her to describe her setup.",
+      improvement:"Look Samantha up in User Manager to verify her account before you start troubleshooting." },
+    { id:"familiarize", name:"Familiarize", max:10,
+      strength:"You asked a question that tied Samantha's page to her coaching practice, instead of a generic question.",
+      improvement:"Ask a question that connects to what Samantha's page is for, her coaching practice, rather than a generic or account-only question." },
+    { id:"clarify", name:"Clarify the issue", max:15,
+      strength:"You confirmed both the device, desktop, and the exact element, the heart icon, before drawing any conclusion.",
+      improvement:"Confirm both the device and the exact element involved before you conclude what's wrong." },
+    { id:"roadmap", name:"Roadmapping", max:10,
+      strength:"You told Samantha your plan, what you'd check and do next, so she wasn't left guessing.",
+      improvement:"Tell Samantha your plan, what you'll check and do next, so she's not left guessing." },
+    { id:"article", name:"Article / Copilot", max:20,
+      strength:"You confirmed the cause in the right resources instead of relying on memory.",
+      improvement:"Open Identifying Editor Elements and Elements, Text & Repeater Issues together to confirm the cause instead of relying on memory or a partial source." },
+    { id:"recreate", name:"Recreate the issue", max:10,
+      strength:"You impersonated Samantha's account and checked the Layers panel on both desktop and mobile before explaining anything.",
+      improvement:"Impersonate the account and check the Layers panel on both desktop and mobile before you explain the cause." },
+    { id:"solve", name:"Solve the issue", max:20, additive:true,
+      strength:"You walked Samantha through setting DOM order to manual and advised keeping it automatic elsewhere for accessibility.",
+      improvement:"Walk Samantha through Settings > Accessibility Wizard > Organize DOM order > Manually, and advise keeping automatic DOM order on elsewhere since it helps accessibility." }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open", gate:true,
+      speaker:"Hey, I'm having trouble with some layers on my page. I made some adjustments and when I saved it got messed up.",
+      prompt:"How do you open the conversation?",
+      choices:[
+        { id:"A", text:"Hi Samantha! I know it can be frustrating when things don't save right. I'm going to do all I can to help. Can you confirm your account email?",
+          verdict:"partial", points:3, goTo:"s_dynamics",
+          consequence:"Samantha: Sure, it's samanthamoore@icloud.com." },
+        { id:"B", text:"Hi Samantha, thanks so much for reaching out today. I'm [name] and I'd be happy to look into what's going on with your layers. Before we get started, can I get the email address that's on your account?",
+          verdict:"correct", points:5, goTo:"s_dynamics",
+          consequence:"Samantha: Sure, it's samanthamoore@icloud.com." },
+        { id:"C", text:"Yes, this is a super common problem! I think I'll be able to help you get this sorted in no time. Can you please share your email with me to confirm your account and get started?",
+          verdict:"incorrect", points:0, goTo:"s_dynamics",
+          consequence:"Samantha: Sure, it's samanthamoore@icloud.com." }
+      ]
+    },
+
+    s_dynamics: {
+      stage:"dynamics", gate:true,
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"Samantha, I just checked and to fix this, you can just drag the element back to where it was and hit save again, that should sort it.",
+          verdict:"incorrect", points:0, goTo:"s_familiarize",
+          consequence:"Samantha: How can I do that if I can't even see it? That's the thing.\n\nExpert: Ok, I understand." },
+        { id:"B", text:"[Action] Look Samantha up in User Manager to verify the account.",
+          verdict:"correct", points:10, goTo:"s_familiarize",
+          consequence:"(The email matches the account on file. You can see Samantha's site.)" },
+        { id:"C", text:"Can you describe exactly what you're seeing on your screen?",
+          verdict:"incorrect", points:0, goTo:"s_familiarize",
+          credits:[{stage:"clarify", points:8, verdict:"partial"}],
+          consequence:"Samantha: Um, it's just my heart icon and some text, kind of overlapping now." }
+      ]
+    },
+
+    s_familiarize: {
+      stage:"familiarize", gate:true,
+      prompt:"What do you say?",
+      choices:[
+        { id:"A", text:"Thank you. We definitely want to make sure this looks right for your visitors. What's this particular page for?",
+          verdict:"correct", points:10, goTo:"s_clarify",
+          consequence:"Samantha: It's my services page, where people book one on one coaching sessions with me.\n\nExpert: Yes, definitely an important page to ensure is sorted perfectly! What kind of coaching do you do?\n\nSamantha: Relationship coaching practice for romantic and non-romantic relationships." },
+        { id:"B", text:"Samantha, just so I understand the bigger picture, can you tell me a bit about what your website is about overall?",
+          verdict:"partial", points:4, goTo:"s_clarify",
+          consequence:"Samantha: It's for my relationship coaching practice. I mostly do one on one sessions with clients where we talk about areas for improvement in both their romantic and non-romantic relationships.\n\nExpert: Wow, that sounds like really meaningful work. It must be hard for people to open up about something so sensitive, but it's so important to talk about. That's really neat.\n\nSamantha: Thank you, [name]. I thank my clients every day for their vulnerability. It's beautiful!" },
+        { id:"C", text:"That's helpful. I'm going to jump straight into looking at the layers for you now.",
+          verdict:"incorrect", points:0, goTo:"s_clarify" }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify", gate:true,
+      speaker:"So I moved my heart icon under my headline, but every time I hit save, it jumps back on top of my paragraph text.",
+      prompt:"What do you ask?",
+      choices:[
+        { id:"A", text:"It sounds like you'd like to kind of hide the heart icon instead of reposition it. Is that right?",
+          verdict:"partial", points:8, goTo:"s_roadmap", retry:true, capIfRetried:8,
+          consequence:"Samantha: No, I want to keep it visible, it just needs to stay under the headline instead of jumping on top of my text." },
+        { id:"B", text:"To confirm, is this issue happening on desktop? And is it only the heart icon jumping over your paragraph text, or are other elements affected too?",
+          verdict:"correct", points:15, goTo:"s_roadmap",
+          consequence:"Samantha: Desktop, and it's just the heart icon. Everything else stays put." },
+        { id:"C", text:"Just to confirm, are you working on your desktop site or on mobile right now?",
+          verdict:"partial", points:8, goTo:"s_roadmap",
+          consequence:"Samantha: Desktop. I can see the heart icon just fine in the Editor, it's just in the wrong spot after I save." },
+        { id:"D", text:"Okay, it sounds like that whole section might be acting up, so let me just go ahead and quickly rebuild that for you right now.",
+          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:8,
+          consequence:"Samantha: Wait, let's not rebuild anything just yet, it's just the heart icon in the wrong spot." }
+      ]
+    },
+
+    s_roadmap: {
+      stage:"roadmap", gate:false,
+      speaker:"Expert: Got it, thank you for clarifying!\n\nSamantha: Okay, so what now?",
+      prompt:"What's next?",
+      choices:[
+        { id:"A", text:"Here's my plan. I'll take 2 to 3 minutes to recreate this problem on my end and I'll check back in to let you know what I found. Then I'll check in with my resources to see what can be done. I'll be back shortly.",
+          verdict:"correct", points:10, goTo:"s_recreate",
+          consequence:"Samantha: Sounds good, take your time." },
+        { id:"B", text:"Please send over a screenshot of the page for me.",
+          verdict:"partial", points:5, goTo:"s_recreate", retry:true, capIfRetried:8,
+          consequence:"Samantha: I can't do that right now, sorry." },
+        { id:"C", text:"Please allow me 2 to 3 minutes to take a closer look at this on my end, ok?",
+          verdict:"incorrect", points:0, goTo:"s_recreate",
+          consequence:"Samantha: Sure, take your time." }
+      ]
+    },
+
+    s_recreate: {
+      stage:"recreate", gate:true,
+image:{ src:"Lenas%20Layers%20Panel.png", caption:"Samantha's Layers panel — the heart Vector Art sits inside Section: Services." },      prompt:"What do you do first?",
+      choices:[
+        { id:"A", text:"[Action] Search the Help Center for a matching article to send Samantha.",
+          verdict:"incorrect", points:0, goTo:"s_article", retry:true, capIfRetried:5,
+          consequence:"Samantha: Is this what's going on, or what is this??\n\nExpert: Actually, just give me one moment to confirm." },
+        { id:"B", text:"[Action] Open Samantha's live site and identify the overlapping elements.",
+          verdict:"partial", points:5, goTo:"s_article" },
+        { id:"C", text:"[Action] Impersonate Samantha's account and find the element in the Layers panel to ensure its in the right place.", showsImageAfter:true,
+          verdict:"correct", points:10, goTo:"s_article",
+          consequence:"Expert: I can see the overlapping elements on my end as well." }
+      ]
+    },
+
+    s_article: {
+      stage:"article", gate:true,
+      speaker:"Did you find anything?",
+      prompt:"What do you check before you explain the fix to Samantha?",
+      choices:[
+        { id:"A", text:"[Action] Reply using the “Products Crossover Guide”.",
+          verdict:"partial", points:10, goTo:"s_solve", retry:true, capIfRetried:20 },
+        { id:"B", text:"[Action] You've already seen Samantha's problem yourself, so now it's time to talk her through the fix.",
+          verdict:"incorrect", points:0, goTo:"s_solve" },
+        { id:"C", text:"[Action] Reply using “Identifying Editor Elements” and “Elements, Text & Repeater Issues”.",
+          verdict:"correct", points:20, goTo:"s_solve" },
+        { id:"D", text:"[Action] Provide a response using “Wix Editor: Troubleshooting Common Issues (Elements Moving)”.",
+          verdict:"partial", points:10, goTo:"s_solve" },
+        { id:"E", text:"[Action] Reply using “Wix Editor: Menus, Anchors, Backgrounds”.",
+          verdict:"incorrect", points:10, goTo:"s_solve" },
+        { id:"F", text:"[Action] Reply using “Mobile Editor: Live Site Issues.”",
+          verdict:"incorrect", points:10, goTo:"s_solve" }
+      ]
+    },
+
+    s_solve: {
+      stage:"solve", gate:true,
+      speaker:"So what do I do to fix it?",
+image:{ src:"Lenas%20Organize%20DOM%20Order.png", caption:"…Settings > Accessibility Wizard > Organize DOM order — set this to Manually on this page." },      prompt:"How do you walk Samantha through the fix?",
+      choices:[
+        { id:"A", text:"Samantha, I found that this is a case that is typically handled by another dedicated team of specialists. So, I'll put together notes about what we've done so far and they can take a closer look at this issue for you.",
+          verdict:"incorrect", points:0, goTo:"s_close",
+          consequence:"Samantha: Oh okay, bummer. Thanks for the help." },
+        { id:"B", text:"It looks like what's causing this issue is a setting called DOM order. I'm going to go ahead and update this detail for you and we'll see if that helps.",
+          verdict:"partial", points:10, goTo:"s_solve2",
+          consequence:"Samantha: Thanks! I'll just refresh on my end and see then." },
+        { id:"C", text:"Open your Layers panel and check the stacking order there. If the heart icon looks out of place, select it, choose Arrange, then Send to Back, and save again.",
+          verdict:"incorrect", points:0, goTo:"s_solve2",
+          consequence:"Samantha: Okay, done, it seems right but then it does the same thing again.\n\nExpert: Let's try going back to the Layers panel and selecting the element. Once you've done that, click \"Organize DOM Order\", select \"Manually\" and then \"Apply.\" Let me know if that works.\n\nSamantha: Okay, done! But I organized DOM via the Accessibility Wizard." },
+        { id:"D", text:"Since I confirmed that everything is stacked in the correct order, I believe this issue is being caused by your site's DOM Settings. Let's try adjusting these and see if that helps.",
+          showsImageAfter:true, verdict:"correct", points:15, goTo:"s_solve2",
+          consequence:"Samantha: Ok yes! What do I do to fix it?\n\nExpert:\n1. First, select Settings in the top left bar of the Editor and select Accessibility Wizard.\n2. Click Scan my site. It may take a few minutes here!\n3. Click the first panel called \"Site level.\" We're looking for \"Organize DOM order\"\n4. Select \"Edit\" (in screenshot) then switch from Automatically to \"Manually\"\n5. Click Apply, save once more and you should be ready to go!\n\nLet me know if that works!\n\nSamantha: Okay, done." }
+      ]
+    },
+
+    s_solve2: {
+      stage:"solve", gate:true,
+      speaker:"Looks like that worked! Should I turn this off completely so it doesn't happen again?",
+      prompt:"How do you respond?",
+      choices:[
+        { id:"A", text:"Yes, turn automatic DOM order off completely across your whole site, that's the easiest way to avoid this in the future.",
+          verdict:"incorrect", points:0, goTo:"s_close" },
+        { id:"B", text:"Honestly it doesn't matter much either way, just keep it set to whatever feels easiest for you.",
+          verdict:"partial", points:2, goTo:"s_close" },
+        { id:"C", text:"It's best to keep automatic DOM order on elsewhere, since it helps accessibility, and set it to manual only on pages like this one.",
+          verdict:"correct", points:5, goTo:"s_close",
+          consequence:"Samantha: That makes sense, thank you so much!" }
+      ]
+    },
+
+    s_close: {
+      stage:"open", gate:true,
+      prompt:"How do you close?",
+      choices:[
+        { id:"A", text:"Glad that's sorted! Quick recap: the heart icon was jumping from the automatic DOM order after saving, and setting it to manual here fixes that. Is there anything else I can help you with today?",
+          verdict:"correct", points:5, goTo:"__end__",
+          consequence:"Samantha: No, nothing else. Thanks for your help!\n\nExpert: Alrighty then, have a great rest of your day, Samantha!" },
+        { id:"B", text:"No problem! Stay in this chat please.",
+          verdict:"incorrect", points:0, goTo:"__end__" },
+        { id:"C", text:"You're welcome, so glad I could help. Have a great day!",
+          verdict:"partial", points:3, goTo:"__end__" }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const app = document.getElementById('app');
+  const U = S.user || { name:(S.userBio? "the user":"User"), image:null, bio:S.userBio||"" };
+
+  const earned = {};        // stageId -> best points (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response that set that stage's score
+  const transcript = [];    // ordered record of the whole conversation
+  const stageCfg = {};      // stageId -> stage config (for additive/max lookups)
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; stageCfg[st.id]=st; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+  const help = { used:false, checkedCorrectArticle:false, openedAnyResourceLink:false };
+  // Whether the CURRENT screen's speaker line actually played (passed its
+  // speakerIf gate) — read when the choice is recorded so the end-of-call
+  // transcript replay matches exactly what the learner saw live.
+  let currentSpeakerShown = false;
+
+  /* ---- learner name ----------------------------------------------------
+     Captured on the Meet screen. Used to (a) label the learner's own chat
+     bubbles, (b) substitute the [name] token anywhere in scenario text, and
+     (c) push the value out to a Rise/Storyline "learner_name" variable. */
+  let learner_name = "";
+  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, learner_name || "you"); }
+  function setLearnerName(v){
+    learner_name = (v||"").trim();
+    pushRiseVar("learner_name", learner_name);
+  }
+
+  /* ---- learner email ---------------------------------------------------
+     Also captured on the Meet screen (required, basic format check). Unlike
+     the name, it is NOT pushed to a Rise/Storyline variable — it is only
+     sent to the telemetry Form (see FIELD_IDS.learner_email below). */
+  let learner_email = "";
+  function setLearnerEmail(v){ learner_email = (v||"").trim(); }
+
+  // Best-effort write to the host course's variable. Storyline exposes
+  // GetPlayer(); Rise/other hosts can listen for the postMessage below.
+  function pushRiseVar(name, value){
+    try {
+      const p = (window.parent && window.parent.GetPlayer && window.parent.GetPlayer())
+             || (window.top && window.top.GetPlayer && window.top.GetPlayer());
+      if(p && p.SetVar) p.SetVar(name, value);
+    } catch(e){}
+    try { window.parent && window.parent.postMessage({ type:'setVar', name:name, value:value }, '*'); } catch(e){}
+  }
+
+  // Stamp each screen with its own id so retry can re-open it.
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  /* =========================== TELEMETRY ===========================
+     Posts one row per learner action to a Google Form, whose responses feed
+     the Sheet. A Google Form's formResponse endpoint accepts anonymous,
+     cross-origin POSTs with no auth, no deployment permissions, and no shared
+     key — which is why this works where the Apps Script Web App returned 401.
+     (This is the same mechanism proven in the working Rise POC.)
+
+     Each field is addressed by its Form `entry.NNN` id, not by column name.
+     Body is application/x-www-form-urlencoded (entry.123=value&...). If the
+     Form's questions ever change, refresh the ids in FIELD_IDS below by
+     opening the live form's prefilled-link tool or viewing its HTML source.
+
+     mode:'no-cors' makes the response opaque, so a rejected/misrouted write is
+     invisible here and fails silently. Verify the first run by watching rows
+     actually land in the Sheet.
+
+     learner_email IS collected on the Meet screen in this scenario and sent to
+     the Form's learner_email field (entry.1276253364). All other values are
+     derived dynamically from the scenario/screen, so every scenario self-labels
+     with no per-scenario editing here. */
+  const TELEMETRY_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSegiZwFV7DN-wwWsqnBbrqzJ5yEK-3lk8Zl182M0fMNFYH5hg/formResponse';
+  const FIELD_IDS = {
+    learner_email:    'entry.1276253364',
+    learner_name:     'entry.2005409239',
+    attempt_id:       'entry.1673953677',
+    course:           'entry.2010105379',
+    scene:            'entry.1283761747',
+    interaction:      'entry.1781563601',
+    question:         'entry.786197073',
+    response:         'entry.2057562952',
+    correct:          'entry.1897805741',
+    points:           'entry.1780599104',
+    time_on_step_sec: 'entry.1327709145',
+    notes:            'entry.1963386753'
+  };
+  const TELEMETRY_COURSE = S.title;           // written to the `course` field
+
+  // One id per play-through, so a learner's rows can be grouped in the Sheet.
+  const attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // `time_on_step_sec` — seconds between a screen appearing and the learner acting.
+  let stepStartedAt = null;
+  function markStepStart(){ stepStartedAt = callSeconds; }
+  function secondsOnStep(){ return stepStartedAt==null ? '' : Math.max(0, callSeconds - stepStartedAt); }
+
+  // Same idea for the Check Resources modal: seconds since it was opened, not the call clock.
+  let resourcesOpenedAt = null;
+  function secondsOnResources(){ return resourcesOpenedAt==null ? '' : Math.max(0, callSeconds - resourcesOpenedAt); }
+
+  // verdict -> the `correct` field
+  function correctCol(verdict){
+    if(verdict==='correct')   return 'yes';
+    if(verdict==='partial')   return 'partial';
+    if(verdict==='incorrect') return 'no';
+    return '';
+  }
+
+  function logEvent(evt){
+    evt = evt || {};
+    // Map this event onto the Form fields.
+    const row = {
+      learner_email:    learner_email,
+      learner_name:     learner_name,
+      attempt_id:       attemptId,
+      course:           TELEMETRY_COURSE,
+      scene:            evt.screen   || '',
+      interaction:      evt.stage    || evt.helper || evt.type || '',
+      question:         evt.question || '',
+      response:         evt.text     || evt.action || '',
+      correct:          correctCol(evt.verdict),
+      points:           evt.points  == null ? '' : evt.points,
+      time_on_step_sec: evt.seconds == null ? '' : evt.seconds,
+      notes:            evt.notes    || ''
+    };
+    // Build the urlencoded body keyed by Form entry ids.
+    const body = [];
+    for(const k in row){
+      if(!FIELD_IDS[k]) continue;              // skip any field without an entry id
+      const v = row[k];
+      body.push(FIELD_IDS[k] + '=' + encodeURIComponent(v == null ? '' : v));
+    }
+    try{
+      fetch(TELEMETRY_ENDPOINT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body: body.join('&')
+      }).catch(()=>{});  // best-effort telemetry; never blocks the learner's flow
+    } catch(e){}
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---- call timer (authentic Communication-Panel touch) ---- */
+  let callSeconds = 0, timerHandle = null;
+  function mmss(t){ const m=Math.floor(t/60), s=t%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+  function startTimer(){ const el=()=>document.getElementById('timer');
+    timerHandle = setInterval(()=>{ callSeconds++; const e=el(); if(e) e.textContent=mmss(callSeconds); }, 1000); }
+  function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
+
+  let chatEl, composerEl;
+
+  /* =================== PHASE 1 — MEET THE USER =================== */
+  function renderMeet(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}"
+             onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'noimg\\'>[ ${escapeHtml(U.name)} ]<br><span style=&quot;font-size:0.75rem&quot;>character image not found</span></div>')">`
+      : `<div class="noimg">[ ${escapeHtml(U.name)} ]</div>`;
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Practice Session · User Scenario</div>
+          <h1 class="display">Meet ${escapeHtml(U.name)}</h1>
+          <p>${escapeHtml(U.bio)}</p>
+          <div class="namefield">
+            <label for="learnerName">Your name</label>
+            <input class="nameinput" id="learnerName" type="text" autocomplete="name"
+                   placeholder="Enter your name" value="${escapeHtml(learner_name)}">
+            <div class="nameerror" id="nameError" hidden>Please enter your name to continue.</div>
+          </div>
+          <div class="namefield">
+            <label for="learnerEmail">Your email</label>
+            <input class="nameinput" id="learnerEmail" type="email" autocomplete="email"
+                   placeholder="Enter your email" value="${escapeHtml(learner_email)}">
+            <div class="nameerror" id="emailError" hidden>Please enter a valid email to continue.</div>
+          </div>
+          <div><button class="btn btn-dark" id="startBtn">Start the chat →</button></div>
+        </div>
+      </section>`;
+    const nameInput  = document.getElementById('learnerName');
+    const nameError  = document.getElementById('nameError');
+    const emailInput = document.getElementById('learnerEmail');
+    const emailError = document.getElementById('emailError');
+    const emailOk = v => /^\S+@\S+\.\S+$/.test((v||'').trim());
+    nameInput.addEventListener('input', e => {
+      setLearnerName(e.target.value);
+      if(learner_name) { nameError.hidden = true; nameInput.classList.remove('invalid'); }
+    });
+    emailInput.addEventListener('input', e => {
+      setLearnerEmail(e.target.value);
+      if(emailOk(learner_email)) { emailError.hidden = true; emailInput.classList.remove('invalid'); }
+    });
+    document.getElementById('startBtn').onclick = () => {
+      setLearnerName(nameInput.value);
+      setLearnerEmail(emailInput.value);
+      let bad = false;
+      if(!learner_name){
+        nameError.hidden = false; nameInput.classList.add('invalid'); bad = true;
+      }
+      if(!emailOk(learner_email)){
+        emailError.hidden = false; emailInput.classList.add('invalid'); bad = true;
+      }
+      if(bad){ (!learner_name ? nameInput : emailInput).focus(); return; }
+      startCall();
+    };
+  }
+
+  /* =================== PHASE 2 — THE LIVE CALL =================== */
+  function startCall(){
+    const initial = (U.name||'?').trim().charAt(0).toUpperCase();
+    app.innerHTML = `
+      <section class="panel" id="sim">
+        <div class="panel-head">
+          <div class="avatar">${escapeHtml(initial)}</div>
+          <div>
+            <div class="who-name">${escapeHtml(U.name)}</div>
+            <div class="who-sub"><span class="livedot"></span> Live chat · <span class="timer" id="timer">00:00</span></div>
+          </div>
+          <div class="head-spacer"></div>
+          <button class="btn-fs" id="fsBtn" type="button" title="Click to view fullscreen">⤢ Click to view fullscreen</button>
+          <div class="helperbar-head" id="helperbar"></div>
+          <button class="btn-end" id="endBtn">End</button>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="composer">
+          <div id="composer"></div>
+        </div>
+      </section>`;
+    chatEl = document.getElementById('chat');
+    composerEl = document.getElementById('composer');
+    document.getElementById('endBtn').onclick = confirmEnd;
+    // "Click to view fullscreen" — expand the whole sim panel via the Fullscreen API.
+    const fsBtn = document.getElementById('fsBtn'), sim = document.getElementById('sim');
+    if(fsBtn && sim && document.fullscreenEnabled){
+      fsBtn.onclick = ()=>{
+        if(document.fullscreenElement) document.exitFullscreen();
+        else sim.requestFullscreen().catch(()=>{});
+      };
+      document.addEventListener('fullscreenchange', ()=>{
+        fsBtn.innerHTML = document.fullscreenElement===sim ? '⤡ Exit fullscreen' : '⤢ Click to view fullscreen';
+      });
+    } else if(fsBtn){ fsBtn.style.display='none'; }
+    renderHelpers();
+    startTimer();
+    renderScreen(S.start, { animateSpeaker:false });  // first line appears immediately
+  }
+
+  function confirmEnd(){
+    // Ending early is allowed — skips are recoverable, unreached stages simply score 0.
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>End the chat?</h3></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">You'll go straight to your results. Anything you haven't done yet won't score.</p>
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="endYes">End &amp; see results</button>
+          <button class="btn btn-ghost" id="endNo">Keep going</button>
+        </div></div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.querySelector('#endNo').onclick = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#endYes').onclick = ()=>{ dlg.close(); dlg.remove(); renderFinal(); };
+  }
+
+  /* ---- Bubble markup (shared by the LIVE chat and the END transcript) ----
+     'system' bubbles are inline notes (pill), used for both tool/observation
+     lines and action notes — anything that isn't a direct spoken quote. */
+  function bubbleMarkup(kind, text, metaText, reaction){
+    const meta = metaText ? `<div class="meta">${escapeHtml(metaText)}</div>` : '';
+    const cls  = 'bubble' + (kind==='system' ? ' action' : '');
+    const msgCls = 'msg ' + kind + (reaction ? ' reaction' : '');
+    const body = escapeHtml(px(text)).replace(/\n/g,'<br>');
+    return `<div class="${msgCls}">${meta}<div class="${cls}">${body}</div></div>`;
+  }
+  function appendNode(html){
+    const tmp = document.createElement('div'); tmp.innerHTML = html;
+    const node = tmp.firstElementChild;
+    chatEl.appendChild(node); chatEl.scrollTop = chatEl.scrollHeight;
+    return node;
+  }
+  function appendBubble(kind, text, reaction){
+    const meta = kind==='system' ? '' :
+      `${kind==='you' ? (learner_name||'You') : U.name} · ${mmss(callSeconds)}`;
+    return appendNode(bubbleMarkup(kind, text, meta, reaction));
+  }
+  /* Inline action note: an "[Action]" choice is something the Expert DOES, shown
+     as a centered system note in the stream (e.g. "You open User Manager."). */
+  function actionNoteText(raw){
+    const t = stripAction(px(raw)).trim().replace(/\s+/g,' ').replace(/\s*\.\s*$/,'');
+    return 'You ' + t.charAt(0).toLowerCase() + t.slice(1);
+  }
+  function appendActionNote(text){ return appendBubble('system', text, true); }
+
+  /* Inline screen image: a screenshot shown in the stream for a given screen
+     (e.g. the Layers panel or the Accessibility Wizard). `img` is {src, alt,
+     caption}. Rendered as a full-width figure so learners see the same thing
+     the Expert would be looking at. Broken/absent sources hide gracefully. */
+  function appendImage(img){
+    if(!img || !img.src) return null;
+    const alt = escapeHtml(img.alt || '');
+    // No caption — learners read the screenshot and locate the info themselves.
+    // Click (or Enter/Space) opens the image in a full-screen zoom lightbox.
+    return appendNode(
+      `<div class="msg system"><figure class="screenshot">`+
+      `<img src="${escapeHtml(img.src)}" alt="${alt}" loading="lazy" tabindex="0" role="button" `+
+      `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
+      `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}" `+
+      `onerror="this.closest('figure').innerHTML='<div class=\\'noimg\\'>[ screenshot not found ]</div>'">`+
+      `</figure></div>`);
+  }
+
+  /* ---- Lightbox: click any inline screenshot to view it enlarged ---- */
+  function openLightbox(src, alt){
+    const dlg = document.createElement('dialog'); dlg.className='lightbox';
+    dlg.innerHTML = `<button class="lightbox-close" aria-label="Close">&times;</button>`+
+      `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt||'')}">`;
+    document.body.appendChild(dlg); dlg.showModal();
+    const close = ()=>{ try{dlg.close();}catch(e){} dlg.remove(); };
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) close(); });
+    dlg.querySelector('.lightbox-close').onclick = close;
+  }
+  window.__openLightbox = openLightbox;
+
+  function setComposer(html){ composerEl.innerHTML = html; }
+
+  /* "[Action] ..." choices are actions, not spoken replies. */
+  const ACTION_RE = /^\s*\[Action\]\s*/i;
+  function isAction(text){ return ACTION_RE.test(text||''); }
+  function stripAction(text){ return (text||'').replace(ACTION_RE, ''); }
+
+  /* ---- Split a scripted line (speaker OR consequence) into ordered segments,
+     one bubble per speaker. Segments break ONLY at a speaker label at the start
+     of a line — NOT at blank lines — so a single message that contains its own
+     paragraph break (e.g. the "Set to Advanced" upgrade steps) stays one bubble.
+       "Expert:"            -> your blue bubble (right)
+       "Sarah:"/name/caller -> gray caller bubble (left)
+       "(...)"              -> inline system note (tool result / stage direction)
+       unlabeled            -> caller (spoken) by default
+     Speaker labels, wrapping quotes, and the ( ) around system notes are
+     stripped so bubbles read as clean chat. ---- */
+  const YOU_LABEL = /^\s*expert\s*[:：]\s*/i;
+  function callerLabelRe(){
+    const nm = (U.name||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return new RegExp('^\\s*(?:' + (nm?nm+'|':'') + 'sarah|caller|customer)\\s*[:：]\\s*','i');
+  }
+  function stripQuotes(s){ return s.replace(/^\s*["'“”‘’]+/,'').replace(/["'“”‘’]+\s*$/,'').trim(); }
+  function splitDialogue(text){
+    if(!text) return [];
+    const clr = callerLabelRe(); const segs=[]; let cur=null;
+    String(text).split('\n').forEach(line=>{
+      if(YOU_LABEL.test(line)){ cur={kind:'you',    text:line.replace(YOU_LABEL,'')}; segs.push(cur); }
+      else if(clr.test(line)){  cur={kind:'caller', text:line.replace(clr,'')};        segs.push(cur); }
+      else if(!cur && /^\s*\(/.test(line)){ cur={kind:'system', text:line};            segs.push(cur); }
+      else if(!cur){            cur={kind:'caller', text:line};                         segs.push(cur); }
+      else cur.text += '\n' + line;
+    });
+    return segs.map(s=>{
+      let t = s.kind==='system' ? s.text.replace(/^\s*\(/,'').replace(/\)\s*$/,'') : s.text;
+      return { kind:s.kind, text:stripQuotes(t) };
+    }).filter(s=>s.text.length);
+  }
+  /* transcript bubbles: same markup, name label only (no live timer) */
+  function segMarkup(kind, text){
+    const who = kind==='system' ? '' : (kind==='you' ? (learner_name||'You') : U.name);
+    return bubbleMarkup(kind, text, who);
+  }
+
+  /* ---- Typing indicator + auto-advance reveal ----
+     Sarah's "typing…" dots show before her first reply to a pick; follow-on
+     caller lines in the same beat use a shorter delay; your/system lines appear
+     after a short beat. animate=false reveals everything at once (first load). */
+  const TAI_MS = 5000, TAI_FOLLOW_MS = 1500, YOU_MS = 700, SYS_MS = 500;
+  // Consequence beats:
+  //  • inline notes (centered system bubbles) reveal 2s apart;
+  //  • spoken consequence lines (Samantha OR the Expert) show a 5s typing
+  //    indicator before landing.
+  const REACT_INLINE_MS = 2000, REACT_TYPING_MS = 5000;
+  function typingBubble(kind){
+    const you = kind==='you';
+    const side = you ? 'you' : 'caller';
+    const who  = you ? (learner_name||'You') : U.name;
+    return appendNode(
+      `<div class="msg typing ${side}"><div class="meta">${escapeHtml(who)} · typing…</div>`+
+      `<div class="bubble"><span class="tai-dot"></span><span class="tai-dot"></span><span class="tai-dot"></span></div></div>`);
+  }
+  function revealSegments(segs, animate, done, opts){
+    opts = opts || {};
+    const reaction = !!opts.reaction;
+    let i=0, sawCaller=false;
+    (function next(){
+      if(i>=segs.length){ if(done) done(); return; }
+      const s=segs[i++];
+      // In a consequence (reaction) reveal:
+      //  • centered inline notes (system) turn green and reveal 2s apart;
+      //  • spoken lines — Samantha (caller) OR the Expert (you) — show a 5s
+      //    typing indicator, then land.
+      const inlineNote = reaction && s.kind==='system';
+      if(!animate){ appendBubble(s.kind, s.text, inlineNote); return next(); }
+      if(inlineNote){
+        setTimeout(()=>{ appendBubble('system', s.text, true); next(); }, REACT_INLINE_MS);
+      } else if(reaction && (s.kind==='caller' || s.kind==='you')){
+        const dots=typingBubble(s.kind);
+        setTimeout(()=>{ dots.remove(); appendBubble(s.kind, s.text); next(); }, REACT_TYPING_MS);
+      } else if(s.kind==='caller'){
+        const t = sawCaller ? TAI_FOLLOW_MS : TAI_MS; sawCaller=true;
+        const dots=typingBubble();
+        setTimeout(()=>{ dots.remove(); appendBubble('caller', s.text); next(); }, t);
+      } else {
+        setTimeout(()=>{ appendBubble(s.kind, s.text); next(); }, s.kind==='you'?YOU_MS:SYS_MS);
+      }
+    })();
+  }
+
+  /* ---- Helper buttons (native <dialog>) ---- */
+  function openModal(title, node){
+    const dlg = document.createElement('dialog'); dlg.className='modal'; dlg.id='modal';
+    const inner = document.createElement('div'); inner.className='modal-inner';
+    const head = document.createElement('div'); head.className='mhead';
+    head.innerHTML = `<h3>${escapeHtml(title)}</h3>`;
+    const x = document.createElement('button'); x.className='mx'; x.innerHTML='&times;'; x.setAttribute('aria-label','Close');
+    x.onclick = closeModal; head.appendChild(x);
+    inner.appendChild(head); inner.appendChild(node); dlg.appendChild(inner);
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) closeModal(); });  // backdrop click
+  }
+  function closeModal(){ const m=document.getElementById('modal'); if(m){ try{m.close();}catch(e){} m.remove(); } }
+
+  function renderHelpers(){
+    const bar = document.getElementById('helperbar');
+    if(!S.resources){ bar.style.display='none'; return; }
+    bar.innerHTML='';
+    const b=document.createElement('button');
+    b.className='hbtn';
+    b.textContent = S.resources.title || 'Check Resources';
+    b.onclick = openResources;
+    bar.appendChild(b);
+  }
+  /* Opens the scenario's dynamic links in a modal. Opening the resource
+     marked correct:true is what lifts the article-stage cap in renderFinal —
+     but only if it happens at/after RESOURCE_CREDIT_MIN_SECONDS into the call.
+     Opening it earlier doesn't count; the learner can still open it again
+     later (any time before ending the chat) to earn credit. */
+  const RESOURCE_CREDIT_MIN_SECONDS = 30;
+  function openResources(){
+    const r=S.resources, wrap=document.createElement('div');
+    resourcesOpenedAt = callSeconds;   // start the clock for this modal's dwell time
+    logEvent({type:'helper', helper:'resources', action:'opened Check Resources', seconds:0});
+    if(r.note) wrap.innerHTML='<div class="mnote" style="margin:0 0 0.625rem">'+escapeHtml(r.note)+'</div>';
+    (r.items||[]).forEach(it=>{
+      const a=document.createElement('a');
+      a.className='mopt'; a.href=it.url||'#'; a.target='_blank'; a.rel='noopener noreferrer';
+      a.textContent=it.label + '  ↗';
+      a.onclick=()=>{
+        // Any resource link click (correct or distractor) counts as "opened a
+        // resource" — this gates speaker lines like "(You open CSI.)" that
+        // should only appear if the learner actually looked something up.
+        help.openedAnyResourceLink = true;
+        if(it.correct){
+          if(callSeconds >= RESOURCE_CREDIT_MIN_SECONDS){
+            help.checkedCorrectArticle=true;
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      verdict:'correct', seconds:secondsOnResources(), notes:'opened the correct resource'});
+          } else {
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      seconds:secondsOnResources(), notes:'opened the correct resource too early to earn credit (before '+RESOURCE_CREDIT_MIN_SECONDS+'s)'});
+          }
+        } else logEvent({type:'helper', helper:'resources', action:it.label,
+                         verdict:'incorrect', seconds:secondsOnResources(), notes:'opened a distractor resource'});
+      };
+      wrap.appendChild(a);
+    });
+    openModal(r.title||'Check Resources', wrap);
+    document.getElementById('modal').addEventListener('close', ()=>{
+      logEvent({type:'helper', helper:'resources', action:'closed Check Resources', seconds:secondsOnResources()});
+    }, {once:true});
+  }
+
+  /* Centered in-sim notice (styled like the Check Resources panel) shown when a
+     learner tries to reply from an article they never opened in Check Resources —
+     replaces the old browser alert(). */
+  function notifyResourceNotOpened(){
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<div class="mnote" style="margin:0;font-size:0.875rem;color:var(--ink-2)">'
+      + 'It looks like you didn’t open this article using Check Resources. '
+      + 'Remember to always check the resource before answering from memory.</div>';
+    openModal('Check the resource first', wrap);
+  }
+
+  /* Progress bar removed — kept as a no-op so existing call sites are harmless. */
+  function paintProgress(){}
+
+  function applyCredit(stg, pts, verdict, pickText){
+    if(!(stg in earned)) return;
+    const cfg = stageCfg[stg] || {};
+    if(cfg.additive){
+      // Stage spans more than one screen (e.g. solve = s_solve + s_solve2):
+      // sum contributions, capped at the stage max, rather than taking the best.
+      const next = Math.min(cfg.max==null ? Infinity : cfg.max, earned[stg] + Math.max(0, pts));
+      if(pts > 0 || !(stg in decisivePick)) decisivePick[stg] = {text:pickText, verdict:verdict, points:next};
+      earned[stg] = next;
+      if(verdict==='correct') status[stg]='done';
+      else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+      return;
+    }
+    if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+    if(pts > earned[stg]) earned[stg] = pts;
+    if(verdict==='correct') status[stg]='done';
+    else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+  }
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text));
+  }
+
+  function renderScreen(id, opts){
+    opts = opts || {};
+    const retriedIds = opts.retriedIds || [];
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    setComposer('');   // choices appear only AFTER the caller's line has landed
+
+    const showChoices = ()=>{
+      // (Screen screenshots are no longer shown automatically — they now reveal
+      //  only when the learner picks the choice flagged with caption:"Samantha's Layers panel…".)
+      setComposer(`<div class="prompt">${escapeHtml(px(scr.prompt))}</div><div id="choices"></div>`);
+      const cWrap = document.getElementById('choices');
+      scr.choices.forEach(ch=>{
+        const b=document.createElement('button');
+        // A choice with `say` is the Expert SPEAKING (rendered as a bubble), so
+        // it isn't a tool action — no badge, even if its label reads "[Action]".
+        const badge = isAction(ch.text) && !ch.say;
+        b.className = 'choice' + (badge ? ' choice-action' : '');
+        b.innerHTML = (badge ? '<span class="cbadge">Action</span>' : '')
+                    + escapeHtml(stripAction(px(ch.text)));
+        if(retriedIds.includes(ch.id)) b.disabled=true;
+        b.onclick=()=>choose(scr,ch,retriedIds,opts.cap);
+        cWrap.appendChild(b);
+      });
+      markStepStart();   // start the clock for this screen's time_on_step_sec
+    };
+
+    // The caller line (which may itself contain Expert:/Sarah: parts) is split
+    // into its own bubbles. On auto-advance it animates in with typing dots.
+    currentSpeakerShown = !!(scr.speaker && !opts.skipSpeaker && speakerGateMet(scr));
+    if(currentSpeakerShown){
+      revealSegments(splitDialogue(scr.speaker), !!opts.animateSpeaker, showChoices);
+    } else {
+      showChoices();
+    }
+  }
+
+  /* Some speaker lines only make sense if the learner actually did something
+     first. `speakerIf:"resourceOpened"` on a screen gates its speaker line so
+     it's skipped entirely unless the learner clicked a resource link in Check
+     Resources at some point in the call. Add more gate keys here as needed. */
+  function speakerGateMet(scr){
+    if(!scr.speakerIf) return true;
+    if(scr.speakerIf === 'resourceOpened') return !!help.openedAnyResourceLink;
+    return true;
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    // The learner's pick renders as:
+    //   • `say` present  -> a blue Expert bubble of the spoken words ("Tell Sarah…")
+    //   • an [Action]    -> an inline "You …" note (a tool action)
+    //   • otherwise      -> a blue reply bubble of the choice text
+    if(ch.say) appendBubble('you', ch.say);
+    else if(isAction(ch.text)) appendActionNote(actionNoteText(ch.text));
+    else appendBubble('you', ch.text);
+
+    // Choice-gated screenshot: shows immediately on selection, before the reply.
+    if(ch.showsImage && scr.image) appendImage(scr.image);
+    // Deferred screenshot: shown AFTER the consequence (reply) finishes revealing.
+    const showImageAfter = ()=>{ if(ch.showsImageAfter && scr.image) appendImage(scr.image); };
+    const segs = splitDialogue(ch.consequence);
+
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
+      logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+                 text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
+                 notes:'first attempt — caller pushed back, screen re-opened for a retry (capped at '+ch.capIfRetried+')' });
+      setComposer('');
+      // Auto-advance: once the pushback lands, re-open the same screen (no button).
+      revealSegments(segs, true, ()=>renderScreen(scr.id,
+        { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true }), { reaction:true });
+      return;
+    }
+
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+    logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+               text:stripAction(px(ch.text)), verdict:ch.verdict, points:pts, seconds:secondsOnStep(),
+               notes:(isAction(ch.text) ? 'action' : 'reply')
+                     + (typeof cap==='number' ? '; retry attempt, capped at '+cap : '') });
+    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, say:ch.say, consequence:ch.consequence });
+
+    setComposer('');
+    // Auto-advance to the next screen — NO Continue button. The next caller line
+    // arrives via its own typing indicator, straight into the next choices.
+    revealSegments(segs, true, ()=>{
+      showImageAfter();
+      if(ch.goTo==='__end__') renderFinal();
+      else renderScreen(ch.goTo, { animateSpeaker:true });
+    }, { reaction:true });
+  }
+
+  /* =================== PHASE 3 — COMPLETE =================== */
+  function renderFinal(){
+    stopTimer();
+
+    // Apply the Check-Resources penalty before tallying (same rule the old
+    // "Check the Articles" used: no verify of the correct resource → capped).
+    const helpNotes = [];
+    const res = S.resources;
+    if(res && !help.checkedCorrectArticle && (res.stage in earned) && earned[res.stage] > res.capIfUnchecked){
+      earned[res.stage] = res.capIfUnchecked;
+      helpNotes.push("You reached the right answer, but didn't verify it in the source resource — checking the resource is the skill, not remembering.");
+    }
+    S.stages.forEach(st=>{ if(earned[st.id] >= st.max) status[st.id]='done'; else if(earned[st.id] > 0 && status[st.id]==='done') status[st.id]='partial'; });
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+
+    // One summary row per attempt: the total score only.
+    logEvent({ type:'final', points:sum, seconds:callSeconds,
+               notes:'final score ' + sum + ' / ' + maxTotal });
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span class="sval">${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      return p ? `<div class="pick">Your response: “${escapeHtml(p.text)}”</div>`
+               : `<div class="pick miss">You didn't reach this step.</div>`;
+    };
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=>`<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`).join('');
+
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="" onerror="this.style.display='none'">` : '';
+
+    app.innerHTML = `
+      <section class="complete-hero">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <h1 class="display">Complete!</h1>
+          <p class="lead">Here's how the chat went, stage by stage — with the exact response that set each score.</p>
+          <div class="scorenum">${sum}<small> / ${maxTotal}</small></div>
+        </div>
+      </section>
+
+      <div class="card">
+        <h3>Scorecard</h3>${rows}
+      </div>
+
+      <div class="card">
+        <h3 style="color:var(--correct)">Top strengths</h3>
+        <ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>
+      </div>
+
+      <div class="card">
+        <h3 style="color:var(--partial)">Areas for improvement</h3>
+        <ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>
+      </div>
+
+      ${helpNotes.length ? `<div class="card"><h3>Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="txBtn">View conversation transcript</button>
+        <button class="btn btn-dark" onclick="location.reload()">Restart</button>
+      </div>
+      <div id="tx" class="card" style="display:none"></div>`;
+
+    document.getElementById('txBtn').onclick = () => {
+      const tx = document.getElementById('tx'), btn = document.getElementById('txBtn');
+      if(tx.style.display==='none'){
+        // Mirror the live chat: split speaker/consequence into speaker bubbles,
+        // render the pick as an action note or a blue reply bubble.
+        tx.innerHTML = `<h3 style="margin-bottom:0.375rem">Conversation transcript</h3>` +
+          `<div class="chat txchat">` +
+          transcript.map(t=>{
+            let h='';
+            if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=segMarkup(s.kind, s.text));
+            h += t.say ? segMarkup('you', t.say)
+               : isAction(t.picked) ? bubbleMarkup('system', actionNoteText(t.picked), '')
+               : segMarkup('you', t.picked);
+            if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=segMarkup(s.kind, s.text));
+            return h;
+          }).join('') + `</div>`;
+        tx.style.display='block'; btn.textContent='Hide conversation transcript';
+      } else { tx.style.display='none'; btn.textContent='View conversation transcript'; }
+    };
+  }
+
+  /* ---- boot ---- */
+  renderMeet();
+})();
+</script>
+</body>
+</html>

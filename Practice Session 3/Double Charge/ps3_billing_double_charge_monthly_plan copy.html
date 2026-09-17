@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Session — Billing: Double Charge on a Monthly Plan (Rise Code Block Template · v2)</title>
+
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION 3  ·  BILLING: DOUBLE CHARGE ON A MONTHLY PLAN
+  Built on the v2 interactive-scenario template (Rise Code Block). Look & engine
+  unchanged from the Wix Editor: Layers build; only the scenario CONTENT differs,
+  plus a required "Your email" field added on the Meet screen.
+==================================================================================
+
+  HOW TO READ THIS FILE (for stakeholders / non-coders)
+  -----------------------------------------------------
+  Two parts, on purpose:
+    1) THE SCENARIO  (<script id="scenario">) — the CONTENT. Reads like a table.
+    2) THE ENGINE    (<script id="engine">)   — the machinery that plays ANY scenario.
+
+  THE INTERACTION MODEL
+  ---------------------
+  Each scenario mirrors a real Expert <-> user interaction across eight graded
+  behaviors (the rubric, 100 pts):
+     open(5) · dynamics(10) · familiarize(10) · clarify(15)
+     roadmap(10) · article(20) · recreate(10) · solve(20)
+
+  Rules:
+    • FEEDBACK IS SAVED FOR THE END. No grade, no correctness colors, no running
+      score during play. Choosing an answer simply advances the call.
+    • IN-CHARACTER REACTIONS ARE NOT FEEDBACK. A weak choice may draw a caller
+      reaction in dialogue; that line is part of the sim, not a grade.
+    • MOSTLY GATED, SOME FREEDOM — "gate:true" screens must be finished to advance.
+    • RETRY ONLY IF THE USER PROMPTS — a choice marked "retry:true" re-opens the
+      screen because the caller pushed back; the retry is capped by "capIfRetried".
+    • SKIPS ARE RECOVERABLE — each stage keeps its own best score.
+    • ADDITIVE STAGES span more than one screen (recreate = s_recreate + s_recreate2,
+      solve = s_solve + s_document); their contributions sum, capped at the stage max.
+
+  FIELD GUIDE
+  -----------
+    user   : { name, image, bio } — shown on the MEET screen and in the call header.
+    STAGE  : id, name, max, strength (shown at end if done), improvement (if missed).
+    SCREEN : stage, gate, speaker (caller line), prompt, choices[].
+    CHOICE : text, verdict, points, goTo, credits[], retry/capIfRetried,
+             consequence, stageOverride.
+==================================================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@400;700;800&family=Wix+Madefor+Text:ital,wght@0,400;0,500;0,600;0,700;1,600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    /* ---- Brand palette (the exact hexes supplied) ---- */
+    --ink:#242424; --ink-2:#424242; --muted:#707070;
+    --line:#E0E0E0; --line-2:#D1D1D1; --bg:#F5F5F5; --paper:#ffffff;
+    --brand:#DA3B01;                 /* Wix orange-red — the End button + accents   */
+    --agent:#0F62E6; --agent-deep:#1464A0;  /* agent (you) blue                     */
+    --positive:#5BBE7E;
+    --agent-bubble:#EAF1FE; --agent-bubble-line:#CFE0FF;
+    /* ---- LOCKED end-screen correctness legend (scorecard only) ---- */
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    /* ---- shape ---- */
+    --r-lg:1.25rem; --r-md:0.875rem; --r-sm:0.625rem;
+    --shadow:0 0.625rem 1.875rem rgba(20,24,40,.10);
+    --font-display:'Wix Madefor Display','Wix Madefor Text',system-ui,Arial,sans-serif;
+    --font-text:'Wix Madefor Text',system-ui,Arial,Helvetica,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{font-size:16px}
+  html,body{margin:0}
+  body{
+    font-family:var(--font-text); color:var(--ink); line-height:1.5;
+    background:
+      radial-gradient(68.75rem 31.25rem at 12% -10%, #EEF3FF 0%, rgba(238,243,255,0) 60%),
+      radial-gradient(56.25rem 31.25rem at 105% 0%, #F3F0FA 0%, rgba(243,240,250,0) 55%),
+      var(--bg);
+  }
+  .app{
+    max-width:66.25rem;margin:0 auto;padding:1.5rem 1.25rem;
+    height:100vh;overflow-y:auto;overflow-x:hidden;
+    display:flex;flex-direction:column;
+  }
+  h1,h2,h3{font-family:var(--font-display);letter-spacing:-.01em;margin:0}
+  .display{font-weight:800;line-height:1.05}
+
+  /* ============================ MEET THE USER ============================ */
+  .meet{
+    display:grid;grid-template-columns:0.85fr 1.15fr;gap:0;
+    background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow);overflow:hidden;flex:1;min-height:0;
+  }
+  .meet .portrait{
+    position:relative;
+    background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);
+    display:flex;align-items:flex-end;justify-content:center;padding:0 0.75rem;
+  }
+  .meet .portrait img{max-height:30rem;max-width:100%;object-fit:contain;filter:drop-shadow(0 1.125rem 1.5rem rgba(20,24,40,.16))}
+  .meet .portrait .noimg{align-self:center;color:var(--muted);font-size:0.875rem;text-align:center;padding:1.5rem}
+  .meet .body{padding:2.75rem 2.75rem 2.5rem;display:flex;flex-direction:column;justify-content:center;overflow-y:auto;height:100%}
+  .eyebrow{font-size:0.8125rem;font-weight:700;color:var(--agent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.625rem}
+  .meet .body h1{font-size:2.75rem;margin-bottom:1.125rem}
+  .meet .body p{font-size:1.0625rem;color:var(--ink-2);margin:0 0 1.75rem;max-width:44ch}
+
+  /* black pill buttons — matches the Rise course (Get Started / Next / Restart) */
+  .btn{font-family:var(--font-text);font-weight:700;font-size:0.9375rem;cursor:pointer;border:0;border-radius:62.4375rem;padding:0.8125rem 1.625rem;transition:transform .12s ease, box-shadow .12s ease, background .12s ease}
+  .btn:active{transform:translateY(0.0625rem)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{background:#000}
+  .btn-ghost{background:var(--paper);color:var(--ink);border:0.0625rem solid var(--line-2)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  /* ============================ THE CALL (Communication Panel) ============================ */
+  .panel{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;flex:1;min-height:0;display:flex;flex-direction:column}
+  .panel-head{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1.125rem;border-bottom:0.0625rem solid var(--line);background:#fff;flex:none}
+  .avatar{width:2.375rem;height:2.375rem;border-radius:50%;background:var(--agent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.9375rem;flex:0 0 auto}
+  .who-name{font-weight:700;font-size:0.9375rem}
+  .who-sub{display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.78125rem;margin-top:0.0625rem}
+  .livedot{width:0.5rem;height:0.5rem;border-radius:50%;background:var(--positive);display:inline-block;box-shadow:0 0 0 0.1875rem rgba(91,190,126,.20)}
+  .timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
+  .head-spacer{flex:1}
+  .helperbar-head{display:flex;gap:0.5rem;margin-right:0.5rem}
+  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.8125rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
+  .btn-end:hover{filter:brightness(.94)}
+
+
+  /* Fixed height so the chat window stays the SAME SIZE for the whole call —
+     it no longer grows message-by-message; overflow scrolls internally. */
+  .chat{padding:1rem 1.125rem 0.375rem;display:flex;flex-direction:column;gap:0.875rem;flex:1 1 auto;min-height:0;overflow-y:auto}
+  .msg{display:flex;flex-direction:column;max-width:78%}
+  .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
+  .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
+  .msg.caller{align-self:flex-start;align-items:flex-start}
+  .msg.caller .bubble{background:var(--bg);border:0.0625rem solid var(--line);border-top-left-radius:0.3125rem;color:var(--ink)}
+  .msg.you{align-self:flex-end;align-items:flex-end}
+  .msg.you .meta{text-align:right;color:var(--agent-deep)}
+  .msg.you .bubble{background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-top-right-radius:0.3125rem;color:var(--ink)}
+  .msg.system{align-self:center;max-width:90%;align-items:center}
+  .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:italic;font-size:0.8125rem;padding:0.125rem 0.375rem;text-align:center}
+  /* Inline screenshot figure (kept from the template; unused when no image is set) */
+  .msg.system .screenshot{margin:0.25rem 0;max-width:100%;display:flex;flex-direction:column;align-items:center}
+  .msg.system .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block}
+  .msg.system .screenshot figcaption{font-size:0.6875rem;color:var(--muted);font-style:italic;margin-top:0.375rem;text-align:center}
+  .msg.system .screenshot .noimg{color:var(--muted);font-size:0.8125rem;padding:1rem;border:0.0625rem dashed var(--line);border-radius:0.5rem}
+
+  /* [Action] choices render their result as an inline centered system note in the
+     chat stream (reusing .msg.system), so there's no separate action bar. */
+  .msg.system .bubble.action{font-style:normal;color:var(--agent-deep);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:62.4375rem;padding:0.25rem 0.75rem}
+
+  /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
+     from spoken replies, right inside the choice button. */
+  .cbadge{display:inline-block;font-weight:700;font-size:0.625rem;text-transform:uppercase;letter-spacing:.05em;color:var(--agent-deep);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:0.375rem;padding:0.0625rem 0.375rem;margin-right:0.5rem;vertical-align:0.05rem}
+
+  /* composer / decision area — where the real panel's message box sits */
+  .composer{border-top:0.0625rem solid var(--line);background:#FBFBFC;padding:0.875rem 1.125rem 1.125rem;flex:none;max-height:45%;overflow-y:auto}
+  .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
+  .hbtn{font-size:0.78125rem;font-weight:600;padding:0.4375rem 0.8125rem;border-radius:62.4375rem;border:0.0625rem solid var(--line-2);background:#fff;color:var(--ink-2);cursor:pointer}
+  .hbtn:hover{border-color:var(--agent);color:var(--agent)}
+  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0.125rem 0 0.625rem}
+  .choice{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.8125rem 0.9375rem;margin:0.5rem 0;font-size:0.90625rem;font-family:var(--font-text);color:var(--ink);cursor:pointer;transition:border-color .12s ease, box-shadow .12s ease, background .12s ease}
+  .choice:hover:not(:disabled){border-color:var(--agent);box-shadow:0 0.125rem 0.625rem rgba(15,98,230,.10);background:#fff}
+  .choice:disabled{opacity:.45;cursor:not-allowed}
+  .next{margin-top:0.75rem}
+
+  /* typing awareness indicator (TAI) — the user "typing…" bubble before a reply */
+  .msg.typing .bubble{display:inline-flex;align-items:center;gap:0.3125rem;padding:0.8125rem 0.9375rem}
+  .tai-dot{width:0.4375rem;height:0.4375rem;border-radius:50%;background:var(--muted);opacity:.4;animation:tai-blink 1.2s infinite ease-in-out}
+  .tai-dot:nth-child(2){animation-delay:.2s}
+  .tai-dot:nth-child(3){animation-delay:.4s}
+  @keyframes tai-blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:.9;transform:translateY(-0.125rem)}}
+
+  /* learner name + email fields on the Meet screen */
+  .namefield{display:flex;flex-direction:column;gap:0.5rem;margin:0 0 1.25rem;max-width:21.25rem}
+  .namefield label{font-size:0.8125rem;font-weight:700;color:var(--ink-2)}
+  .nameinput{font-family:var(--font-text);font-size:0.9375rem;padding:0.75rem 0.875rem;border:0.0625rem solid var(--line-2);border-radius:var(--r-sm);color:var(--ink);background:#fff}
+  .nameinput:focus{outline:none;border-color:var(--agent);box-shadow:0 0 0 0.1875rem rgba(15,98,230,.12)}
+  .nameinput.invalid{border-color:#D64545}
+  .nameerror{font-size:0.78125rem;color:#D64545}
+
+  /* ============================ COMPLETE ============================ */
+  .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
+  .complete-hero .portrait{background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);display:flex;align-items:flex-end;justify-content:center}
+  .complete-hero .portrait img{max-height:21.25rem;max-width:100%;object-fit:contain;filter:drop-shadow(0 1rem 1.375rem rgba(20,24,40,.16))}
+  .complete-hero .body{padding:2.5rem 2.75rem;display:flex;flex-direction:column;justify-content:center}
+  .complete-hero h1{font-size:3rem;margin-bottom:0.75rem}
+  .complete-hero .lead{font-size:1rem;color:var(--ink-2);margin:0 0 1.375rem;max-width:46ch}
+  .scorenum{font-family:var(--font-display);font-weight:800;font-size:3.5rem;line-height:1}
+  .scorenum small{font-size:1.375rem;color:var(--muted);font-weight:700}
+
+  .card{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);padding:1.25rem 1.375rem;margin-top:1rem;box-shadow:0 0.25rem 1rem rgba(20,24,40,.05)}
+  .card h3{font-size:0.9375rem;margin:0 0 0.5rem}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;padding:0.5625rem 0;border-bottom:0.0625rem solid #F1F1F1}
+  .srow:last-child{border-bottom:0}
+  .sdot{width:0.5625rem;height:0.5625rem;border-radius:50%;margin-right:0.5625rem;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .sval{font-variant-numeric:tabular-nums;font-weight:600}
+  .list{margin:0.5rem 0 0;padding-left:0;list-style:none}
+  .list li{padding:0.5625rem 0 0.5625rem 1.625rem;position:relative;font-size:0.875rem;border-bottom:0.0625rem solid #F4F4F4}
+  .list li:last-child{border-bottom:0}
+  .list.str li:before{content:"✓";position:absolute;left:0.125rem;color:var(--correct);font-weight:800}
+  .list.imp li:before{content:"→";position:absolute;left:0.125rem;color:var(--partial);font-weight:800}
+  .pick{font-size:0.78125rem;color:var(--muted);margin-top:0.3125rem;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+  .actions{display:flex;gap:0.625rem;flex-wrap:wrap;margin-top:1.125rem}
+  /* end-screen transcript reuses the LIVE chat bubbles (.msg/.bubble) so it
+     mirrors the simulation exactly — gray caller left, blue Expert right,
+     centered action/system notes. */
+  .txchat{display:flex;flex-direction:column;gap:0.75rem;padding:0.5rem 0 0.25rem}
+
+  /* ============================ helper <dialog> ============================ */
+  dialog.modal{border:0;border-radius:var(--r-md);max-width:35rem;width:calc(100% - 2rem);padding:0;box-shadow:0 1.5rem 3.75rem rgba(20,24,40,.28)}
+  dialog.modal::backdrop{background:rgba(20,24,40,.45)}
+  .modal-inner{padding:1.25rem 1.375rem 1.375rem}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+  .mhead h3{font-size:1.0625rem}
+  .mx{border:0;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--muted)}
+  .mx:hover{color:var(--ink)}
+  .mopt{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.6875rem 0.8125rem;margin:0 0 0.5rem;font-size:0.875rem;font-family:var(--font-text);color:var(--ink);cursor:pointer}
+  .mopt:hover{border-color:var(--agent)}
+  .tabrow{display:flex;gap:0.375rem;margin-bottom:0.625rem}
+  .tab{font-size:0.8125rem;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:0.0625rem solid var(--line-2);background:#fff;font-family:var(--font-text);cursor:pointer}
+  .tab.active{border-color:var(--agent);color:var(--agent);font-weight:700}
+  .article-body{white-space:pre-wrap;font-size:0.875rem;background:var(--bg);border-radius:var(--r-sm);padding:0.8125rem;min-height:5.625rem;line-height:1.5}
+  .mnote{font-size:0.78125rem;color:var(--muted);margin-top:0.5rem}
+  .speakerbox{background:var(--bg);border:0.0625rem solid var(--line);padding:0.6875rem 0.8125rem;border-radius:var(--r-sm);font-size:0.875rem}
+
+  /* MDN: honour users who prefer less motion */
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important}
+  }
+  @media (max-width:45rem){
+    .meet,.complete-hero{grid-template-columns:1fr}
+    .meet .portrait,.complete-hero .portrait{min-height:16.25rem}
+    .meet .body{padding:1.75rem 1.5rem 2rem}
+    .meet .body h1{font-size:2.125rem}
+    .complete-hero .body{padding:1.75rem 1.5rem}
+    .msg{max-width:88%}
+  }
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Billing: Double Charge on a Monthly Plan",
+
+  user: {
+    name: "Dan",
+    image: null,
+    bio: "Meet Dan. Dan noticed he was charged twice for his monthly plan and wants it looked into. In this activity, you'll simulate a chat with him. Click “Resources” to view internal and external help documents at any point during the interaction. Let's begin!"
+  },
+
+  resources: {
+    title: "Check Resources",
+    stage: "article", capIfUnchecked: 10,
+    note: "Open the resources below. Checking the right one before you answer is the skill — not remembering it. Full marks come from confirming how to tell a renewal from a duplicate in Billing Common Scenarios.",
+    items: [
+      { label:"Double Charge Appearing on Your Bank Statement", url:"https://support.wix.com/en/article/double-charge-appearing-on-your-bank-statement" },
+      { label:"Understanding How Wix Processes Payments for Our Services", url:"https://support.wix.com/en/article/double-charge-appearing-on-your-bank-statement" },
+      { label:"Changing the Subscription Period of Your Premium Plan", url:"https://support.wix.com/en/article/changing-the-subscription-period-of-your-premium-plan" },
+      { label:"Billing Common Scenarios", url:"https://csinternal.wixanswers.com/kb/en/article/billing-common-scenarios", correct:true },
+      { label:"Payment Methods", url:"https://csinternal.wixanswers.com/kb/en/article/payment-methods" },
+      { label:"Wix Billing for Site Plans", url:"https://support.wix.com/en/article/wix-billing-for-premium-plans" }
+    ]
+  },
+
+  stages: [
+    { id:"open", name:"Opening & closing", max:5,
+      strength:"You greeted Dan, acknowledged the confusion, and closed with a clear recap.",
+      improvement:"Open with a greeting and a little reassurance, and close with a recap of what each charge was." },
+    { id:"dynamics", name:"Use Dynamics", max:10,
+      strength:"You verified the payment method and, since Dan was on a different email, collected the card details before looking the charge up in SBS.",
+      improvement:"Verify the payment method first, and when the caller is on a different email than the card, collect the card details before you look up the charge." },
+    { id:"familiarize", name:"Familiarize", max:10,
+      strength:"You asked a contextual question that put Dan at ease and gave you useful background.",
+      improvement:"Ask an impactful question that puts the caller at ease and gives you context, rather than a generic or account-only question." },
+    { id:"clarify", name:"Clarify the issue", max:15,
+      strength:"You pinned down the exact dates and amounts, and checked for other services, before drawing any conclusion.",
+      improvement:"Confirm the exact dates and amounts, and check for other services, before you conclude it's a duplicate." },
+    { id:"roadmap", name:"Roadmapping", max:10,
+      strength:"You told Dan your plan for what you'd check and do next.",
+      improvement:"Tell the caller your plan, what you'll check and do next, so they're not left guessing." },
+    { id:"article", name:"Article / Copilot", max:20,
+      strength:"You confirmed the answer in Billing Common Scenarios instead of relying on memory.",
+      improvement:"Open the right source of truth, Billing Common Scenarios, to confirm renewal versus duplicate instead of relying on memory." },
+    { id:"recreate", name:"Recreate the issue", max:10, additive:true,
+      strength:"You confirmed the two separate renewals yourself, reviewing the plan in User Manager and comparing the invoice billing periods in SBS, before explaining.",
+      improvement:"Confirm the two charges yourself, review the plan in the User Manager and compare the invoice billing periods in SBS, before you explain the outcome." },
+    { id:"solve", name:"Solve the issue", max:20, additive:true,
+      strength:"You explained clearly that it wasn't a duplicate with the invoice details, and documented your findings in the internal note.",
+      improvement:"Explain that it isn't a duplicate using the invoice details, and document your findings in the internal note before you close." }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open", gate:true,
+      speaker:"Hey I was charged twice for my monthly plan. Can you please look into this and process a refund?",
+      prompt:"How do you open the conversation?",
+      choices:[
+        { id:"A", text:"“Hey, let me check it out.”",
+          verdict:"incorrect", points:0, goTo:"s_verify_email", retry:true, capIfRetried:3,
+          consequence:"Dan: Okay… thanks." },
+        { id:"B", text:"“Hey Dan, I'm [name]! Oh no, charged twice definitely doesn't sound right. Let me find the duplicate straight away and get back to you with what I find.”",
+          verdict:"partial", points:3, goTo:"s_verify_email" },
+        { id:"C", text:"“Hey Dan, you've reached Wix Customer Care, I'm [name]. Can you please confirm your email?”",
+          verdict:"correct", points:5, goTo:"s_verify_email",
+          consequence:"Dan: My email is dannd@gmail.com." }
+      ]
+    },
+
+    s_verify_email: {
+      stage:"dynamics", gate:true,
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"[Action] Ask him to confirm what monthly plan was charged twice.",
+          verdict:"correct", points:8, goTo:"s_roadmap", stageOverride:"clarify",
+          consequence:"Dan: I think it's called the Core plan? I'm not sure, you'd have to check, but it's about $30." },
+        { id:"B", text:"[Action] Check the most recent payments via the “Plans” tab in User Manager (UM).",
+          verdict:"incorrect", points:0, goTo:"s_roadmap" },
+        { id:"C", text:"[Action] Confirm the email he shared in User Manager (UM).",
+          verdict:"correct", points:10, goTo:"s_roadmap",
+          consequence:"(The email matches the account on file.)" }
+      ]
+    },
+
+    s_roadmap: {
+      stage:"roadmap", gate:true,
+      prompt:"What's next?",
+      choices:[
+        { id:"A", text:"“Thank you. Give me 2-3 minutes while I look into next steps.”",
+          verdict:"partial", points:5, goTo:"s_dynamics" },
+        { id:"B", text:"“Thank you. First, I need to verify the charges, the card details with you, then I'll pull up your billing history and explain what each charge is.”",
+          verdict:"correct", points:10, goTo:"s_dynamics" },
+        { id:"C", text:"“Thanks Dan. Let me take a quick look.”",
+          verdict:"incorrect", points:0, goTo:"s_dynamics" }
+      ]
+    },
+
+    s_dynamics: {
+      stage:"dynamics", gate:true,
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"[Action] Check billing history and recent invoices in the “Sites” tab in UM.",
+          verdict:"incorrect", points:0, goTo:"s_familiarize",
+          consequence:"(You didn't see any billing history or invoices here.)\nExpert: Dan, can you please share the invoice numbers of the charges?" },
+        { id:"B", text:"[Action] Ask Dan to screenshot his bank statement.",
+          verdict:"incorrect", points:0, goTo:"s_dynamics2",
+          consequence:"Dan: My bank statement? Can I just tell you whatever info you need?\nExpert: Yes, actually. Can you please share the invoice numbers of the charges?" },
+        { id:"C", text:"[Action] Ask Dan to provide the invoice numbers for the charges.",
+          verdict:"correct", points:10, goTo:"s_dynamics2" },
+        { id:"D", text:"[Action] Send Dan the Charge Locator link so he can provide the details about the charge.",
+          verdict:"partial", points:5, goTo:"s_familiarize" }
+      ]
+    },
+
+    s_dynamics2: {
+      stage:"dynamics", gate:true,
+      prompt:"What do you ask Dan for?",
+      choices:[
+        { id:"A", text:"“Do you have access to the card's last 4 digits, the cardholder's name, transaction amount and the date of the charge? I will also need the card type and expiration.”",
+          verdict:"correct", points:5, goTo:"s_familiarize",
+          consequence:"Dan: Sure, it's a Visa ending 4417 that expires June of 2028. Name is Dan Owens and the date was 05/05/26." },
+        { id:"B", text:"[Action] Send Dan the Charge Locator link so he can provide the details about the charge.",
+          verdict:"incorrect", points:0, goTo:"s_familiarize",
+          consequence:"Dan: Ok but this is asking me for an invoice number and I don't have that.\nExpert: Do you have access to the card's last 4 digits, the cardholder's name, transaction amount and the date of the charge?\nDan: Sure, it's a Visa ending 4417, Dan Owens, and the date was 05/05/26." },
+        { id:"C", text:"“Not at this time. Even if you have full editing permissions on the site, we can't make exceptions to this rule. This is just to ensure our user's accounts stay protected, I hope you understand!”",
+          verdict:"incorrect", points:0, goTo:"s_document",
+          consequence:"Dan: Wow, that's annoying. Next time, please let me know what information I need from the beginning so I can reach out when I have everything instead of wasting my time." }
+      ]
+    },
+
+    s_familiarize: {
+      stage:"familiarize", gate:true,
+      prompt:"What do you reply next?",
+      choices:[
+        { id:"A", text:"“Thank you! While your account is loading up here, can you tell me a bit about what kind of site you run?”",
+          verdict:"partial", points:4, goTo:"s_clarify",
+          consequence:"Dan: It's a site for my soap shop.\nExpert: Cool!" },
+        { id:"B", text:"“Thank you! While your account is loading up here, tell me, how is your day going?”",
+          verdict:"incorrect", points:0, goTo:"s_clarify",
+          consequence:"Dan: It's great, yea! Just hoping to get this issue sorted soon.\nExpert: Nice! I hear you, I'll do all I can to help." },
+        { id:"C", text:"“Thank you! While your account is loading up here, is this the first time the billing's caught you off guard, or have you noticed this happen before?”",
+          verdict:"correct", points:10, goTo:"s_clarify",
+          consequence:"Dan: First time really, I just saw two charges and panicked." }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify", gate:true,
+      prompt:"What do you reply next?",
+      choices:[
+        { id:"A", text:"“Dan, let me ask: Are both charges definitely not from the same monthly subscription?”",
+          verdict:"partial", points:8, goTo:"s_article",
+          consequence:"Dan: I doubt it since they came in so close together." },
+        { id:"B", text:"“Dan, do you pay for any other Wix products or services, like a domain, business email, or paid apps?”",
+          verdict:"correct", points:15, goTo:"s_article",
+          consequence:"Dan: No, just the one plan for the one site." },
+        { id:"C", text:"“So I've found that this is definitely a duplicate then, no question about it, let me go ahead and start the refund for the extra charge right now.”",
+          verdict:"incorrect", points:0, goTo:"s_article",
+          consequence:"Dan: I'm still not sure it is..." }
+      ]
+    },
+
+    s_article: {
+      stage:"article", gate:true,
+      prompt:"What do you check before you explain the fix to Dan?",
+      choices:[
+        { id:"A", text:"[Action] Open “Double Charge Appearing on Your Bank Statement”.",
+          verdict:"partial", points:10, goTo:"s_recreate" },
+        { id:"B", text:"[Action] Open “Understanding How Wix Processes Payments for Our Services”.",
+          verdict:"partial", points:10, goTo:"s_recreate" },
+        { id:"C", text:"[Action] Open “Billing Common Scenarios” to confirm how to tell a renewal from a duplicate.",
+          verdict:"correct", points:20, goTo:"s_recreate" },
+        { id:"D", text:"[Action] Open “Changing the Subscription Period of Your Premium Plan”.",
+          verdict:"incorrect", points:0, goTo:"s_recreate" }
+      ]
+    },
+
+    s_recreate: {
+      stage:"recreate", gate:true,
+      prompt:"What do you do first?",
+      choices:[
+        { id:"A", text:"[Action] Ask Dan to screenshot his bank statement instead.",
+          verdict:"incorrect", points:0, goTo:"s_recreate2", retry:true, capIfRetried:5,
+          consequence:"Dan: Okay, hang on, let me find it… a minute later — my bank mobile app won't let me screenshot 'due to security reasons.'" },
+        { id:"B", text:"[Action] In User Manager, open Dan's plan and review its renewal and payment history. Also check for a recent failed or declined payment being retried.",
+          verdict:"correct", points:5, goTo:"s_recreate2" }
+      ]
+    },
+
+    s_recreate2: {
+      stage:"recreate", gate:true,
+      prompt:"What do you check next?",
+      choices:[
+        { id:"C", text:"[Action] Open the SBS Invoices tab and check only that the two amounts match, then move on.",
+          verdict:"partial", points:2, goTo:"s_solve" },
+        { id:"D", text:"[Action] In SBS, open the Invoices tab and compare the Billing Period on each invoice, reviewing both to confirm they cover two different periods, last month's renewal and this month's, for the Wix Light Plan. Also rule out a retried failed payment and a pending card authorization hold before concluding two renewals.",
+          verdict:"correct", points:5, goTo:"s_solve" }
+      ]
+    },
+
+    s_solve: {
+      stage:"solve", gate:true,
+      speaker:"(You find that the Billing Period for each charge's invoice covered two different periods.)",
+      prompt:"What do you say next?",
+      choices:[
+        { id:"A", text:"[Action] Tell Dan you've seen this plenty of times before, so it's almost certainly two renewals, and move the conversation along.",
+          verdict:"incorrect", points:0, goTo:"s_document" },
+        { id:"B", text:"“You know what, looking at it again it does seem like a duplicate charge after all, so let me just go ahead and refund one of the two charges for you now.”",
+          verdict:"incorrect", points:0, goTo:"s_document",
+          consequence:"Dan: I had a feeling. Thanks for confirming." },
+        { id:"C", text:"“Good news, it's not a duplicate. These are two separate monthly renewals of your Wix Light Plan, one for last month's billing period and one for this month's, each about $17. I can share the service, amount, date, payment method, subscription period, and invoice number for each.”",
+          verdict:"correct", points:10, goTo:"s_document",
+          consequence:"Dan: Oh, so both are just my normal plan. That's a relief." },
+        { id:"D", text:"“Good news, it's not a duplicate. The charges cover two different periods. I think what's happened here is that you switched over to a yearly plan at some point, and that second charge is the yearly one.”",
+          verdict:"partial", points:2, goTo:"s_document",
+          consequence:"Dan: I never changed anything though. And why would it be the same amount just a couple days after the first payment? Anywho, that's good news. Thanks." }
+      ]
+    },
+
+    s_document: {
+      stage:"solve", gate:true,
+      prompt:"Before you close, what do you do?",
+      choices:[
+        { id:"A", text:"[Action] Close the case now that Dan understands the charges, since he sounds happy and there's nothing left to sort out.",
+          verdict:"partial", points:2, goTo:"s_close" },
+        { id:"B", text:"[Action] Document your findings in the internal note, then close the case.",
+          verdict:"correct", points:10, goTo:"s_close" },
+        { id:"C", text:"“I'll attach the article to your ticket so it's on record.”",
+          verdict:"incorrect", points:0, goTo:"s_close",
+          consequence:"Dan: Not really sure what that means, but thanks. Have a good one." }
+      ]
+    },
+
+    s_close: {
+      stage:"open", gate:true,
+      prompt:"How do you close?",
+      choices:[
+        { id:"A", text:"“Great, thanks for contacting Wix, Dan.”",
+          verdict:"partial", points:3, goTo:"__end__" },
+        { id:"B", text:"“Glad that's cleared up! If you ever run into any other confusion about charges and you have the invoice number available, here's a link to the Charge Locator you can use to quickly find details about charges. Please let me know if you have any questions. Otherwise, have a good day!”",
+          verdict:"correct", points:5, goTo:"__end__" },
+        { id:"C", text:"“You can always use the Charge Locator to quickly find details about charges, too. Please let me know if you have any questions.”",
+          verdict:"incorrect", points:0, goTo:"__end__" }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const app = document.getElementById('app');
+  const U = S.user || { name:(S.userBio? "the user":"User"), image:null, bio:S.userBio||"" };
+
+  const earned = {};        // stageId -> best points (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response that set that stage's score
+  const transcript = [];    // ordered record of the whole conversation
+  const stageCfg = {};      // stageId -> stage config (for additive/max lookups)
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; stageCfg[st.id]=st; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+  const help = { used:false, checkedCorrectArticle:false };
+
+  /* ---- learner name ----------------------------------------------------
+     Captured on the Meet screen. Used to (a) label the learner's own chat
+     bubbles, (b) substitute the [name] token anywhere in scenario text, and
+     (c) push the value out to a Rise/Storyline "learner_name" variable. */
+  let learner_name = "";
+  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, learner_name || "you"); }
+  function setLearnerName(v){
+    learner_name = (v||"").trim();
+    pushRiseVar("learner_name", learner_name);
+  }
+
+  /* ---- learner email ---------------------------------------------------
+     Also captured on the Meet screen (required, basic format check). Unlike
+     the name, it is NOT pushed to a Rise/Storyline variable — it is only
+     sent to the telemetry Form (see FIELD_IDS.learner_email below). */
+  let learner_email = "";
+  function setLearnerEmail(v){ learner_email = (v||"").trim(); }
+
+  // Best-effort write to the host course's variable. Storyline exposes
+  // GetPlayer(); Rise/other hosts can listen for the postMessage below.
+  function pushRiseVar(name, value){
+    try {
+      const p = (window.parent && window.parent.GetPlayer && window.parent.GetPlayer())
+             || (window.top && window.top.GetPlayer && window.top.GetPlayer());
+      if(p && p.SetVar) p.SetVar(name, value);
+    } catch(e){}
+    try { window.parent && window.parent.postMessage({ type:'setVar', name:name, value:value }, '*'); } catch(e){}
+  }
+
+  // Stamp each screen with its own id so retry can re-open it.
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  /* =========================== TELEMETRY ===========================
+     Posts one row per learner action to a Google Form, whose responses feed
+     the Sheet. A Google Form's formResponse endpoint accepts anonymous,
+     cross-origin POSTs with no auth, no deployment permissions, and no shared
+     key — which is why this works where the Apps Script Web App returned 401.
+     (This is the same mechanism proven in the working Rise POC.)
+
+     Each field is addressed by its Form `entry.NNN` id, not by column name.
+     Body is application/x-www-form-urlencoded (entry.123=value&...). If the
+     Form's questions ever change, refresh the ids in FIELD_IDS below by
+     opening the live form's prefilled-link tool or viewing its HTML source.
+
+     mode:'no-cors' makes the response opaque, so a rejected/misrouted write is
+     invisible here and fails silently. Verify the first run by watching rows
+     actually land in the Sheet.
+
+     learner_email IS collected on the Meet screen in this scenario and sent to
+     the Form's learner_email field (entry.1276253364). All other values are
+     derived dynamically from the scenario/screen, so every scenario self-labels
+     with no per-scenario editing here. */
+  const TELEMETRY_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSegiZwFV7DN-wwWsqnBbrqzJ5yEK-3lk8Zl182M0fMNFYH5hg/formResponse';
+  const FIELD_IDS = {
+    learner_email:    'entry.1276253364',
+    learner_name:     'entry.2005409239',
+    attempt_id:       'entry.1673953677',
+    course:           'entry.2010105379',
+    scene:            'entry.1283761747',
+    interaction:      'entry.1781563601',
+    question:         'entry.786197073',
+    response:         'entry.2057562952',
+    correct:          'entry.1897805741',
+    points:           'entry.1780599104',
+    time_on_step_sec: 'entry.1327709145',
+    notes:            'entry.1963386753'
+  };
+  const TELEMETRY_COURSE = S.title;           // written to the `course` field
+
+  // One id per play-through, so a learner's rows can be grouped in the Sheet.
+  const attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // `time_on_step_sec` — seconds between a screen appearing and the learner acting.
+  let stepStartedAt = null;
+  function markStepStart(){ stepStartedAt = callSeconds; }
+  function secondsOnStep(){ return stepStartedAt==null ? '' : Math.max(0, callSeconds - stepStartedAt); }
+
+  // Same idea for the Check Resources modal: seconds since it was opened, not the call clock.
+  let resourcesOpenedAt = null;
+  function secondsOnResources(){ return resourcesOpenedAt==null ? '' : Math.max(0, callSeconds - resourcesOpenedAt); }
+
+  // verdict -> the `correct` field
+  function correctCol(verdict){
+    if(verdict==='correct')   return 'yes';
+    if(verdict==='partial')   return 'partial';
+    if(verdict==='incorrect') return 'no';
+    return '';
+  }
+
+  function logEvent(evt){
+    evt = evt || {};
+    // Map this event onto the Form fields.
+    const row = {
+      learner_email:    learner_email,
+      learner_name:     learner_name,
+      attempt_id:       attemptId,
+      course:           TELEMETRY_COURSE,
+      scene:            evt.screen   || '',
+      interaction:      evt.stage    || evt.helper || evt.type || '',
+      question:         evt.question || '',
+      response:         evt.text     || evt.action || '',
+      correct:          correctCol(evt.verdict),
+      points:           evt.points  == null ? '' : evt.points,
+      time_on_step_sec: evt.seconds == null ? '' : evt.seconds,
+      notes:            evt.notes    || ''
+    };
+    // Build the urlencoded body keyed by Form entry ids.
+    const body = [];
+    for(const k in row){
+      if(!FIELD_IDS[k]) continue;              // skip any field without an entry id
+      const v = row[k];
+      body.push(FIELD_IDS[k] + '=' + encodeURIComponent(v == null ? '' : v));
+    }
+    try{
+      fetch(TELEMETRY_ENDPOINT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body: body.join('&')
+      }).catch(()=>{});  // best-effort telemetry; never blocks the learner's flow
+    } catch(e){}
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---- call timer (authentic Communication-Panel touch) ---- */
+  let callSeconds = 0, timerHandle = null;
+  function mmss(t){ const m=Math.floor(t/60), s=t%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+  function startTimer(){ const el=()=>document.getElementById('timer');
+    timerHandle = setInterval(()=>{ callSeconds++; const e=el(); if(e) e.textContent=mmss(callSeconds); }, 1000); }
+  function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
+
+  let chatEl, composerEl;
+
+  /* =================== PHASE 1 — MEET THE USER =================== */
+  function renderMeet(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}"
+             onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'noimg\\'>[ ${escapeHtml(U.name)} ]<br><span style=&quot;font-size:0.75rem&quot;>character image not found</span></div>')">`
+      : `<div class="noimg">[ ${escapeHtml(U.name)} ]</div>`;
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Practice Session · User Scenario</div>
+          <h1 class="display">Meet ${escapeHtml(U.name)}</h1>
+          <p>${escapeHtml(U.bio)}</p>
+          <div class="namefield">
+            <label for="learnerName">Your name</label>
+            <input class="nameinput" id="learnerName" type="text" autocomplete="name"
+                   placeholder="Enter your name" value="${escapeHtml(learner_name)}">
+            <div class="nameerror" id="nameError" hidden>Please enter your name to continue.</div>
+          </div>
+          <div class="namefield">
+            <label for="learnerEmail">Your email</label>
+            <input class="nameinput" id="learnerEmail" type="email" autocomplete="email"
+                   placeholder="Enter your email" value="${escapeHtml(learner_email)}">
+            <div class="nameerror" id="emailError" hidden>Please enter a valid email to continue.</div>
+          </div>
+          <div><button class="btn btn-dark" id="startBtn">Start the chat →</button></div>
+        </div>
+      </section>`;
+    const nameInput  = document.getElementById('learnerName');
+    const nameError  = document.getElementById('nameError');
+    const emailInput = document.getElementById('learnerEmail');
+    const emailError = document.getElementById('emailError');
+    const emailOk = v => /^\S+@\S+\.\S+$/.test((v||'').trim());
+    nameInput.addEventListener('input', e => {
+      setLearnerName(e.target.value);
+      if(learner_name) { nameError.hidden = true; nameInput.classList.remove('invalid'); }
+    });
+    emailInput.addEventListener('input', e => {
+      setLearnerEmail(e.target.value);
+      if(emailOk(learner_email)) { emailError.hidden = true; emailInput.classList.remove('invalid'); }
+    });
+    document.getElementById('startBtn').onclick = () => {
+      setLearnerName(nameInput.value);
+      setLearnerEmail(emailInput.value);
+      let bad = false;
+      if(!learner_name){
+        nameError.hidden = false; nameInput.classList.add('invalid'); bad = true;
+      }
+      if(!emailOk(learner_email)){
+        emailError.hidden = false; emailInput.classList.add('invalid'); bad = true;
+      }
+      if(bad){ (!learner_name ? nameInput : emailInput).focus(); return; }
+      startCall();
+    };
+  }
+
+  /* =================== PHASE 2 — THE LIVE CALL =================== */
+  function startCall(){
+    const initial = (U.name||'?').trim().charAt(0).toUpperCase();
+    app.innerHTML = `
+      <section class="panel">
+        <div class="panel-head">
+          <div class="avatar">${escapeHtml(initial)}</div>
+          <div>
+            <div class="who-name">${escapeHtml(U.name)}</div>
+            <div class="who-sub"><span class="livedot"></span> Live chat · <span class="timer" id="timer">00:00</span></div>
+          </div>
+          <div class="head-spacer"></div>
+          <div class="helperbar-head" id="helperbar"></div>
+          <button class="btn-end" id="endBtn">End</button>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="composer">
+          <div id="composer"></div>
+        </div>
+      </section>`;
+    chatEl = document.getElementById('chat');
+    composerEl = document.getElementById('composer');
+    document.getElementById('endBtn').onclick = confirmEnd;
+    renderHelpers();
+    startTimer();
+    renderScreen(S.start, { animateSpeaker:false });  // first line appears immediately
+  }
+
+  function confirmEnd(){
+    // Ending early is allowed — skips are recoverable, unreached stages simply score 0.
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>End the chat?</h3></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">You'll go straight to your results. Anything you haven't done yet won't score.</p>
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="endYes">End &amp; see results</button>
+          <button class="btn btn-ghost" id="endNo">Keep going</button>
+        </div></div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.querySelector('#endNo').onclick = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#endYes').onclick = ()=>{ dlg.close(); dlg.remove(); renderFinal(); };
+  }
+
+  /* ---- Bubble markup (shared by the LIVE chat and the END transcript) ----
+     'system' bubbles are inline notes (pill), used for both tool/observation
+     lines and action notes — anything that isn't a direct spoken quote. */
+  function bubbleMarkup(kind, text, metaText){
+    const meta = metaText ? `<div class="meta">${escapeHtml(metaText)}</div>` : '';
+    const cls  = 'bubble' + (kind==='system' ? ' action' : '');
+    const body = escapeHtml(px(text)).replace(/\n/g,'<br>');
+    return `<div class="msg ${kind}">${meta}<div class="${cls}">${body}</div></div>`;
+  }
+  function appendNode(html){
+    const tmp = document.createElement('div'); tmp.innerHTML = html;
+    const node = tmp.firstElementChild;
+    chatEl.appendChild(node); chatEl.scrollTop = chatEl.scrollHeight;
+    return node;
+  }
+  function appendBubble(kind, text){
+    const meta = kind==='system' ? '' :
+      `${kind==='you' ? (learner_name||'You') : U.name} · ${mmss(callSeconds)}`;
+    return appendNode(bubbleMarkup(kind, text, meta));
+  }
+  /* Inline action note: an "[Action]" choice is something the Expert DOES, shown
+     as a centered system note in the stream (e.g. "You open User Manager"). */
+  function actionNoteText(raw){
+    const t = stripAction(px(raw)).trim().replace(/\s+/g,' ').replace(/\s*\.\s*$/,'');
+    return 'You ' + t.charAt(0).toLowerCase() + t.slice(1);
+  }
+  function appendActionNote(text){ return appendBubble('system', text); }
+
+  /* Inline screen image: a screenshot shown in the stream for a given screen.
+     `img` is {src, alt, caption}. Rendered as a full-width figure. Broken/absent
+     sources hide gracefully. (Unused in this scenario — no screens set `image`.) */
+  function appendImage(img){
+    if(!img || !img.src) return null;
+    const alt = escapeHtml(img.alt || '');
+    const cap = img.caption ? `<figcaption>${escapeHtml(img.caption)}</figcaption>` : '';
+    return appendNode(
+      `<div class="msg system"><figure class="screenshot">`+
+      `<img src="${escapeHtml(img.src)}" alt="${alt}" loading="lazy" `+
+      `onerror="this.closest('figure').innerHTML='<div class=\\'noimg\\'>[ screenshot not found ]</div>'">`+
+      `${cap}</figure></div>`);
+  }
+
+  function setComposer(html){ composerEl.innerHTML = html; }
+
+  /* "[Action] ..." choices are actions, not spoken replies. */
+  const ACTION_RE = /^\s*\[Action\]\s*/i;
+  function isAction(text){ return ACTION_RE.test(text||''); }
+  function stripAction(text){ return (text||'').replace(ACTION_RE, ''); }
+
+  /* ---- Split a scripted line (speaker OR consequence) into ordered segments,
+     one bubble per speaker. Segments break ONLY at a speaker label at the start
+     of a line — NOT at blank lines — so a single message that contains its own
+     paragraph break stays one bubble.
+       "Expert:"            -> your blue bubble (right)
+       "Dan:"/name/caller   -> gray caller bubble (left)
+       "(...)"              -> inline system note (tool result / stage direction)
+       unlabeled            -> caller (spoken) by default
+     Speaker labels, wrapping quotes, and the ( ) around system notes are
+     stripped so bubbles read as clean chat. ---- */
+  const YOU_LABEL = /^\s*expert\s*[:：]\s*/i;
+  function callerLabelRe(){
+    const nm = (U.name||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return new RegExp('^\\s*(?:' + (nm?nm+'|':'') + 'sarah|caller|customer)\\s*[:：]\\s*','i');
+  }
+  function stripQuotes(s){ return s.replace(/^\s*["'“”‘’]+/,'').replace(/["'“”‘’]+\s*$/,'').trim(); }
+  function splitDialogue(text){
+    if(!text) return [];
+    const clr = callerLabelRe(); const segs=[]; let cur=null;
+    String(text).split('\n').forEach(line=>{
+      if(YOU_LABEL.test(line)){ cur={kind:'you',    text:line.replace(YOU_LABEL,'')}; segs.push(cur); }
+      else if(clr.test(line)){  cur={kind:'caller', text:line.replace(clr,'')};        segs.push(cur); }
+      else if(!cur && /^\s*\(/.test(line)){ cur={kind:'system', text:line};            segs.push(cur); }
+      else if(!cur){            cur={kind:'caller', text:line};                         segs.push(cur); }
+      else cur.text += '\n' + line;
+    });
+    return segs.map(s=>{
+      let t = s.kind==='system' ? s.text.replace(/^\s*\(/,'').replace(/\)\s*$/,'') : s.text;
+      return { kind:s.kind, text:stripQuotes(t) };
+    }).filter(s=>s.text.length);
+  }
+  /* transcript bubbles: same markup, name label only (no live timer) */
+  function segMarkup(kind, text){
+    const who = kind==='system' ? '' : (kind==='you' ? (learner_name||'You') : U.name);
+    return bubbleMarkup(kind, text, who);
+  }
+
+  /* ---- Typing indicator + auto-advance reveal ----
+     The caller's "typing…" dots show before the first reply to a pick; follow-on
+     caller lines in the same beat use a shorter delay; your/system lines appear
+     after a short beat. animate=false reveals everything at once (first load). */
+  const TAI_MS = 5000, TAI_FOLLOW_MS = 1500, YOU_MS = 700, SYS_MS = 500;
+  function typingBubble(){
+    return appendNode(
+      `<div class="msg typing caller"><div class="meta">${escapeHtml(U.name)} · typing…</div>`+
+      `<div class="bubble"><span class="tai-dot"></span><span class="tai-dot"></span><span class="tai-dot"></span></div></div>`);
+  }
+  function revealSegments(segs, animate, done){
+    let i=0, sawCaller=false;
+    (function next(){
+      if(i>=segs.length){ if(done) done(); return; }
+      const s=segs[i++];
+      if(!animate){ appendBubble(s.kind, s.text); return next(); }
+      if(s.kind==='caller'){
+        const t = sawCaller ? TAI_FOLLOW_MS : TAI_MS; sawCaller=true;
+        const dots=typingBubble();
+        setTimeout(()=>{ dots.remove(); appendBubble('caller', s.text); next(); }, t);
+      } else {
+        setTimeout(()=>{ appendBubble(s.kind, s.text); next(); }, s.kind==='you'?YOU_MS:SYS_MS);
+      }
+    })();
+  }
+
+  /* ---- Helper buttons (native <dialog>) ---- */
+  function openModal(title, node){
+    const dlg = document.createElement('dialog'); dlg.className='modal'; dlg.id='modal';
+    const inner = document.createElement('div'); inner.className='modal-inner';
+    const head = document.createElement('div'); head.className='mhead';
+    head.innerHTML = `<h3>${escapeHtml(title)}</h3>`;
+    const x = document.createElement('button'); x.className='mx'; x.innerHTML='&times;'; x.setAttribute('aria-label','Close');
+    x.onclick = closeModal; head.appendChild(x);
+    inner.appendChild(head); inner.appendChild(node); dlg.appendChild(inner);
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) closeModal(); });  // backdrop click
+  }
+  function closeModal(){ const m=document.getElementById('modal'); if(m){ try{m.close();}catch(e){} m.remove(); } }
+
+  function renderHelpers(){
+    const bar = document.getElementById('helperbar');
+    if(!S.resources){ bar.style.display='none'; return; }
+    bar.innerHTML='';
+    const b=document.createElement('button');
+    b.className='hbtn';
+    b.textContent = S.resources.title || 'Check Resources';
+    b.onclick = openResources;
+    bar.appendChild(b);
+  }
+  /* Opens the scenario's dynamic links in a modal. Opening the resource
+     marked correct:true is what lifts the article-stage cap in renderFinal —
+     but only if it happens at/after RESOURCE_CREDIT_MIN_SECONDS into the call.
+     Opening it earlier doesn't count; the learner can still open it again
+     later (any time before ending the chat) to earn credit. */
+  const RESOURCE_CREDIT_MIN_SECONDS = 30;
+  function openResources(){
+    const r=S.resources, wrap=document.createElement('div');
+    resourcesOpenedAt = callSeconds;   // start the clock for this modal's dwell time
+    logEvent({type:'helper', helper:'resources', action:'opened Check Resources', seconds:0});
+    if(r.note) wrap.innerHTML='<div class="mnote" style="margin:0 0 0.625rem">'+escapeHtml(r.note)+'</div>';
+    (r.items||[]).forEach(it=>{
+      const a=document.createElement('a');
+      a.className='mopt'; a.href=it.url||'#'; a.target='_blank'; a.rel='noopener noreferrer';
+      a.textContent=it.label + '  ↗';
+      a.onclick=()=>{
+        if(it.correct){
+          if(callSeconds >= RESOURCE_CREDIT_MIN_SECONDS){
+            help.checkedCorrectArticle=true;
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      verdict:'correct', seconds:secondsOnResources(), notes:'opened the correct resource'});
+          } else {
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      seconds:secondsOnResources(), notes:'opened the correct resource too early to earn credit (before '+RESOURCE_CREDIT_MIN_SECONDS+'s)'});
+          }
+        } else logEvent({type:'helper', helper:'resources', action:it.label,
+                         verdict:'incorrect', seconds:secondsOnResources(), notes:'opened a distractor resource'});
+      };
+      wrap.appendChild(a);
+    });
+    openModal(r.title||'Check Resources', wrap);
+    document.getElementById('modal').addEventListener('close', ()=>{
+      logEvent({type:'helper', helper:'resources', action:'closed Check Resources', seconds:secondsOnResources()});
+    }, {once:true});
+  }
+
+  /* Progress bar removed — kept as a no-op so existing call sites are harmless. */
+  function paintProgress(){}
+
+  function applyCredit(stg, pts, verdict, pickText){
+    if(!(stg in earned)) return;
+    const cfg = stageCfg[stg] || {};
+    if(cfg.additive){
+      // Stage spans more than one screen (e.g. solve = s_solve + s_document):
+      // sum contributions, capped at the stage max, rather than taking the best.
+      const next = Math.min(cfg.max==null ? Infinity : cfg.max, earned[stg] + Math.max(0, pts));
+      if(pts > 0 || !(stg in decisivePick)) decisivePick[stg] = {text:pickText, verdict:verdict, points:next};
+      earned[stg] = next;
+      if(verdict==='correct') status[stg]='done';
+      else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+      return;
+    }
+    if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+    if(pts > earned[stg]) earned[stg] = pts;
+    if(verdict==='correct') status[stg]='done';
+    else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+  }
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text));
+  }
+
+  function renderScreen(id, opts){
+    opts = opts || {};
+    const retriedIds = opts.retriedIds || [];
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    setComposer('');   // choices appear only AFTER the caller's line has landed
+
+    const showChoices = ()=>{
+      if(scr.image) appendImage(scr.image);   // screen screenshot lands before the choices
+      setComposer(`<div class="prompt">${escapeHtml(px(scr.prompt))}</div><div id="choices"></div>`);
+      const cWrap = document.getElementById('choices');
+      scr.choices.forEach(ch=>{
+        const b=document.createElement('button');
+        // A choice with `say` is the Expert SPEAKING (rendered as a bubble), so
+        // it isn't a tool action — no badge, even if its label reads "[Action]".
+        const badge = isAction(ch.text) && !ch.say;
+        b.className = 'choice' + (badge ? ' choice-action' : '');
+        b.innerHTML = (badge ? '<span class="cbadge">Action</span>' : '')
+                    + escapeHtml(stripAction(px(ch.text)));
+        if(retriedIds.includes(ch.id)) b.disabled=true;
+        b.onclick=()=>choose(scr,ch,retriedIds,opts.cap);
+        cWrap.appendChild(b);
+      });
+      markStepStart();   // start the clock for this screen's time_on_step_sec
+    };
+
+    // The caller line (which may itself contain Expert:/Dan: parts) is split
+    // into its own bubbles. On auto-advance it animates in with typing dots.
+    if(scr.speaker && !opts.skipSpeaker){
+      revealSegments(splitDialogue(scr.speaker), !!opts.animateSpeaker, showChoices);
+    } else {
+      showChoices();
+    }
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    // The learner's pick renders as:
+    //   • `say` present  -> a blue Expert bubble of the spoken words
+    //   • an [Action]    -> an inline "You …" note (a tool action)
+    //   • otherwise      -> a blue reply bubble of the choice text
+    if(ch.say) appendBubble('you', ch.say);
+    else if(isAction(ch.text)) appendActionNote(actionNoteText(ch.text));
+    else appendBubble('you', ch.text);
+
+    const segs = splitDialogue(ch.consequence);
+
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      transcript.push({ speaker:scr.speaker, picked:ch.text, say:ch.say, consequence:ch.consequence });
+      logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+                 text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
+                 notes:'first attempt — caller pushed back, screen re-opened for a retry (capped at '+ch.capIfRetried+')' });
+      setComposer('');
+      // Auto-advance: once the pushback lands, re-open the same screen (no button).
+      revealSegments(segs, true, ()=>renderScreen(scr.id,
+        { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true }));
+      return;
+    }
+
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+    logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+               text:stripAction(px(ch.text)), verdict:ch.verdict, points:pts, seconds:secondsOnStep(),
+               notes:(isAction(ch.text) ? 'action' : 'reply')
+                     + (typeof cap==='number' ? '; retry attempt, capped at '+cap : '') });
+    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, say:ch.say, consequence:ch.consequence });
+
+    setComposer('');
+    // Auto-advance to the next screen — NO Continue button. The next caller line
+    // arrives via its own typing indicator, straight into the next choices.
+    revealSegments(segs, true, ()=>{
+      if(ch.goTo==='__end__') renderFinal();
+      else renderScreen(ch.goTo, { animateSpeaker:true });
+    });
+  }
+
+  /* =================== PHASE 3 — COMPLETE =================== */
+  function renderFinal(){
+    stopTimer();
+
+    // Apply the Check-Resources penalty before tallying (same rule the old
+    // "Check the Articles" used: no verify of the correct resource → capped).
+    const helpNotes = [];
+    const res = S.resources;
+    if(res && !help.checkedCorrectArticle && (res.stage in earned) && earned[res.stage] > res.capIfUnchecked){
+      earned[res.stage] = res.capIfUnchecked;
+      helpNotes.push("You reached the right answer, but didn't verify it in the source resource — checking the resource is the skill, not remembering.");
+    }
+    S.stages.forEach(st=>{ if(earned[st.id] >= st.max) status[st.id]='done'; else if(earned[st.id] > 0 && status[st.id]==='done') status[st.id]='partial'; });
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+
+    // One summary row per attempt: the total score only.
+    logEvent({ type:'final', points:sum, seconds:callSeconds,
+               notes:'final score ' + sum + ' / ' + maxTotal });
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span class="sval">${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      return p ? `<div class="pick">Your response: “${escapeHtml(p.text)}”</div>`
+               : `<div class="pick miss">You didn't reach this step.</div>`;
+    };
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=>`<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`).join('');
+
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="" onerror="this.style.display='none'">` : '';
+
+    app.innerHTML = `
+      <section class="complete-hero">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Chat complete</div>
+          <h1 class="display">Complete!</h1>
+          <p class="lead">Here's how the chat went, stage by stage — with the exact response that set each score.</p>
+          <div class="scorenum">${sum}<small> / ${maxTotal}</small></div>
+        </div>
+      </section>
+
+      <div class="card">
+        <h3>Scorecard</h3>${rows}
+      </div>
+
+      <div class="card">
+        <h3 style="color:var(--correct)">Top strengths</h3>
+        <ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>
+      </div>
+
+      <div class="card">
+        <h3 style="color:var(--partial)">Areas for improvement</h3>
+        <ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>
+      </div>
+
+      ${helpNotes.length ? `<div class="card"><h3>Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="txBtn">View conversation transcript</button>
+        <button class="btn btn-dark" onclick="location.reload()">Restart</button>
+      </div>
+      <div id="tx" class="card" style="display:none"></div>`;
+
+    document.getElementById('txBtn').onclick = () => {
+      const tx = document.getElementById('tx'), btn = document.getElementById('txBtn');
+      if(tx.style.display==='none'){
+        // Mirror the live chat: split speaker/consequence into speaker bubbles,
+        // render the pick as an action note or a blue reply bubble.
+        tx.innerHTML = `<h3 style="margin-bottom:0.375rem">Conversation transcript</h3>` +
+          `<div class="chat txchat">` +
+          transcript.map(t=>{
+            let h='';
+            if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=segMarkup(s.kind, s.text));
+            h += t.say ? segMarkup('you', t.say)
+               : isAction(t.picked) ? bubbleMarkup('system', actionNoteText(t.picked), '')
+               : segMarkup('you', t.picked);
+            if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=segMarkup(s.kind, s.text));
+            return h;
+          }).join('') + `</div>`;
+        tx.style.display='block'; btn.textContent='Hide conversation transcript';
+      } else { tx.style.display='none'; btn.textContent='View conversation transcript'; }
+    };
+  }
+
+  /* ---- boot ---- */
+  renderMeet();
+})();
+</script>
+</body>
+</html>

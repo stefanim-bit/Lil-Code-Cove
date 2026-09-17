@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Call: Wix Editor</title>
+</head>
+<body style="margin:0;">
+<div id="sim-root" style="font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1c1c1e;max-width:720px;margin:0 auto;padding:16px;font-size:15px;line-height:1.5;">
+
+  <div id="sim-header" style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e0e0e2;padding-bottom:8px;margin-bottom:14px;gap:10px;flex-wrap:wrap;">
+    <div style="font-weight:600;">Practice Call: Wix Editor &mdash; Sam Trent</div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <div id="helper-bar" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      <div id="scene-badge" style="font-size:12px;color:#8a8a8e;background:#f2f2f4;border-radius:10px;padding:2px 8px;">&nbsp;</div>
+    </div>
+  </div>
+
+  <div id="scene-area"></div>
+
+  <!-- Debug log — invaluable for Smart testing; REMOVE before production (shows internal state) -->
+  <div style="margin-top:16px;">
+    <button id="log-toggle" style="font-size:11px;color:#8a8a8e;background:none;border:none;cursor:pointer;padding:0;">show/hide debug log</button>
+    <div id="log" style="display:none;margin-top:6px;background:#111;color:#b6ffb6;font-family:Menlo,Consolas,monospace;font-size:11px;padding:8px;border-radius:6px;height:150px;overflow-y:auto;white-space:pre-wrap;"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================================
+     CONFIG — telemetry transport (proven working; see HANDOFF + prior POCs)
+     ========================================================================= */
+  var ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSegiZwFV7DN-wwWsqnBbrqzJ5yEK-3lk8Zl182M0fMNFYH5hg/formResponse';
+  var COURSE   = 'Practice Session 1 - Wix Editor Sub-pages - Rise POC';
+
+  var FIELD = {
+    learner_email:    'entry.1276253364',
+    learner_name:     'entry.2005409239',
+    attempt_id:       'entry.1673953677',
+    course:           'entry.2010105379',
+    scene:            'entry.1283761747',
+    interaction:      'entry.1781563601',
+    question:         'entry.786197073',
+    response:         'entry.2057562952',
+    correct:          'entry.1897805741',
+    points:           'entry.1780599104',
+    time_on_step_sec: 'entry.1327709145',
+    notes:            'entry.1963386753'
+  };
+
+  /* Decoupled identity hook — stays '' until the separate Storyline short-code
+     step is added; every row sends with or without it. */
+  var SESSION_CODE = '';
+
+  /* =========================================================================
+     SCENE DATA — verbatim from the Final storyboard.
+     NOTE (Addendum B fix): 1.6 UsedResource/FoundCorrectArticle are NO LONGER
+     set by the choice — they are set by opening/viewing the Check the Articles
+     panel, so "checked" is distinguished from "guessed right". Choices keep
+     only their ScoreArticle points.
+     ========================================================================= */
+  var SCENES = {
+    '1.1': {
+      intro: true,
+      title: 'Welcome to the Practice Call',
+      body: [
+        'You’re about to take a call from a Wix user.',
+        'You’ll make ten decisions. There’s no time limit.',
+        'Open CSI and Ask a Colleague are on screen the whole way through — use them any time, just like a real call.',
+        'You’re marked on the same nine criteria a Session Supporter marks, including whether you check your resources — not just whether you’re right.'
+      ],
+      cta: 'Take the Call',
+      next: '1.2'
+    },
+
+    '1.2': {
+      title: 'Opening the Call', criterion: 'Opening etiquette', pathLabel: 'Open',
+      speaker: 'Sam Trent',
+      situation: 'Hi — I’m trying to add sub-pages to my menu and it’s just not working. I’ve been at this for an hour.',
+      choices: [
+        { text: 'That sounds frustrating. Let me take a look.',
+          feedback: 'Kind, and that counts — but you haven’t told Sam what you’re doing.',
+          correct: false, points: 0, next: '1.3' },
+        { text: 'Hi, what’s your account email?',
+          feedback: 'Straight to business. Nothing wrong with the question, but no greeting and no reassurance.',
+          correct: false, points: 0, next: '1.3' },
+        { text: 'Hi, you’re through to Wix Support, this is [name]. Sorry you’ve been stuck — let’s get it sorted. Can I start with the email on your account?',
+          feedback: 'Good open. Sam knows who you are, that you heard them, and what’s happening next.',
+          correct: true, points: 0, next: '1.3', flags: { EtiquetteOpen: true } },
+        { text: 'Sure — go into menu settings and switch it to Advanced.',
+          feedback: 'Sam: “Wait — I don’t have anything called Advanced. Where am I meant to be looking?” You gave an answer before you knew what the menu looks like — Sam’s confused now, and you’ve used up some patience.',
+          correct: false, points: 0, next: '1.3' }
+      ]
+    },
+
+    '1.3': {
+      title: 'Finding Their Account', criterion: 'Wix Answers & User Manager use', pathLabel: 'Account',
+      speaker: 'Sam Trent',
+      situation: 'It’s sam.trent@gmail.com.',
+      choices: [
+        { text: 'Ask them to share their screen',
+          feedback: 'Helpful on a call, but you still need to be in their account.',
+          correct: false, points: 5, next: '1.4' },
+        { text: 'Ask them to describe what they can see',
+          feedback: 'You’ve asked Sam to be your eyes. You have tools that do it better.',
+          correct: false, points: 0, next: '1.4' },
+        { text: 'Search Wix Answers for past tickets from them',
+          feedback: 'Past tickets are useful background, but they won’t show you this site.',
+          correct: false, points: 5, next: '1.4' },
+        { text: 'Look them up in User Manager and open their site list',
+          feedback: 'Right tool. User Manager shows you their sites and lets you see what they see.',
+          correct: true, points: 10, next: '1.4' }
+      ]
+    },
+
+    '1.4': {
+      title: 'Understanding What They Want', criterion: 'Familiarization', pathLabel: 'Goal',
+      speaker: 'Sam Trent',
+      situation: 'I’ve got a page for each service and I want them tucked under one heading so the menu isn’t so long.',
+      choices: [
+        { text: 'How many services have you got?',
+          feedback: 'Useful detail, but it doesn’t show Sam you understood the point.',
+          correct: false, points: 5, next: '1.5' },
+        { text: 'So you want a shorter menu with your services grouped underneath — have I got that right?',
+          feedback: 'That’s familiarization. You’ve repeated Sam’s goal in your own words and checked you’ve got it.',
+          correct: true, points: 10, next: '1.5' },
+        { text: 'Right, let’s have a look at your menu.',
+          feedback: 'Straight to the fix. You’ve skipped past what Sam is actually trying to do.',
+          correct: false, points: 0, next: '1.5' },
+        { text: 'Okay, so you want sub-pages.',
+          feedback: 'You’ve named the feature, not the goal. Close, but you haven’t confirmed anything with Sam.',
+          correct: false, points: 5, next: '1.5' }
+      ]
+    },
+
+    '1.5': {
+      title: 'Clarifying the Problem', criterion: 'Clarifying', pathLabel: 'Clarify',
+      speaker: 'Sam Trent', retryCap: 8,
+      situation: 'It’s the menu at the top. I click add page, it shows up, but it won’t go underneath the other one.',
+      choices: [
+        { text: 'What does your menu look like — is it in a row across the top, or down the side? And has it always been that one?',
+          feedback: 'That’s the question that cracks this one. The menu type is the whole problem, and asking how long Sam’s had it tells you it’s an old one.',
+          correct: true, points: 15, next: '1.6' },
+        { text: 'Is it in a row across the top or down the side?',
+          feedback: 'Good question, and it gets you most of the way — you just didn’t find out how old the menu is (partial credit).',
+          correct: false, points: 8, next: '1.6' },
+        { text: 'Okay, so you want a drop-down. Let me talk you through it.',
+          feedback: 'Sam: “I’ve refreshed it about ten times. It’s the same menu I’ve always had.” You guessed instead of asking — listen to what Sam just said: the same menu I’ve always had.',
+          correct: false, points: 0, next: 'return' },
+        { text: 'Have you tried refreshing the Wix Editor?',
+          feedback: 'Sam: “I’ve refreshed it about ten times. It’s the same menu I’ve always had.” You guessed instead of asking — Sam’s already tried the obvious things.',
+          correct: false, points: 0, next: 'return' }
+      ]
+    },
+
+    '1.6': {
+      title: 'Finding the Right Article', criterion: 'Locating the right article', pathLabel: 'Article',
+      speaker: 'Sam Trent', showCheckArticles: true,
+      situation: 'It’s in a row across the top. Had it since I built the site, must be three or four years now.',
+      choices: [
+        { text: 'Open the articles, then tell Sam the fix from “Wix Editor: Adding and Setting Up Your Menu”',
+          feedback: 'Reasonable to check, wrong article to act on — it explains adding pages, not why sub-pages fail on this menu type.',
+          correct: false, points: 8, next: '1.7' },
+        { text: 'Skip the articles, answer from memory (“That’ll be the old menu type — those don’t do sub-pages.”)',
+          feedback: 'Your answer was right, but you answered from memory. Today that worked. The day the product changes you’ll be just as sure, and wrong. Checking is the skill, not remembering.',
+          correct: false, points: 0, next: '1.7' },
+        { text: 'Open the articles, then tell Sam the fix from “Wix Editor: Troubleshooting Common Issues — Site Menu Issues”',
+          feedback: 'Right article. It names the cause (older horizontal menus can’t hold sub-pages) and the fix.',
+          correct: true, points: 15, next: '1.7' }
+      ]
+    },
+
+    '1.7': {
+      title: 'Checking Their Site', criterion: 'Recreating the issue', pathLabel: 'Recreate',
+      speaker: 'Sam Trent',
+      situation: 'Okay… so what do I do? (Before telling them — what do you do?)',
+      choices: [
+        { text: 'Ask them to try it and tell you what happens',
+          feedback: 'You’ve handed the troubleshooting to Sam. They called because they couldn’t do it.',
+          correct: false, points: 5, next: '1.8' },
+        { text: 'Read the steps out from the CSI article',
+          feedback: 'The steps are right, but you haven’t tried them on this site.',
+          correct: false, points: 5, next: '1.8' },
+        { text: 'I’ll pass this to a specialist.',
+          feedback: 'Sam: “How long will that take? I only want to add a page.” This one was yours — CSI has the answer. Passing it on means Sam waits for something you could fix now.',
+          correct: false, points: 0, next: 'return' },
+        { text: 'Clone their site in User Manager and try it yourself',
+          feedback: 'You’ve cloned the site and opened the menu settings. There’s no Advanced option — just Manage Menu and Design. This is the old horizontal menu; it can’t hold sub-pages at all. The fix isn’t switching it to Advanced, it’s replacing the menu.',
+          correct: true, points: 10, next: '1.8', flags: { SawRealCause: true } }
+      ]
+    },
+
+    '1.8': {
+      title: 'Giving Them the Fix', criterion: 'Solving the issue', pathLabel: 'Fix',
+      speaker: 'Sam Trent',
+      situation: 'With the real cause identified, what do you tell Sam?',
+      choices: [
+        { text: 'Send the Wix Help Center link and finish',
+          feedback: 'Sending a link on a call hands the problem back. Sam called to talk to someone.',
+          correct: false, points: 0, next: '1.9' },
+        { text: 'Your menu’s an older type that can’t hold sub-pages. We’ll swap it for a new one — I’ll walk you through it.',
+          feedback: 'Correct, and you knew it because you checked Sam’s site rather than assuming.',
+          correct: true, points: function (s) { return s.flags.AskedForHelp ? 10 : 20; }, next: '1.9' },
+        { text: 'It’s a known limitation of the old menu.',
+          feedback: 'You’ve named the problem and stopped. Sam still can’t fix their menu.',
+          correct: false, points: 0, next: '1.9' },
+        { text: 'Go into menu settings and switch it to Advanced.',
+          feedback: 'That’s what the article says, but you didn’t check Sam’s site — that option doesn’t exist on this menu. Sam’s about to go looking for something that isn’t there.',
+          correct: false, points: 10, next: '1.9' }
+      ]
+    },
+
+    '1.9': {
+      title: 'What Happens Next', criterion: 'Roadmapping', pathLabel: 'Roadmap',
+      speaker: 'Sam Trent',
+      situation: 'Right… so is that something I do, or you?',
+      choices: [
+        { text: 'I’ll stay on while you do it. Delete the old menu, add a new one from Add Elements, then drag your service pages underneath. Then we’ll publish and check it together.',
+          feedback: 'That’s roadmapping. Sam knows each step, who’s doing it, and how you’ll both know it worked.',
+          correct: true, points: 10, next: '1.10' },
+        { text: 'I can’t do it for you, it’s on your side.',
+          feedback: 'No plan given at all.',
+          correct: false, points: 0, next: '1.10' },
+        { text: 'You’ll need to delete the old menu and add a new one.',
+          feedback: 'Right steps, no order and no finish line. Sam will get halfway and call back.',
+          correct: false, points: 5, next: '1.10' },
+        { text: 'It’s all in the article I’m sending over.',
+          feedback: 'You’ve handed over a document instead of a plan.',
+          correct: false, points: 0, next: '1.10' }
+      ]
+    },
+
+    '1.10': {
+      title: 'Anything Else You Noticed', criterion: 'Offering suggestions', pathLabel: 'Suggest',
+      speaker: 'Sam Trent',
+      situation: 'While in Sam’s site, you noticed the contact page isn’t linked in the menu at all. Do you mention it?',
+      choices: [
+        { text: 'Say nothing, stay on the issue Sam called about',
+          feedback: 'Staying on topic is fair, but you spotted something useful and kept it to yourself.',
+          correct: false, points: 0, next: '1.11' },
+        { text: 'There’s a couple of other things you might want to look at some time.',
+          feedback: 'You’ve hinted at something without saying what — Sam can’t act on that.',
+          correct: false, points: 3, next: '1.11' },
+        { text: 'One other thing while we’re here — your contact page isn’t in the menu. Want me to show you how to add it?',
+          feedback: 'A clear, relevant suggestion for Sam’s specific site, offered rather than imposed.',
+          correct: true, points: 5, next: '1.11' }
+      ]
+    },
+
+    '1.11': {
+      title: 'Ending the Call', criterion: 'Closing etiquette', pathLabel: 'Close',
+      speaker: 'Sam Trent',
+      situation: 'Brilliant, that’s working now. Thanks.',
+      choices: [
+        { text: 'No problem. (ends)',
+          feedback: 'Abrupt end — nothing recapped, no next steps.',
+          correct: false, points: 0, next: 'end' },
+        { text: 'Glad that’s sorted. So we swapped the old menu for a new one and your services are grouped now. If anything shifts after publishing, call back and ask for me. Have a good afternoon.',
+          feedback: 'Recap, next steps, and a farewell — a complete close.',
+          correct: true, points: 0, next: 'end', flags: { EtiquetteClose: true } },
+        { text: 'Great, glad it’s sorted. Have a good day.',
+          feedback: 'A farewell, but no recap and no next steps.',
+          correct: false, points: 0, next: 'end' }
+      ]
+    }
+  };
+
+  var START = '1.1';
+
+  /* Ask a Colleague (Addendum A) */
+  var COLLEAGUE_HINTS = [
+    { pick: 'I’m not sure what to ask them', topic: 'ask',
+      hint: 'Find out what kind of menu Sam’s got. That’s usually where this one hides.' },
+    { pick: 'I can’t find the right article', topic: 'article',
+      hint: 'Open the two menu articles from the Check the Articles button and compare which one explains why sub-pages fail — that’s the one to use.' },
+    { pick: 'I’m not sure how to check their site', topic: 'recreate',
+      hint: 'Clone their site in User Manager and try it yourself.' },
+    { pick: 'I don’t know how to explain it', topic: 'explain',
+      hint: 'Tell Sam what’s causing it, then the steps, then what happens next.' }
+  ];
+
+  /* Check the Articles (Addendum B) */
+  var ARTICLES = {
+    a1: {
+      title: 'Wix Editor: Troubleshooting Common Issues — Site Menu Issues',
+      body: 'Sub-pages won’t sit under another page. Sites using the older horizontal menu can’t hold sub-pages.\n\nTo fix it:\n1. Click the menu in the Wix Editor.\n2. Open Settings and set the menu to Advanced.\n3. If that option isn’t there, the menu is too old — delete it and add a new horizontal menu from Add Elements.'
+    },
+    a2: {
+      title: 'Wix Editor: Adding and Setting Up Your Menu',
+      body: 'Adding a page to your menu.\n1. Click Pages in the Wix Editor.\n2. Click + Add Page.\n3. Drag the page underneath another page to make it a sub-page.\n\nNote: not all menus support sub-pages.'
+    }
+  };
+
+  /* Open CSI — searchable titles-only stub (no cause/fix spoiler) */
+  var CSI_TITLES = [
+    'Wix Editor: Troubleshooting Common Issues — Site Menu Issues',
+    'Wix Editor: Adding and Setting Up Your Menu',
+    'Wix Editor: Managing Your Site Menu',
+    'Wix Editor: About the Horizontal Menu',
+    'Wix Editor: Creating Drop-Down & Sub-Menus'
+  ];
+
+  /* =========================================================================
+     STATE
+     ========================================================================= */
+  var state;
+  function freshState() {
+    return {
+      attemptId: 'anon-' + Date.now(),
+      currentScene: null,
+      helpTopic: '',
+      flags: {
+        EtiquetteOpen: false, EtiquetteClose: false, SawRealCause: false,
+        UsedResource: false, FoundCorrectArticle: false, AskedForHelp: false
+      },
+      scores: {},          // criterion -> effective points
+      pathTaken: [],
+      returned: {}
+    };
+  }
+
+  /* =========================================================================
+     DOM helpers + debug log
+     ========================================================================= */
+  var area   = document.getElementById('scene-area');
+  var badge  = document.getElementById('scene-badge');
+  var helperBar = document.getElementById('helper-bar');
+  var logEl  = document.getElementById('log');
+  document.getElementById('log-toggle').addEventListener('click', function () {
+    logEl.style.display = logEl.style.display === 'none' ? 'block' : 'none';
+  });
+  function log(msg) {
+    var t = new Date().toLocaleTimeString();
+    logEl.textContent += '[' + t + '] ' + msg + '\n';
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function el(tag, style, html) {
+    var e = document.createElement(tag);
+    if (style) e.style.cssText = style;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+
+  /* =========================================================================
+     TELEMETRY — always sends; decoupled from SESSION_CODE
+     ========================================================================= */
+  function sendRow(row) {
+    var f = {};
+    f[FIELD.learner_email]    = 'NO-API';
+    f[FIELD.learner_name]     = '';
+    f[FIELD.attempt_id]       = state.attemptId;
+    f[FIELD.course]           = COURSE;
+    f[FIELD.scene]            = row.scene;
+    f[FIELD.interaction]      = row.interaction;
+    f[FIELD.question]         = row.question || '';
+    f[FIELD.response]         = row.response;
+    f[FIELD.correct]          = row.correct || '';
+    f[FIELD.points]           = (row.points == null ? '' : row.points);
+    f[FIELD.time_on_step_sec] = '';
+    f[FIELD.notes]            = (row.notes || '') + (SESSION_CODE ? ' code:' + SESSION_CODE : '');
+
+    var body = [];
+    for (var k in f) { if (f.hasOwnProperty(k)) body.push(k + '=' + encodeURIComponent(f[k] == null ? '' : f[k])); }
+
+    var mark = row.correct === 'yes' ? '✓' : (row.correct === 'no' ? '✗' : '·');
+    fetch(ENDPOINT, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: body.join('&')
+    }).then(function () { log('  → row sent (' + row.scene + ' / ' + mark + ' / ' + (row.points == null ? '-' : row.points) + 'pts)'); })
+      .catch(function (e) { log('  → fetch threw: ' + e.message); });
+  }
+
+  /* =========================================================================
+     MODAL (used by all three helper buttons)
+     ========================================================================= */
+  function closeModal() {
+    var m = document.getElementById('sim-modal');
+    if (m) m.parentNode.removeChild(m);
+  }
+  function openModal(title, contentNode) {
+    closeModal();
+    var overlay = el('div', 'position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;');
+    overlay.id = 'sim-modal';
+    var panel = el('div', 'background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,0.3);font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1c1c1e;');
+    var head = el('div', 'display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;');
+    head.appendChild(el('div', 'font-weight:600;font-size:16px;', esc(title)));
+    var x = el('button', 'border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:#8a8a8e;', '&times;');
+    x.addEventListener('click', closeModal);
+    head.appendChild(x);
+    panel.appendChild(head);
+    panel.appendChild(contentNode);
+    overlay.appendChild(panel);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+    document.body.appendChild(overlay);
+  }
+
+  /* =========================================================================
+     HELPER BUTTONS (persistent shell)
+     ========================================================================= */
+  function helperBtn(label, onClick) {
+    var b = el('button', 'font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #c0c0c2;background:#fff;color:#2a6df4;cursor:pointer;', esc(label));
+    b.addEventListener('click', onClick);
+    return b;
+  }
+  function renderHelpers(sceneId) {
+    helperBar.innerHTML = '';
+    var isScene = SCENES[sceneId] && !SCENES[sceneId].intro;
+    var isIntro = SCENES[sceneId] && SCENES[sceneId].intro;
+    // Open CSI: 1.1 through 1.11
+    if (isScene || isIntro) helperBar.appendChild(helperBtn('Open CSI', openCSI));
+    // Ask a Colleague: 1.2 through 1.11
+    if (isScene) helperBar.appendChild(helperBtn('Ask a Colleague', openColleague));
+    // Check the Articles: 1.6 only
+    if (isScene && SCENES[sceneId].showCheckArticles) helperBar.appendChild(helperBtn('Check the Articles', openCheckArticles));
+  }
+
+  function openCSI() {
+    var wrap = el('div');
+    wrap.appendChild(el('div', 'font-size:13px;color:#6a6a6e;margin-bottom:8px;', 'Search CSI, just like a real call. (Practice: results are titles only — read full articles at the Check the Articles step when it’s available.)'));
+    var input = el('input');
+    input.type = 'text'; input.placeholder = 'Search articles…';
+    input.style.cssText = 'width:100%;padding:8px 10px;border:1px solid #d0d0d2;border-radius:6px;font-size:14px;margin-bottom:10px;box-sizing:border-box;';
+    var list = el('div');
+    function draw(filter) {
+      list.innerHTML = '';
+      CSI_TITLES.filter(function (t) { return t.toLowerCase().indexOf(filter.toLowerCase()) !== -1; })
+        .forEach(function (t) {
+          var row = el('div', 'padding:8px 10px;border:1px solid #eee;border-radius:6px;margin-bottom:6px;color:#2a6df4;cursor:pointer;font-size:14px;', esc(t));
+          row.addEventListener('click', function () {
+            sendRow({ scene: 'scene-' + state.currentScene, interaction: 'Open CSI', question: 'CSI lookup', response: t, notes: 'resource: CSI title opened' });
+            row.style.background = '#f2f2f4';
+            row.innerHTML = esc(t) + ' <span style="color:#8a8a8e;font-size:12px;">— opened</span>';
+          });
+          list.appendChild(row);
+        });
+    }
+    input.addEventListener('input', function () { draw(input.value); });
+    wrap.appendChild(input); wrap.appendChild(list);
+    draw('');
+    sendRow({ scene: 'scene-' + state.currentScene, interaction: 'Open CSI', question: 'CSI lookup', response: 'opened', notes: 'resource: CSI panel opened' });
+    openModal('Open CSI', wrap);
+  }
+
+  function openColleague() {
+    var wrap = el('div');
+    wrap.appendChild(el('div', 'font-size:14px;margin-bottom:12px;', 'What do you need a hand with?'));
+    COLLEAGUE_HINTS.forEach(function (h) {
+      var b = el('button', 'display:block;width:100%;text-align:left;margin:0 0 8px;padding:10px 12px;border-radius:8px;border:1px solid #d0d0d2;background:#fff;font-size:14px;cursor:pointer;', esc(h.pick));
+      b.addEventListener('click', function () {
+        state.flags.AskedForHelp = true;
+        state.helpTopic = h.topic;
+        sendRow({ scene: 'scene-' + state.currentScene, interaction: 'Ask a Colleague', question: h.pick, response: h.topic, notes: 'hint used (caps Solving at 10; solved-with-assistance)' });
+        var out = el('div');
+        out.appendChild(el('div', 'border-left:3px solid #2a6df4;padding:8px 0 8px 12px;margin-bottom:12px;font-size:14px;', esc(h.hint)));
+        out.appendChild(el('div', 'font-size:12px;color:#8a8a8e;', 'Noted as solved with assistance for this call.'));
+        var ok = el('button', ctaStyle(), 'Got it');
+        ok.addEventListener('click', closeModal);
+        out.appendChild(ok);
+        openModal('Ask a Colleague', out);
+      });
+      wrap.appendChild(b);
+    });
+    var never = el('button', 'display:block;width:100%;text-align:left;margin:6px 0 0;padding:10px 12px;border-radius:8px;border:1px dashed #c0c0c2;background:#fafafa;font-size:14px;color:#6a6a6e;cursor:pointer;', 'Never mind');
+    never.addEventListener('click', closeModal);
+    wrap.appendChild(never);
+    openModal('Ask a Colleague', wrap);
+  }
+
+  function openCheckArticles() {
+    // Addendum B: opening the panel sets UsedResource; viewing Article 1 sets FoundCorrectArticle.
+    state.flags.UsedResource = true;
+    sendRow({ scene: 'scene-1.6', interaction: 'Check the Articles', question: 'articles opened', response: 'opened', notes: 'resource: sets UsedResource' });
+
+    var wrap = el('div');
+    wrap.appendChild(el('div', 'font-size:13px;color:#6a6a6e;margin-bottom:10px;', 'Two articles could apply. Read them and decide which explains why sub-pages fail on this menu.'));
+    var tabs = el('div', 'display:flex;gap:6px;margin-bottom:10px;');
+    var readArea = el('div', 'white-space:pre-wrap;font-size:14px;background:#f7f7f8;border-radius:8px;padding:12px;min-height:80px;', 'Select an article to read.');
+
+    function tab(label, key) {
+      var b = el('button', 'font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #c0c0c2;background:#fff;cursor:pointer;', esc(label));
+      b.addEventListener('click', function () {
+        readArea.textContent = ARTICLES[key].title + '\n\n' + ARTICLES[key].body;
+        if (key === 'a1') {
+          state.flags.FoundCorrectArticle = true;
+          sendRow({ scene: 'scene-1.6', interaction: 'Check the Articles', question: 'article viewed', response: 'viewed Article 1 (correct)', notes: 'resource: sets FoundCorrectArticle' });
+        } else {
+          sendRow({ scene: 'scene-1.6', interaction: 'Check the Articles', question: 'article viewed', response: 'viewed Article 2 (how-to)', notes: 'resource' });
+        }
+      });
+      return b;
+    }
+    tabs.appendChild(tab('Article 1', 'a1'));
+    tabs.appendChild(tab('Article 2', 'a2'));
+    wrap.appendChild(tabs);
+    wrap.appendChild(readArea);
+    var done = el('button', ctaStyle(), 'Close');
+    done.style.marginTop = '12px';
+    done.addEventListener('click', closeModal);
+    wrap.appendChild(done);
+    openModal('Check the Articles', wrap);
+  }
+
+  /* =========================================================================
+     RENDER — scenes
+     ========================================================================= */
+  function renderIntro(scene) {
+    state.currentScene = '1.1';
+    renderHelpers('1.1');
+    badge.textContent = scene.title;
+    area.innerHTML = '';
+    area.appendChild(el('h2', 'font-size:20px;margin:0 0 10px;', esc('Practice Call: Wix Editor')));
+    scene.body.forEach(function (p) { area.appendChild(el('p', 'margin:0 0 10px;', esc(p))); });
+    var btn = el('button', ctaStyle(), esc(scene.cta));
+    btn.addEventListener('click', function () { go(scene.next); });
+    area.appendChild(btn);
+  }
+
+  function renderScene(id) {
+    var scene = SCENES[id];
+    state.currentScene = id;
+    renderHelpers(id);
+    badge.textContent = 'Scene ' + id + ' — ' + scene.criterion;
+    area.innerHTML = '';
+
+    var bubble = el('div', 'background:#f2f2f4;border-radius:10px;padding:12px 14px;margin-bottom:16px;');
+    bubble.appendChild(el('div', 'font-weight:600;font-size:13px;color:#6a6a6e;margin-bottom:4px;', esc(scene.speaker)));
+    bubble.appendChild(el('div', '', '“' + esc(scene.situation) + '”'));
+    area.appendChild(bubble);
+
+    if (state.returned[id]) {
+      area.appendChild(el('div', 'font-size:13px;color:#b8860b;margin-bottom:10px;', 'Sam’s still on the line — the choices are still open. Try again.'));
+    }
+
+    scene.choices.forEach(function (choice) {
+      var btn = el('button', choiceStyle(), esc(choice.text));
+      btn.addEventListener('mouseover', function () { btn.style.background = '#eef3ff'; });
+      btn.addEventListener('mouseout',  function () { btn.style.background = '#fff'; });
+      btn.addEventListener('click', function () { onChoice(id, scene, choice); });
+      area.appendChild(btn);
+    });
+  }
+
+  function onChoice(id, scene, choice) {
+    var pts = (typeof choice.points === 'function') ? choice.points(state) : choice.points;
+    var capped = false;
+    if (state.returned[id] && scene.retryCap != null && pts > scene.retryCap) { pts = scene.retryCap; capped = true; }
+
+    if (choice.flags) { for (var k in choice.flags) { if (choice.flags.hasOwnProperty(k)) state.flags[k] = choice.flags[k]; } }
+    if (choice.next !== 'return') {
+      state.scores[scene.criterion] = pts;
+      state.pathTaken.push(scene.pathLabel + (choice.correct ? '✓' : '✗'));
+    }
+
+    log('Scene ' + id + ' — chose: "' + choice.text.slice(0, 46) + (choice.text.length > 46 ? '…' : '') + '"');
+
+    sendRow({
+      scene: 'scene-' + id + '-' + slug(scene.title),
+      interaction: scene.criterion,
+      question: scene.title,
+      response: choice.text,
+      correct: choice.correct ? 'yes' : 'no',
+      points: pts,
+      notes: 'branching v1' + (capped ? '; retry-capped' : '') + (choice.next === 'return' ? '; loop-back' : '')
+    });
+
+    showFeedback(id, scene, choice);
+  }
+
+  function showFeedback(id, scene, choice) {
+    area.innerHTML = '';
+    var fb = el('div', 'border-left:3px solid ' + (choice.correct ? '#34a853' : '#d0d0d2') + ';padding:6px 0 6px 12px;margin-bottom:16px;');
+    fb.appendChild(el('div', 'font-weight:600;font-size:13px;color:' + (choice.correct ? '#34a853' : '#8a8a8e') + ';margin-bottom:4px;',
+      choice.correct ? '✓ Credited' : '✗ Not credited'));
+    fb.appendChild(el('div', '', esc(choice.feedback)));
+    area.appendChild(fb);
+
+    var label = choice.next === 'return' ? 'Back to Sam' : (choice.next === 'end' ? 'Finish the call' : 'Continue');
+    var btn = el('button', ctaStyle(), esc(label));
+    btn.addEventListener('click', function () {
+      if (choice.next === 'return') { state.returned[id] = true; renderScene(id); }
+      else { go(choice.next); }
+    });
+    area.appendChild(btn);
+  }
+
+  /* =========================================================================
+     SCORING + SCORE SLIDES (1.12, 1.13)
+     ========================================================================= */
+  function etiquetteScore() {
+    var o = state.flags.EtiquetteOpen, c = state.flags.EtiquetteClose;
+    return (o && c) ? 5 : ((o || c) ? 3 : 0);
+  }
+  var SCORE_ROWS = [
+    { label: 'Opening & closing etiquette',           key: '__etiquette', max: 5 },
+    { label: 'Wix Answers & User Manager (UM) use',   key: 'Wix Answers & User Manager use', max: 10 },
+    { label: 'Familiarization',                        key: 'Familiarization', max: 10 },
+    { label: 'Clarifying',                             key: 'Clarifying', max: 15 },
+    { label: 'Roadmapping',                            key: 'Roadmapping', max: 10 },
+    { label: 'Finding the right article',              key: 'Locating the right article', max: 15 },
+    { label: 'Recreating the issue',                   key: 'Recreating the issue', max: 10 },
+    { label: 'Solving the issue',                      key: 'Solving the issue', max: 20 },
+    { label: 'Offering suggestions',                   key: 'Offering suggestions', max: 5 }
+  ];
+  function scoreFor(key) { return key === '__etiquette' ? etiquetteScore() : (state.scores[key] || 0); }
+  function totalScore() { var t = 0; SCORE_ROWS.forEach(function (r) { t += scoreFor(r.key); }); return t; }
+
+  // 1.12 — What Good Looked Like
+  function renderSummary() {
+    state.currentScene = 'summary';
+    renderHelpers('summary');
+    badge.textContent = 'What Good Looked Like';
+    area.innerHTML = '';
+    area.appendChild(el('h2', 'font-size:20px;margin:0 0 10px;', 'What Good Looked Like'));
+    area.appendChild(el('p', 'margin:0 0 4px;font-weight:600;', 'Your path:'));
+    area.appendChild(el('div', 'font-family:Menlo,Consolas,monospace;font-size:13px;background:#f2f2f4;border-radius:8px;padding:10px;margin-bottom:14px;',
+      esc(state.pathTaken.join('  ·  '))));
+    area.appendChild(el('p', 'margin:0 0 6px;font-weight:600;', 'What works every time:'));
+    var list = el('ol', 'margin:0 0 16px;padding-left:20px;');
+    [
+      'Greet them and say what you’re doing.',
+      'Find their account in User Manager. See what they see.',
+      'Say their goal back to them. Check you’ve understood.',
+      'Ask what kind of menu it is, and how long they’ve had it.',
+      'Check CSI. Look for troubleshooting, not how-to.',
+      'Clone the site and try it. The article’s fix didn’t work here.',
+      'Tell them the cause and the fix.',
+      'Give them the steps in order, and how you’ll check it worked.',
+      'Offer anything useful you spotted.',
+      'Recap, next steps, goodbye.'
+    ].forEach(function (t) { list.appendChild(el('li', 'margin-bottom:3px;', esc(t))); });
+    area.appendChild(list);
+    var btn = el('button', ctaStyle(), 'See My Score');
+    btn.addEventListener('click', renderScore);
+    area.appendChild(btn);
+  }
+
+  // 1.13 — Your Score
+  function renderScore() {
+    state.currentScene = 'score';
+    renderHelpers('score');
+    badge.textContent = 'Your Score';
+    area.innerHTML = '';
+    area.appendChild(el('h2', 'font-size:20px;margin:0 0 10px;', 'Your Score'));
+
+    var table = el('table', 'width:100%;border-collapse:collapse;font-size:14px;margin-bottom:14px;');
+    SCORE_ROWS.forEach(function (r) {
+      var tr = el('tr');
+      tr.appendChild(el('td', 'padding:6px 4px;border-bottom:1px solid #eee;', esc(r.label)));
+      tr.appendChild(el('td', 'padding:6px 4px;border-bottom:1px solid #eee;text-align:right;white-space:nowrap;', scoreFor(r.key) + ' / ' + r.max));
+      table.appendChild(tr);
+    });
+    var total = totalScore();
+    var trT = el('tr');
+    trT.appendChild(el('td', 'padding:8px 4px;font-weight:700;', 'TOTAL'));
+    trT.appendChild(el('td', 'padding:8px 4px;text-align:right;font-weight:700;', total + ' / 100'));
+    table.appendChild(trT);
+    area.appendChild(table);
+
+    // conditional lines
+    var notes = [];
+    if (scoreFor('Locating the right article') === 8) notes.push('You found an article, but not the one that explains the cause. Next time, look for troubleshooting rather than how-to.');
+    if (scoreFor('Recreating the issue') < 10) notes.push('You didn’t check their site before answering. On this call, the article’s first fix didn’t exist on their menu — recreating is what would have caught that.');
+    if (state.flags.AskedForHelp) notes.push('You asked a colleague for a hand. That’s fine — it’s what Slack is for. On the scorecard it’s “solved with assistance,” which is worth less than solving it yourself.');
+    notes.forEach(function (n) {
+      area.appendChild(el('div', 'border-left:3px solid #e0a800;background:#fffbe6;padding:8px 12px;border-radius:6px;margin-bottom:8px;font-size:13px;', esc(n)));
+    });
+
+    area.appendChild(el('p', 'margin:14px 0 16px;font-size:13px;color:#6a6a6e;', 'Next: Practice Session 2 — [Confirm title/topic].'));
+
+    // final summary telemetry row (total + flags + HelpTopic)
+    sendRow({
+      scene: 'summary-final',
+      interaction: 'Final score',
+      question: 'Your Score',
+      response: state.pathTaken.join(' '),
+      correct: '',
+      points: total,
+      notes: 'summary; total=' + total + '/100'
+        + '; etiquette=' + etiquetteScore()
+        + '; askedForHelp=' + state.flags.AskedForHelp
+        + '; helpTopic=' + (state.helpTopic || 'none')
+        + '; usedResource=' + state.flags.UsedResource
+        + '; foundCorrectArticle=' + state.flags.FoundCorrectArticle
+        + '; sawRealCause=' + state.flags.SawRealCause
+    });
+
+    // completion signal to Rise/Smart
+    try { window.parent.postMessage({ type: 'complete' }, '*'); log('Sent completion postMessage to parent.'); }
+    catch (e) { log('completion postMessage failed: ' + e.message); }
+
+    var btn = el('button', ctaStyle(), 'Restart (retest)');
+    btn.addEventListener('click', start);
+    area.appendChild(btn);
+  }
+
+  /* =========================================================================
+     ENGINE
+     ========================================================================= */
+  function go(target) {
+    if (target === 'end') { renderSummary(); return; }
+    var scene = SCENES[target];
+    if (!scene) { log('ERROR: unknown scene "' + target + '"'); return; }
+    if (scene.intro) { renderIntro(scene); } else { renderScene(target); }
+  }
+
+  function start() {
+    closeModal();
+    state = freshState();
+    log('=== New attempt: ' + state.attemptId + ' ===');
+    go(START);
+  }
+
+  /* styles */
+  function ctaStyle() { return 'display:inline-block;margin-top:6px;padding:11px 20px;border-radius:8px;border:none;background:#2a6df4;color:#fff;font-size:15px;cursor:pointer;'; }
+  function choiceStyle() { return 'display:block;width:100%;text-align:left;margin:0 0 8px;padding:12px 14px;border-radius:8px;border:1px solid #d0d0d2;background:#fff;font-size:14px;line-height:1.45;cursor:pointer;'; }
+
+  start();
+})();
+</script>
+</body>
+</html>
