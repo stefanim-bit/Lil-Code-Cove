@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Practice Session — CALL MODE POC (speak-aloud · Rise Code Block · v2)</title>
+<title>Practice Session — Layers V3 · Call POC (speak-aloud · Rise Code Block)</title>
 
 <!--
 ==================================================================================
@@ -146,7 +146,7 @@
   .timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
   .head-spacer{flex:1}
   .helperbar-head{display:flex;gap:0.5rem;margin-right:0.5rem}
-  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.8125rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
+  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.875rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
   .btn-end:hover{filter:brightness(.94)}
 
 
@@ -161,12 +161,12 @@
   .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
   .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
   .msg.caller{align-self:flex-start;align-items:flex-start}
-  .msg.caller .bubble{background:var(--bg);border:0.0625rem solid var(--line);border-top-left-radius:0.3125rem;color:var(--ink)}
+  .msg.caller .bubble{background:#F5F5F5;border:0px;border-top-left-radius:0.3125rem;color:var(--ink)}
   .msg.you{align-self:flex-end;align-items:flex-end}
-  .msg.you .meta{text-align:right;color:var(--agent-deep)}
-  .msg.you .bubble{background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-top-right-radius:0.3125rem;color:var(--ink)}
+  .msg.you .meta{text-align:right;color:#707070}
+  .msg.you .bubble{background:#E4EFFE;border:0px;border-top-right-radius:0.3125rem;color:var(--ink)}
   .msg.system{align-self:center;max-width:90%;align-items:center}
-  .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:italic;font-size:0.8125rem;padding:0.125rem 0.375rem;text-align:center}
+  .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:normal;font-size:0.78125rem;padding:0.125rem 0.375rem;text-align:center}
   /* Inline screenshot figure (Layers panel, Accessibility Wizard, etc.) */
   .msg.system .screenshot{margin:0.25rem 0;max-width:100%;display:flex;flex-direction:column;align-items:center}
   .msg.system .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
@@ -182,16 +182,16 @@
 
   /* [Action] choices render their result as an inline centered system note in the
      chat stream (reusing .msg.system), so there's no separate action bar. */
-  .msg.system .bubble.action{font-style:normal;color:var(--agent);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:62.4375rem;padding:0.25rem 0.75rem}
+  .msg.system .bubble.action{font-style:normal;color:#242424;background:none;border:none;border-radius:62.4375rem;padding:0.25rem 0.75rem}
 
   /* Inline notes — the centered "system" bubbles only: an action you take
      ("You clone the site…") or a thing you find ("(You find…)"). These are the
      ONLY lines painted green; caller replies are untouched. */
   .msg.reaction .bubble,
-  .msg.reaction .bubble.action{color:#5BBE7E !important}
+  .msg.reaction .bubble.action{color:#242424 !important}
 
   /* "Click to view fullscreen" control in the sim header */
-  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.78125rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
+  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.875rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
   .btn-fs:hover{color:var(--agent);background:var(--agent-bubble)}
   .panel:fullscreen{border-radius:0;display:flex;flex-direction:column;overflow:auto}
   .panel:fullscreen .chat{min-height:0;flex:1}
@@ -202,7 +202,6 @@
 
   /* composer / decision area — where the real panel's message box sits */
   .composer{border-top:0.0625rem solid var(--line);background:#FBFBFC;padding:0.875rem 1.125rem 1.125rem}
-
   /* ===== CALL MODE — speak-aloud voice panel ===== */
   .voice{border:0.0625rem solid #D6E6FE;background:#F7FAFF;border-radius:0.75rem;padding:0.875rem 1rem;margin:0 0 0.75rem}
   .voice-row{display:flex;align-items:center;gap:0.75rem}
@@ -217,7 +216,8 @@
   @keyframes micpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.6)}}
   /* live volume meter — segmented bar driven by mic RMS */
   .meter{flex:1 1 auto;height:0.75rem;border-radius:62rem;background:#E3ECFB;overflow:hidden;position:relative}
-  .meter-fill{height:100%;width:0%;border-radius:62rem;background:linear-gradient(90deg,#7DBB00,#F5A623 70%,#E62214);transition:width .06s linear}
+  /* Color is set per-frame from meterColor(L); width tracks live level. */
+  .meter-fill{height:100%;width:0%;border-radius:62rem;background:#B31200;transition:width .18s ease-out,background-color .3s ease-out}
   .meter-mark{position:absolute;top:-2px;bottom:-2px;width:2px;background:#116DFF;opacity:.55}
   .voice-status{font-size:0.8125rem;color:var(--ink-2);margin:0.5rem 0 0;min-height:1.1rem;line-height:1.35}
   .voice-status .heard{color:var(--ink);font-style:italic}
@@ -228,10 +228,26 @@
   .choice.matched{border-color:#116DFF;box-shadow:0 0 0 0.125rem rgba(17,109,255,.25)}
   .choices-label{font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0.25rem 0 0.5rem}
   .voice-unsupported{font-size:0.8125rem;color:#C81C0F;background:#FDECEA;border-radius:0.5rem;padding:0.5rem 0.75rem;margin:0 0 0.5rem}
+  /* ===== Results page — Delivery (voice & projection) panel ===== */
+  .dv-wrap{padding:0.25rem 0}
+  .dv-top{display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;margin:0 0 0.75rem}
+  .dv-pill{font-size:0.8125rem;font-weight:700;color:#fff;border-radius:62rem;padding:0.3125rem 0.75rem}
+  .dv-pill.good{background:#3E8A00} .dv-pill.mid{background:#E0900A} .dv-pill.low{background:#D0210F}
+  .dv-meta{font-size:0.8125rem;color:var(--ink-2)}
+  .dv-bar{position:relative;height:0.75rem;border-radius:62rem;background:#E3ECFB;overflow:visible;margin:0 0 0.75rem}
+  .dv-fill{height:100%;border-radius:62rem;transition:width .3s ease}
+  .dv-mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:#116DFF;opacity:.6}
+  .dv-note{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0}
+  .dv-none{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0}
+  .dv-playback{margin:1rem 0 0;padding:0.875rem 0 0;border-top:0.0625rem solid var(--line)}
+  .dv-playback.is-empty{display:none}
+  .dv-pb-label{font-size:0.8125rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 0.5rem}
+  .dv-pb-slot audio{width:100%;height:2.25rem;display:block}
+  .dv-pb-prep{font-size:0.875rem;color:var(--muted);font-style:italic}
   .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
-  .hbtn{font-size:0.78125rem;font-weight:600;padding:0.4375rem 0.8125rem;border-radius:62.4375rem;border:0.0625rem solid var(--line-2);background:#fff;color:var(--ink-2);cursor:pointer}
-  .hbtn:hover{border-color:var(--agent);color:var(--agent)}
-  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0.125rem 0 0.625rem}
+  .hbtn{font-size:0.875rem;font-weight:500;padding:0.375rem 1.5rem;border-radius:18.75rem;border:1px solid #424242;background:#fff;color:#242424;cursor:pointer;height:32px}
+  .hbtn:hover{border-color:#424242;color:#fff;background:#424242}
+  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;margin:0.125rem 0 0.625rem}
   .choice{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.8125rem 0.9375rem;margin:0.5rem 0;font-size:0.90625rem;font-family:var(--font-text);color:var(--ink);cursor:pointer;transition:border-color .12s ease, box-shadow .12s ease, background .12s ease}
   .choice:hover:not(:disabled){border-color:var(--agent);box-shadow:0 0.125rem 0.625rem rgba(15,98,230,.10);background:#fff}
   .choice:disabled{opacity:.45;cursor:not-allowed}
@@ -253,6 +269,18 @@
   .nameinput.invalid{border-color:#E62214}
   .nameerror{font-size:0.75rem;color:#44485F;opacity:0;visibility:hidden;transition:opacity 200ms ease-out, visibility 200ms ease-out}
   .nameerror.show{opacity:1;visibility:visible}
+
+  /* confirm-your-details step (between Meet and the call) */
+  .confirm-details{display:flex;flex-direction:column;gap:0.75rem;margin:0 0 1.75rem;max-width:21.25rem}
+  .confirm-row{display:flex;flex-direction:column;gap:0.1875rem;border-bottom:0.0625rem solid var(--line);padding-bottom:0.625rem}
+  .confirm-label{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .confirm-value{font-size:1rem;color:#000000;word-break:break-word}
+  .confirm-actions{display:flex;gap:0.625rem;align-items:center}
+  .btn-wide{width:auto;padding:0.375rem 1.5rem}
+  .confirm-consent{display:flex;gap:0.5rem;align-items:flex-start;max-width:24rem;margin:0 0 1.5rem;
+    padding:0.75rem 0.875rem;background:var(--bg);border:0.0625rem solid var(--line);border-radius:0.5rem;
+    font-size:0.8125rem;line-height:1.45;color:var(--ink-2)}
+  .confirm-consent svg{flex:0 0 auto;margin-top:0.0625rem}
 
   /* ============================ COMPLETE ============================ */
   .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
@@ -495,8 +523,7 @@ window.SCENARIO = {
 image:{ src:"Scenario%20Screenshots/Lenas%20Layers%20Panel.png", caption:"Samantha's Layers panel — the heart Vector Art sits inside Section: Services." },      prompt:"What do you do first?",
       choices:[
         { id:"A", text:"[Action] Search the Help Center for a matching article to send Samantha.",
-          verdict:"incorrect", points:0, goTo:"s_recreate2", retry:true, capIfRetried:5,
-          consequence:"Samantha: Is this what's going on, or what is this??\n\nExpert: Actually, just give me one moment to confirm." },
+          verdict:"incorrect", points:0, goTo:"s_recreate2", retry:true, capIfRetried:5, silent:true },
         { id:"B", text:"[Action] Open Samantha's live site to find the overlapping elements.", showsImageAfter:true,
           image:{ src:"Scenario%20Screenshots/Live%20Site%20(Recreate%20B).png", caption:"Samantha's live site — the overlapping elements as seen on the published page." },
           verdict:"partial", points:5, goTo:"s_recreate2" },
@@ -616,7 +643,10 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
      bubbles, (b) substitute the [name] token anywhere in scenario text, and
      (c) push the value out to a Rise/Storyline "learner_name" variable. */
   let learner_name = "";
-  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, learner_name || "you"); }
+  // The scenario chat shows only the learner's FIRST name; the full name is
+  // still stored in learner_name (pushed to the Rise var + telemetry).
+  function learnerFirst(){ const n=(learner_name||"").trim(); return n ? n.split(/\s+/)[0] : ""; }
+  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, learnerFirst() || "you"); }
   function setLearnerName(v){
     learner_name = (v||"").trim();
     pushRiseVar("learner_name", learner_name);
@@ -733,6 +763,80 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     } catch(e){}
   }
 
+  /* =================== CALL-RECORDING UPLOAD ===================
+     The per-action telemetry above rides a Google Form, which CANNOT accept a
+     file. So the call audio goes to a separate sink: a Google Apps Script Web
+     App that (1) saves the .webm to a Drive folder and (2) writes one row to a
+     "Recordings" tab — timestamp, attempt_id, email, name, course, recording_url
+     — keyed by the SAME attempt_id used in the Form rows, so the recording links
+     back to the learner's telemetry. Everything stays inside Google Workspace;
+     no third-party host.
+
+     DEPLOYMENT (must be done once, by the sheet/Drive owner):
+       • Paste the companion Apps Script (see "RECORDING WEB APP.gs") into the
+         Sheet's Apps Script editor and deploy as a Web App.
+       • Execute as: Me.  Who has access: ANYONE.
+         "Anyone" (not "Anyone within Wix") is required — external BPO learners
+         sign in with @wixcs.com, a different domain, and a domain-scoped Web App
+         would reject them (the 401 we hit before). "Execute as: Me" means the
+         file lands in the OWNER's Drive; learners need no Drive permissions.
+       • Paste the resulting /exec URL into RECORDING_ENDPOINT below.
+     Until a URL is set, recording silently no-ops and the sim runs unchanged. */
+  const RECORDING_ENDPOINT = '';   // <-- paste the Apps Script Web App /exec URL here
+
+  function uploadRecording(blob){
+    if(!RECORDING_ENDPOINT || !blob || !blob.size) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      // reader.result is a data: URL — keep only the base64 payload.
+      const base64 = String(reader.result).split(',')[1] || '';
+      const body = new URLSearchParams({
+        attempt_id:    attemptId,
+        learner_email: learner_email,
+        learner_name:  learner_name,
+        course:        TELEMETRY_COURSE,
+        mime:          blob.type || 'audio/webm',
+        audio_b64:     base64
+      });
+      try{
+        // Same transport as the telemetry Form: urlencoded + no-cors, so it's
+        // fire-and-forget with no CORS preflight. The Web App parses e.parameter,
+        // writes the Recordings row + Drive link itself, so we never read a
+        // response back (which no-cors wouldn't let us do anyway).
+        fetch(RECORDING_ENDPOINT, {
+          method:'POST', mode:'no-cors',
+          headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+          body: body.toString()
+        }).catch(()=>{});
+      } catch(e){}
+    };
+    reader.readAsDataURL(blob);
+  }
+
+  /* Local, play-only playback of the learner's OWN call, shown in the results
+     "Voice and Projection" panel. Uses an in-memory object URL — nothing is
+     downloaded and no Drive access is needed; it lives only for this session and
+     is gone on refresh. The permanent copy is the one uploaded to L&D's Drive.
+     `controlsList="nodownload"` hides the browser's download button (Chrome/Edge,
+     which is also the required browser for speech-to-text). */
+  function mountPlayback(blob){
+    const wrap = document.getElementById('callPlayback');
+    const slot = document.getElementById('callPlaybackSlot');
+    if(!wrap || !slot) return;
+    if(!blob || !blob.size){ wrap.classList.add('is-empty'); return; }
+    try{
+      const url = URL.createObjectURL(blob);
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.preload = 'metadata';
+      audio.src = url;
+      audio.setAttribute('controlsList', 'nodownload noplaybackrate');
+      audio.oncontextmenu = () => false;   // no "save audio as" right-click
+      slot.innerHTML = '';
+      slot.appendChild(audio);
+    } catch(e){ wrap.classList.add('is-empty'); }
+  }
+
   function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   /* ---- call timer (authentic Communication-Panel touch) ---- */
@@ -797,8 +901,43 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         emailError.classList.add('show'); emailInput.classList.add('invalid'); bad = true;
       }
       if(bad){ (!learner_name ? nameInput : emailInput).focus(); return; }
-      startCall();
+      renderConfirm();
     };
+  }
+
+  /* =================== PHASE 1b — CONFIRM YOUR DETAILS ===================
+     A checkpoint between Meet and the call: the learner reviews the exact
+     name + email that will be attached to their results. "Back" returns to
+     Meet with their entries preserved; "These are correct" starts the call. */
+  function renderConfirm(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}"
+             onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'noimg\\'>[ ${escapeHtml(U.name)} ]</div>')">`
+      : `<div class="noimg">[ ${escapeHtml(U.name)} ]</div>`;
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Practice Session · Confirm your details</div>
+          <h1 class="display">Are these correct?</h1>
+          <p>Make sure your first and last name and Wix email address are correct before we proceed.</p>
+          <div class="confirm-details">
+            <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${escapeHtml(learner_name)}</span></div>
+            <div class="confirm-row"><span class="confirm-label">Email</span><span class="confirm-value">${escapeHtml(learner_email)}</span></div>
+          </div>
+          <div class="confirm-consent">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 8h.01M11 11.5h1v5h1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>To give you feedback on how you sound on a call, your spoken responses are recorded once you start. The recording is stored with your name and email for coaching and review by the Wix L&amp;D team. Tap a written response instead of speaking if you'd prefer not to be recorded.</span>
+          </div>
+          <div class="confirm-actions">
+            <button class="btn btn-ghost btn-wide" id="backBtn" type="button">Back</button>
+            <button class="btn btn-dark btn-wide" id="confirmBtn" type="button">These are correct<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button>
+          </div>
+        </div>
+      </section>`;
+    document.getElementById('backBtn').onclick = renderMeet;
+    document.getElementById('confirmBtn').onclick = startCall;
   }
 
   /* =================== PHASE 2 — THE LIVE CALL =================== */
@@ -874,7 +1013,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   }
   function appendBubble(kind, text, reaction){
     const meta = kind==='system' ? '' :
-      `${kind==='you' ? (learner_name||'You') : U.name} · ${mmss(callSeconds)}`;
+      `${kind==='you' ? (learnerFirst()||'You') : U.name} · ${mmss(callSeconds)}`;
     return appendNode(bubbleMarkup(kind, text, meta, reaction));
   }
   /* Inline action note: an "[Action]" choice is something the Expert DOES, shown
@@ -956,7 +1095,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   }
   /* transcript bubbles: same markup, name label only (no live timer) */
   function segMarkup(kind, text){
-    const who = kind==='system' ? '' : (kind==='you' ? (learner_name||'You') : U.name);
+    const who = kind==='system' ? '' : (kind==='you' ? (learnerFirst()||'You') : U.name);
     return bubbleMarkup(kind, text, who);
   }
 
@@ -973,7 +1112,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   function typingBubble(kind){
     const you = kind==='you';
     const side = you ? 'you' : 'caller';
-    const who  = you ? (learner_name||'You') : U.name;
+    const who  = you ? (learnerFirst()||'You') : U.name;
     return appendNode(
       `<div class="msg typing ${side}"><div class="meta">${escapeHtml(who)} · typing…</div>`+
       `<div class="bubble"><span class="tai-dot"></span><span class="tai-dot"></span><span class="tai-dot"></span></div></div>`);
@@ -1121,9 +1260,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     const showChoices = ()=>{
       // (Screen screenshots are no longer shown automatically — they now reveal
       //  only when the learner picks the choice flagged with caption:"Samantha's Layers panel…".)
-      // CALL MODE: the prompt asks the learner to SAY their reply aloud; the
-      // written choices remain below as a reference/fallback (and for browsers
-      // without speech-to-text). See the CALL MODE module near the bottom.
+      // CALL MODE: all response options stay visible; the learner reads one aloud
+      // (or taps it). The voice panel + meter sit below. See the CALL MODE module.
       setComposer(`<div class="prompt">${escapeHtml(px(scr.prompt))}</div>`
                 + `<div class="choices-label" id="choicesLabel">Read one of these responses aloud — or tap to pick</div>`
                 + `<div id="choices"></div>`
@@ -1190,7 +1328,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     //   • `say` present  -> a blue Expert bubble of the spoken words ("Tell Sarah…")
     //   • an [Action]    -> an inline "You …" note (a tool action)
     //   • otherwise      -> a blue reply bubble of the choice text
-    if(ch.say) appendBubble('you', ch.say);
+    if(ch.silent) { /* silent pick: render nothing in chat, just re-open for a retry */ }
+    else if(ch.say) appendBubble('you', ch.say);
     else if(isAction(ch.text)) appendActionNote(actionNoteText(ch.text));
     else appendBubble('you', ch.text);
 
@@ -1201,7 +1340,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     const segs = splitDialogue(ch.consequence);
 
     if(ch.retry && !retriedIds.includes(ch.id)){
-      transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
+      if(!ch.silent) transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
       logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
                  text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
                  notes:'first attempt — caller pushed back, screen re-opened for a retry (capped at '+ch.capIfRetried+')' });
@@ -1234,6 +1373,16 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   /* =================== PHASE 3 — COMPLETE =================== */
   function renderFinal(){
     stopTimer();
+    // The call is over: stop the recorder and ship the audio to Drive (keyed by
+    // attempt_id). Best-effort — never blocks rendering the results.
+    try{
+      if(window.CallMode && window.CallMode.stopRecording){
+        window.CallMode.stopRecording().then(blob => {
+          uploadRecording(blob);   // permanent copy → L&D Drive
+          mountPlayback(blob);     // play-only copy → learner, in the results panel
+        }).catch(()=>{});
+      }
+    } catch(e){}
 
     // Apply the Check-Resources penalty before tallying (same rule the old
     // "Check the Articles" used: no verify of the correct resource → capped).
@@ -1262,10 +1411,16 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       return p ? `<div class="pick">Your response: “${escapeHtml(p.text)}”</div>`
                : `<div class="pick miss">You didn't reach this step.</div>`;
     };
+    // A stage counts as "reached" only if the learner actually answered or was
+    // credited for it (decisivePick set). Stages skipped by ending the chat
+    // early get no coaching feedback — just a "didn't reach this step" note.
+    const reached = st => (st.id in decisivePick);
     const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
         .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
     const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
-        .map(st=>`<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`).join('');
+        .map(st=> reached(st)
+            ? `<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`
+            : `<li><b>${st.name}</b> — You didn't reach this step.</li>`).join('');
 
     // One collapsible row, styled like the wix.com "Website builder FAQs".
     const accItem = (id, title, inner) => `
@@ -1296,6 +1451,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         ${accItem('scorecard','Scorecard', rows)}
         ${accItem('strengths','Top strengths', `<ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>`)}
         ${accItem('areas','Areas for improvement', `<ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>`)}
+        ${(window.CallMode && window.CallMode.delivery) ? accItem('delivery','Voice and Projection', window.CallMode.delivery().html) : ''}
       </div>
 
       ${helpNotes.length ? `<div class="card"><h3>Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
@@ -1379,32 +1535,13 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   try { window.parent.postMessage({ type: 'complete' }, '*'); } catch(e){}
 })();
 </script>
-
-<!-- ============================ CALL MODE (POC) ============================
-  Speak-aloud layer. Turns the click-a-choice sim into a "call": the learner
-  wears a headset mic, SAYS their response, and we (1) show a live volume meter
-  so they can hear-and-see whether they're projecting, and (2) transcribe the
-  speech and match it to the closest scripted choice, which the learner confirms.
-
-  WHAT'S BROWSER-NATIVE (no backend, no keys):
-    • Volume meter  — getUserMedia + Web Audio AnalyserNode (RMS). Fully LOCAL.
-    • Transcription — Web Speech API (SpeechRecognition). Chrome/Edge only;
-                      in Chrome the AUDIO is sent to Google for transcription.
-    • Matching      — keyword/overlap scoring against each choice, in-page.
-
-  GRACEFUL FALLBACK: if speech recognition is unavailable (Firefox/Safari) or
-  the mic is blocked, the written choices stay fully clickable — the sim still
-  works exactly as before.
-
-  RISE EMBED NOTE: the Code Block iframe must allow mic access. Rise serves over
-  HTTPS; the browser will prompt for the mic on the first click. If the prompt
-  never appears, the iframe needs allow="microphone" (test this early in Rise).
-========================================================================= -->
 <script id="callmode">
 (function(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const cm = { audio:null, analyser:null, data:null, meterFill:null, rafId:null,
-               peak:0, recognizing:false };
+               peak:0, recognizing:false,
+               volLog:[],     // one entry per SPOKEN response: its peak loudness (0..1)
+               stream:null, recorder:null, chunks:[] };  // call-recording capture
 
   // Words too common to help distinguish one choice from another.
   const STOP = new Set(("a an the and or but so to of in on at for with your you "+
@@ -1443,30 +1580,116 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     if(cm.audio) return true;
     try{
       const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      cm.stream = stream;
       const Ctx = window.AudioContext || window.webkitAudioContext;
       const ctx = new Ctx();
       const src = ctx.createMediaStreamSource(stream);
       const an = ctx.createAnalyser(); an.fftSize = 1024;
       src.connect(an);
       cm.audio = ctx; cm.analyser = an; cm.data = new Uint8Array(an.fftSize);
+      startRecording(stream);   // begin capturing the call from the first mic use
       loopMeter();
       return true;
     } catch(e){ return false; }
   }
+
+  /* ---- Call recording (MediaRecorder) — one continuous file per attempt ----
+     Starts on the first mic use and runs through the whole call; stopRecording()
+     (called at end-of-call) returns the finished audio Blob for upload. Records
+     the learner's side only — the caller's lines are scripted text, not audio.
+     If MediaRecorder or a supported codec is missing, it silently no-ops. */
+  function pickMime(){
+    const cands = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
+    if(typeof MediaRecorder==='undefined' || !MediaRecorder.isTypeSupported) return '';
+    for(const m of cands){ if(MediaRecorder.isTypeSupported(m)) return m; }
+    return '';
+  }
+  function startRecording(stream){
+    if(cm.recorder || typeof MediaRecorder==='undefined') return;
+    try{
+      const mime = pickMime();
+      cm.recorder = mime ? new MediaRecorder(stream, { mimeType:mime })
+                         : new MediaRecorder(stream);
+      cm.chunks = [];
+      cm.recorder.ondataavailable = e => { if(e.data && e.data.size) cm.chunks.push(e.data); };
+      cm.recorder.start();   // one blob at stop; simplest and reliable for a POC
+    } catch(e){ cm.recorder = null; }
+  }
+  function stopRecording(){
+    return new Promise(resolve => {
+      const rec = cm.recorder;
+      // Always release the mic when the call ends, recorder or not.
+      const releaseMic = ()=>{ try{ (cm.stream && cm.stream.getTracks()||[]).forEach(t=>t.stop()); }catch(_){} };
+      if(!rec || rec.state === 'inactive'){ releaseMic(); resolve(null); return; }
+      rec.onstop = () => {
+        const type = (cm.chunks[0] && cm.chunks[0].type) || rec.mimeType || 'audio/webm';
+        const blob = cm.chunks.length ? new Blob(cm.chunks, { type }) : null;
+        cm.recorder = null; cm.chunks = [];
+        releaseMic();
+        resolve(blob);
+      };
+      try{ rec.stop(); }catch(e){ releaseMic(); resolve(null); }
+    });
+  }
+
   function level(){ // RMS -> 0..1, lightly boosted so normal speech reads mid-scale
     if(!cm.analyser) return 0;
     cm.analyser.getByteTimeDomainData(cm.data);
     let sum=0; for(let i=0;i<cm.data.length;i++){ const v=(cm.data[i]-128)/128; sum+=v*v; }
     return Math.min(1, Math.sqrt(sum/cm.data.length) * 3.2);
   }
+  /* Whole-bar color for the CURRENT loudness. Quiet is penalized hardest:
+     the entire red→orange band lives below the 0.22 "minimum projection" mark,
+     the good range is solid green, and only an extreme shout (>~0.9) tips into
+     a soft amber "ease off" — because too loud is far less bad than too quiet. */
+  const METER_STOPS = [
+    [0.00, [179, 18,  0 ]],   // deep red   — barely audible
+    [0.12, [230, 34, 20 ]],   // red        — too quiet
+    [0.22, [245,166, 35 ]],   // orange     — at the projection threshold mark
+    [0.30, [232,195,  0 ]],   // amber-yellow
+    [0.40, [143,203,  0 ]],   // yellow-green — entering the good zone
+    [0.55, [ 95,178,  0 ]],   // green      — good projection
+    [0.88, [ 79,163,  0 ]],   // solid green (holds through loud)
+    [1.00, [224,160, 32 ]]    // soft amber — only an extreme shout
+  ];
+  function meterColor(L){
+    L = Math.max(0, Math.min(1, L));
+    for(let i=1;i<METER_STOPS.length;i++){
+      const [p1,c1]=METER_STOPS[i-1], [p2,c2]=METER_STOPS[i];
+      if(L<=p2){
+        const t=(L-p1)/(p2-p1||1);
+        const r=Math.round(c1[0]+(c2[0]-c1[0])*t);
+        const g=Math.round(c1[1]+(c2[1]-c1[1])*t);
+        const b=Math.round(c1[2]+(c2[2]-c1[2])*t);
+        return `rgb(${r},${g},${b})`;
+      }
+    }
+    return `rgb(79,163,0)`;
+  }
   function loopMeter(){
-    const step = ()=>{
+    // Calm the meter for EVERYONE by default: (1) exponential smoothing damps
+    // spikes, (2) the width is quantized to steps so it doesn't twitch, (3)
+    // repaints are throttled. Low-motion is the baseline — not gated behind the
+    // OS setting. When the OS "reduce motion" setting is on, it's calmer still.
+    const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const EMA      = reduce ? 0.07 : 0.12;   // lower = smoother / slower to react
+    const STEP_PCT = reduce ? 12   : 8;      // quantize width to whole % steps
+    const INTERVAL = reduce ? 260  : 150;    // ms between DOM repaints
+    let smoothed = 0, lastPaint = 0, lastPct = -1, lastBucket = -1;
+    const step = (ts)=>{
       const L = level();
       if(cm.recognizing) cm.peak = Math.max(cm.peak, L);
-      if(cm.meterFill) cm.meterFill.style.width = Math.round(L*100)+'%';
+      smoothed += (L - smoothed) * EMA;      // low-pass filter
+      if(cm.meterFill && (ts - lastPaint) >= INTERVAL){
+        lastPaint = ts;
+        const pct = Math.round(smoothed*100 / STEP_PCT) * STEP_PCT;
+        if(pct !== lastPct){ cm.meterFill.style.width = pct + '%'; lastPct = pct; }
+        const bucket = Math.round(smoothed / 0.05);           // recolor per 5% band
+        if(bucket !== lastBucket){ cm.meterFill.style.background = meterColor(smoothed); lastBucket = bucket; }
+      }
       cm.rafId = requestAnimationFrame(step);
     };
-    step();
+    cm.rafId = requestAnimationFrame(step);
   }
 
   /* ---- Attach the voice panel to the current screen's composer ---- */
@@ -1589,7 +1812,12 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       vConfirm.appendChild(again);
     }
 
-    function commit(match){ if(!match) return; match.btn.click(); }  // reuse the engine's real scoring path
+    function commit(match){ if(!match) return;
+      // Record THIS spoken response's peak loudness for the end-of-call
+      // projection summary (only voice-driven selections land here; tapping a
+      // choice directly doesn't, which is correct — no voice to measure).
+      cm.volLog.push(cm.peak);
+      match.btn.click(); }  // reuse the engine's real scoring path
 
     // Press-and-hold interaction.
     micBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); start(); });
@@ -1605,7 +1833,45 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   }
   function escapeText(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  window.CallMode = { attach };
+  /* ---- End-of-call projection summary (feeds the results "Delivery" panel) ----
+     One OVERALL rating from the average peak loudness across every spoken
+     response. Quiet is treated as the problem; a strong average reads as good. */
+  function delivery(){
+    const log = cm.volLog.slice();
+    const spoken = log.length;
+    if(!spoken){
+      return { spoken:0, html:
+        `<p class="dv-none">No spoken responses were captured this time. `+
+        `Try it again with your headset microphone on to get projection feedback.</p>` };
+    }
+    const avg = log.reduce((a,b)=>a+b,0) / spoken;
+    // Bands mirror the live meter: 0.22 = minimum projection, ~0.45 = solidly good.
+    let rating, cls, note;
+    if(avg >= 0.45){ rating='Well projected'; cls='good';
+      note='Your voice carried clearly across the call. Great job!'; }
+    else if(avg >= 0.28){ rating='A bit quiet in places'; cls='mid';
+      note='You were audible, but on parts of the call your voice dropped low. Aim to keep your volume up throughout.'; }
+    else { rating='Too quiet overall'; cls='low';
+      note='Across the call your voice stayed low. Speak a little louder so the user hears you clearly.'; }
+    const pct = Math.round(Math.min(1, avg) * 100);
+    const barColor = meterColor(avg);
+    return { spoken, avg, rating, html:
+      `<div class="dv-wrap">
+         <div class="dv-top"><span class="dv-pill ${cls}">${rating}</span>
+           <span class="dv-meta">${spoken} spoken response${spoken>1?'s':''} · Average Volume</span></div>
+         <div class="dv-bar"><div class="dv-fill" style="width:${pct}%;background:${barColor}"></div>
+           <div class="dv-mark" style="left:22%"></div></div>
+         <p class="dv-note">${note}</p>
+         <div class="dv-playback" id="callPlayback">
+           <div class="dv-pb-label">Listen back to your call</div>
+           <div class="dv-pb-slot" id="callPlaybackSlot">
+             <span class="dv-pb-prep">Preparing your recording…</span>
+           </div>
+         </div>
+       </div>` };
+  }
+
+  window.CallMode = { attach, delivery, stopRecording };
 })();
 </script>
 </body>

@@ -1,6 +1,6 @@
 # Handoff — Storyline → Google Sheet telemetry (Onboarding Redesign practice sim)
 
-Last updated: 2026-08-10
+Last updated: 2026-09-23
 
 ## Goal
 
@@ -192,6 +192,41 @@ Two paths forward, either is reasonable to start with:
 2. **Check with Articulate support or their known-issues list** for this Storyline version, searching specifically for `Execute JavaScript` not firing on click-type triggers (as distinct from Timeline Starts). If this is a recognized bug, there may be a patch, a workaround (e.g. routing the click through a different trigger type first), or a required publish setting we haven't found.
 
 Once JS-on-click works again (via either path), retest with the one-line `JS-OK` script first, then restore the full send-script — watch for the em dash `—` in `'Onboarding Sim v1 — TEST'` as a plausible copy-paste corruption source, worth swapping for a plain hyphen preemptively. Then retest for `FIRED` + a landed Sheet row. **If** it reaches `FIRED` but still no row: that's a separate, later-stage environment block, not code — open DevTools during the click and look for `Refused to connect to 'https://docs.google.com/...'`, which would be CSP needing `docs.google.com` allowlisted (check on whichever host is being used at that point).
+
+## RUNBOOK — "telemetry stopped populating the Sheet"
+
+**First confirmed occurrence: 2026-09-23.** Both the Articulate build and the Wix Smart build stopped writing to the Sheet on the same day. Diagnosed and fixed same day — root cause was Google-side, not the sim.
+
+### Symptom
+New responses stop appearing in the Sheet. Both hosts (Articulate + Smart) can look broken at once, because they share ONE dependency: the same Google Form → Sheet.
+
+### 30-second diagnosis
+Submit a test, then check the **Form's Responses tab count**:
+- **Count climbing but Sheet not updating → it's the Form→Sheet link/tab, NEVER the sim code or endpoint.** Stop looking at the HTML. (Verified 2026-09-23: sim send code, endpoint URL, and all 12 `entry.*` IDs were unchanged and correct; the form was live and accepting; only the Sheet wasn't receiving.)
+- Count NOT climbing → the form itself isn't recording; check form settings/quota (different problem).
+
+### Root cause (2026-09-23)
+**A sort was left active on the linked "Form Responses" tab.** Google's live append always adds each new response as a new row at the bottom in submission order; a manual sort/filter on that tab reorders those rows and puts it in a state where the native sync silently stops writing. The form keeps collecting; the Sheet just stops receiving. Repeated unlink/relink cycles then piled up orphaned "Form Responses N" tabs, compounding the broken state.
+
+Tell-tale: **unlink/relink only does a one-time batch dump** (old + stuck rows land together on a fresh tab). It does NOT repair the live stream — new responses still don't flow on their own afterward.
+
+### Fix that worked
+**Unlink, then link to a BRAND-NEW spreadsheet** (Responses → ⋮ → link → *Create new spreadsheet*, NOT "select existing"). A fresh spreadsheet gets a fresh sync connection and live append resumes immediately. Re-selecting the old cluttered sheet tends to re-break because of the accumulated orphaned tabs. After the switch, repoint any analysis to the new spreadsheet.
+
+### Prevention rule
+**Never sort, filter, rename, or restructure the live "Form Responses" tab.** Treat it as append-only / read-only. Do all sorting/filtering/pivoting on a SEPARATE tab that pulls from it with a formula, e.g.:
+```
+=SORT(QUERY('Form Responses 1'!A:L, "select * where A is not null", 1), 1, FALSE)
+```
+That gives a live, always-sorted working view while the real response tab stays untouched — so sync never breaks again.
+
+### Durable fix worth doing (removes this failure mode entirely)
+The native Form→Sheet sync is inherently fragile (any edit to the response tab can silently kill it). Since responses ALWAYS land reliably in the Form, stop depending on the native link and write to the Sheet from **Apps Script instead**:
+
+- Add a form-bound (or standalone) Apps Script with an **installable "On form submit" trigger**. On each submission it reads `e.response.getItemResponses()` and `appendRow`s straight into the Sheet by ID — real-time, owner-controlled, and immune to the native-link/sort breakage.
+- Install the trigger on the **Form**, not the spreadsheet, so it fires regardless of whether the native Sheet link is healthy.
+- This is the same mechanism already earmarked as `onFormSubmitToResponses` in `Code.gs`; the 12 field IDs and the `timestamp | learner_email | … | notes` schema (both documented above) are all that's needed to write it.
+- Bonus: the handler can write directly into the normalized schema tab, so there's no raw-form-dump tab to sort/edit in the first place.
 
 ## Remaining work after unblocking
 

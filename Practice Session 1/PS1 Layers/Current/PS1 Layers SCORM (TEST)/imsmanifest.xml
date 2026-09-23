@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="WIXLD.PS1.LAYERS.TEST" version="1.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                      http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+                      http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+
+  <organizations default="ORG-PS1-LAYERS">
+    <organization identifier="ORG-PS1-LAYERS">
+      <title>PS1 — Layers Scenario (TEST)</title>
+      <item identifier="ITEM-PS1-LAYERS" identifierref="RES-PS1-LAYERS" isvisible="true">
+        <title>Layers Scenario</title>
+        <adlcp:masteryscore>0</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+
+  <resources>
+    <resource identifier="RES-PS1-LAYERS" type="webcontent"
+              adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="scorm12.js"/>
+      <file href="content/index.html"/>
+      <file href="content/Samantha M/Samantha_Close.png"/>
+      <file href="content/Samantha M/Samantha_Meet.png"/>
+      <file href="content/Scenario Screenshots/Live Site (Recreate B).png"/>
+      <file href="content/Scenario Screenshots/Lenas Organize DOM Order.png"/>
+      <file href="content/Scenario Screenshots/Lenas Layers Panel.png"/>
+    </resource>
+  </resources>
+</manifest>

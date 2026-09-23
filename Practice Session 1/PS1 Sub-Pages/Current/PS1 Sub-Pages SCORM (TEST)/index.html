@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wix L&amp;D — Sub-Pages Scenario (SCORM 1.2 TEST)</title>
+<script src="scorm12.js"></script>
+<style>
+  html,body{margin:0;height:100%;background:#fff}
+  #stage{display:block;width:100%;height:100vh;border:0}
+</style>
+</head>
+<body>
+  <!-- The unmodified scenario runs inside this frame. Same-origin inside the
+       SCORM package, so we can relay its postMessage completion signal. -->
+  <iframe id="stage" src="content/index.html" title="Sub-Pages Scenario"
+          allow="clipboard-write"></iframe>
+
+<script>
+(function () {
+  // 1) Open the SCORM session as soon as the launch page loads.
+  SCORM12.init();
+
+  // 2) The scenario already emits window.parent.postMessage(...) events:
+  //      { type:'setVar', name:'activity_complete', value:'true' }  -> learner finished
+  //      { type:'setVar', name:'learner_name', value:'...' }        -> captured on Meet screen
+  //    We map the completion signal onto cmi.core.lesson_status.
+  window.addEventListener('message', function (e) {
+    var d = e && e.data;
+    if (!d || typeof d !== 'object') return;
+
+    if (d.type === 'setVar' && d.name === 'activity_complete' &&
+        String(d.value) === 'true') {
+      SCORM12.complete();
+      console.log('[SCORM] Scenario reported activity_complete -> lesson_status=completed');
+    }
+
+    if (d.type === 'setVar' && d.name === 'learner_name') {
+      SCORM12.set('cmi.comments', 'Learner: ' + d.value);
+    }
+  });
+
+  // 3) Close the SCORM session cleanly when the LMS unloads the SCO.
+  window.addEventListener('pagehide', function () { SCORM12.finish(); });
+  window.addEventListener('unload',   function () { SCORM12.finish(); });
+})();
+</script>
+</body>
+</html>

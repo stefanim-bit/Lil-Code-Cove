@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Practice Session — Interactive Scenario (Rise Code Block Template · v2 · RISE BUILD)</title>
+<title>Care Dojo — Interactive Scenario (Rise Code Block Template · v2 · RISE BUILD)</title>
 
 <!--
 ==================================================================================
@@ -115,13 +115,14 @@
   }
   .meet .portrait{
     position:relative;
-    background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);
-    display:flex;align-items:flex-end;justify-content:center;padding:0;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;padding:0;
     overflow:hidden;min-height:0;
   }
-  /* Sarah's artwork is a full-body cutout, so it's shown whole (contain) on a
-     soft background rather than full-bleed cropped. */
-  .meet .portrait img{width:100%;height:100%;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 1rem 1.375rem rgba(20,24,40,.16))}
+  /* Full-bleed cropped headshot — matches Amber's meet spec and the Layers
+     scenario: `cover` fills the container so the photo's own background always
+     reaches every edge and never leaves a gap. Use this for all future scenarios. */
+  .meet .portrait img{width:100%;height:100%;object-fit:cover}
   .meet .portrait .noimg{align-self:center;color:var(--muted);font-size:0.875rem;text-align:center;padding:1.5rem}
   .meet .body{padding:2.5rem 3.75rem;display:flex;flex-direction:column;justify-content:center}
   .eyebrow{font-size:0.75rem;font-weight:700;color:#101585;text-transform:uppercase;letter-spacing:0;margin-bottom:0.625rem}
@@ -139,8 +140,8 @@
   .btn-ghost:hover{border-color:var(--ink)}
 
   /* ============================ THE CALL (Communication Panel) ============================ */
-  .panel{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden}
-  .panel-head{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1.125rem;border-bottom:0.0625rem solid var(--line);background:#fff}
+  .panel{position:relative;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;height:600px;display:flex;flex-direction:column}
+  .panel-head{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1.125rem;border-bottom:0.0625rem solid var(--line);background:#fff;flex:0 0 auto}
   .avatar{width:2.375rem;height:2.375rem;border-radius:50%;background:var(--agent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.9375rem;flex:0 0 auto}
   .who-name{font-weight:700;font-size:0.9375rem}
   .who-sub{display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.78125rem;margin-top:0.0625rem}
@@ -158,7 +159,7 @@
      scrolls internally, so the response options below always sit on screen and
      can be read in full without scrolling the page. 40vh is tuned so the
      options fit for the common (≤4 option) screens. */
-  .chat{padding:1rem 1.125rem 0.375rem;display:flex;flex-direction:column;gap:0.875rem;height:40vh;overflow-y:auto}
+  .chat{padding:1rem 1.125rem 3.5rem;display:flex;flex-direction:column;gap:0.875rem;flex:1;min-height:0;overflow-y:auto}
   .msg{display:flex;flex-direction:column;max-width:78%}
   .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
   .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
@@ -192,11 +193,24 @@
   .msg.reaction .bubble,
   .msg.reaction .bubble.action{color:#242424 !important}
 
-  /* "Click to view fullscreen" control in the sim header */
+  /* legacy in-header fullscreen text button (replaced by the .fs-fab icon) */
   .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.875rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
   .btn-fs:hover{color:var(--agent);background:var(--agent-bubble)}
   .panel:fullscreen{border-radius:0;display:flex;flex-direction:column;overflow:auto}
   .panel:fullscreen .chat{min-height:0;flex:1}
+  /* Fullscreen toggle — a round icon that lives OUTSIDE the chat panel (top-right). */
+  .sim-wrap{position:relative;padding-top:3rem}
+  .fs-fab{position:absolute;top:0;right:0;width:2.25rem;height:2.25rem;padding:0;border:0;border-radius:50%;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 0.0625rem 0.25rem rgba(20,24,40,.14);transition:transform .12s ease}
+  .fs-fab:hover{transform:scale(1.08)}
+  .fs-fab svg{width:100%;height:100%;display:block}
+  .sim-wrap:fullscreen{padding-top:0;background:var(--bg);display:flex;flex-direction:column}
+  .sim-wrap:fullscreen .panel{flex:1;height:auto;border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .sim-wrap:fullscreen .chat{min-height:0;flex:1}
+  .sim-wrap:fullscreen .fs-fab{top:0.75rem;right:0.75rem;z-index:20}
+  /* In fullscreen the round fullscreen icon floats at the panel's top-right and
+     would sit on top of the End button. Pad the header right so the buttons
+     shift left and clear the icon. */
+  .sim-wrap:fullscreen .panel-head{padding-right:3.5rem}
 
   /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
      from spoken replies, right inside the choice button. */
@@ -208,6 +222,18 @@
   .hbtn{font-size:0.875rem;font-weight:500;padding:0.375rem 1.5rem;border-radius:18.75rem;border:1px solid #424242;background:#fff;color:#242424;cursor:pointer;height:32px}
   .hbtn:hover{border-color:#424242;color:#fff;background:#424242}
   .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;margin:0.125rem 0 0.625rem}
+  /* ---- slide-up decision sheet: the question + choices overlay the lower chat,
+     so the panel height is FIXED and never grows. Click the handle to
+     minimize/expand; it auto-opens for each new question, no backdrop dim. ---- */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#FBFBFC;border-top:0.0625rem solid var(--line);border-top-left-radius:var(--r-md);border-top-right-radius:var(--r-md);box-shadow:0 -0.5rem 1.5rem rgba(20,24,40,.10);display:flex;flex-direction:column;max-height:82%;transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:2}
+  .sheet.min{transform:translateY(calc(100% - 3.25rem))}
+  .sheet-handle{position:relative;flex:0 0 auto;height:3.25rem;width:100%;display:flex;align-items:center;gap:0.75rem;padding:0 1.125rem;cursor:pointer;user-select:none;background:none;border:0;font-family:var(--font-text);text-align:left}
+  .sheet-handle:hover{background:#F3F4F7}
+  .sheet-grab{position:absolute;top:0.4375rem;left:50%;transform:translateX(-50%);width:2.25rem;height:0.25rem;border-radius:62.4375rem;background:var(--line-2)}
+  .sheet-q{flex:1;font-weight:700;font-size:0.8125rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:0.25rem}
+  .sheet-chev{flex:0 0 auto;color:var(--ink-2);display:inline-flex;transition:transform .28s ease;padding-top:0.25rem}
+  .sheet:not(.min) .sheet-chev{transform:rotate(180deg)}
+  .sheet-body{flex:1;min-height:0;overflow-y:auto;padding:0.25rem 1.125rem 1.125rem}
   .choice{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.8125rem 0.9375rem;margin:0.5rem 0;font-size:0.90625rem;font-family:var(--font-text);color:var(--ink);cursor:pointer;transition:border-color .12s ease, box-shadow .12s ease, background .12s ease}
   .choice:hover:not(:disabled){border-color:var(--agent);box-shadow:0 0.125rem 0.625rem rgba(15,98,230,.10);background:#fff}
   .choice:disabled{opacity:.45;cursor:not-allowed}
@@ -240,8 +266,8 @@
 
   /* ============================ COMPLETE ============================ */
   .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
-  .complete-hero .portrait{background:linear-gradient(160deg,#EDF2FE 0%,#F1EEFA 55%,#F6F7FA 100%);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;min-height:0}
-  .complete-hero .portrait img{width:auto;height:auto;max-width:100%;max-height:21.25rem;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 1rem 1.375rem rgba(20,24,40,.16))}
+  .complete-hero .portrait{background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0}
+  .complete-hero .portrait img{width:100%;height:100%;object-fit:cover}
   .complete-hero .body{padding:2.5rem 2.75rem;display:flex;flex-direction:column;justify-content:center}
   .complete-hero h1{font-size:3rem;margin-bottom:0.75rem}
   .complete-hero .lead{font-size:1rem;color:var(--ink-2);margin:0 0 1.375rem;max-width:46ch}
@@ -341,7 +367,7 @@ window.SCENARIO = {
     name: "Sarah",
     image: "Sarah/Sarah_Meet.png",
     completeImage: "Sarah/Sarah_Close.png",
-    bio: "Sarah is trying to add sub-pages to her site menu and has been stuck for an hour trying to get it working."
+    bio: "Sarah is trying to add sub-pages to her site menu and has been stuck for an hour trying to get it working. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!"
   },
 
   resources: {
@@ -350,7 +376,7 @@ window.SCENARIO = {
     note: "Open the resources below. Checking the right one before you answer is the skill — not remembering it.",
     items: [
       { label:"Wix Editor: Menus, Anchors & Backgrounds", url:"https://csinternal.wixanswers.com/kb/en/article/wix-editor-menus-anchors-backgrounds", correct:true },
-      { label:"Wix Editor: Menu Issues", url:"http://support.wix.com/en/article/wix-editor-menu-issues", correct:true },
+      { label:"Wix Editor: Menu Issues", url:"https://support.wix.com/en/article/wix-editor-menu-issues", correct:true },
       { label:"Studio Editor: Menus, Dropdowns, and Anchor Navigation", url:"https://csinternal.wixanswers.com/kb/en/article/studio-editor-menus-dropdowns-and-anchor-navigation" },
       { label:"Mobile Editor: Live Site Issues", url:"https://csinternal.wixanswers.com/kb/en/article/mobile-editor-live-site-issues" },
       { label:"Wix Stores — Category Menu Display and Layout Issues", url:"https://csinternal.wixanswers.com/kb/en/article/wix-stores-%E2%80%94-category-menu-display-and-layout-issues" }
@@ -394,18 +420,17 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"Hey, I gotcha, this is an easy fix! Go into your menu settings and switch it to Advanced.",
           verdict:"incorrect", points:0, goTo:"s_dynamics",
-          consequence:"Sarah: Wait, I don’t have anything called Advanced. Where am I meant to be looking?\n\nExpert: Actually, let's start with your email so I'm looking at the right account." },
-        { id:"B", text:"Hi Sarah, I can help. What’s the email on your account?",
+          consequence:"Sarah: Wait, I don’t have anything called Advanced. Where am I meant to be looking?\n\nExpert: Actually, let's start with the site you're reaching out about." },
+        { id:"B", text:"Hi Sarah, I can help.",
           verdict:"partial", points:3, goTo:"s_dynamics" },
-        { id:"C", text:"Hi, you’ve reached Wix Customer Care, I’m [name].\nSarah, can we start with the email on your account?",
-          verdict:"correct", points:5, goTo:"s_dynamics",
-          credits:[{stage:"roadmap", points:4, verdict:"partial"}] }
+        { id:"C", text:"Hi, you’ve reached Wix Customer Care, I’m [name]. I can help with that.",
+          verdict:"correct", points:5, goTo:"s_dynamics" }
       ]
     },
 
     s_dynamics: {
       stage:"dynamics", gate:true,
-      speaker:"My email is Sarah.trent@gmail.com.",
+      speaker:"I’m reaching out about the “Picture Perfect” site.",
       prompt:"What do you do next?",
       choices:[
         { id:"A", text:"Thank you Sarah. Can you describe what you can see on your screen?",
@@ -413,10 +438,10 @@ window.SCENARIO = {
           consequence:"Sarah: Um, just my menu and the pages panel." },
         { id:"B", text:"[Action] Look Sarah up in User Manager.",
           verdict:"correct", points:10, goTo:"s_familiarize",
-          consequence:"(The email Sarah provided matches the email associated with the Wix account.)\n\nExpert: Perfect, I’ve pulled up your account details. Thanks for that." },
-        { id:"C", text:"[Action] Compare with the email listed in the Overview Tab Manager.",
-          verdict:"correct", points:10, goTo:"s_familiarize",
-          consequence:"(The email Sarah provided matches the email associated with the Wix account.)\n\nExpert: Perfect, I’ve pulled up your account details. Thanks for that." },
+          consequence:"Expert: Perfect, I’ve pulled up your account details. Thanks for that." },
+        { id:"C", text:"[Action] Check the Overview Tab Manager.",
+          verdict:"partial", points:5, goTo:"s_familiarize",
+          consequence:"Expert: Perfect, I’ve pulled up your account details. Thanks for that." },
         { id:"D", text:"[Action] Check Case History for related tickets from Sarah.",
           verdict:"partial", points:5, goTo:"s_familiarize",
           consequence:"(There aren’t any linked cases in Case History.)\n\nExpert: Perfect, I’ve pulled up your account details. Thanks for that." }
@@ -501,17 +526,17 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"[Action] Tell Sarah it’s just the old menu type.",
           say:"It’s just the old menu type.",
-          verdict:"incorrect", points:0, goTo:"s_solve" },
+          verdict:"incorrect", points:10, goTo:"s_solve" },
         { id:"B", text:"[Action] Reply using “Wix Editor: Menu Issues”.",
           verdict:"correct", points:20, goTo:"s_solve" },
         { id:"C", text:"[Action] Reply using “Studio Editor: Menus, Dropdowns, and Anchor Navigation.”",
-          verdict:"incorrect", points:0, goTo:"s_solve" },
+          verdict:"incorrect", points:10, goTo:"s_solve" },
         { id:"D", text:"[Action] Reply using “Wix Editor: Menus, Anchors, Backgrounds”.",
           verdict:"correct", points:20, goTo:"s_solve" },
         { id:"E", text:"[Action] Reply using “Mobile Editor: Live Site Issues”.",
-          verdict:"incorrect", points:0, goTo:"s_solve" },
+          verdict:"incorrect", points:10, goTo:"s_solve" },
         { id:"F", text:"[Action] Reply using “Wix Stores — Category Menu Display and Layout Issues”.",
-          verdict:"incorrect", points:0, goTo:"s_solve" }
+          verdict:"incorrect", points:10, goTo:"s_solve" }
       ]
     },
 
@@ -521,7 +546,7 @@ window.SCENARIO = {
       prompt:"What do you tell Sarah?",
       choices:[
         { id:"A", text:"Check the Inspector tabs for the affected element and its parent elements. The cause is often inherited from a parent, not the element itself. Let me walk you through how to do this now.",
-          verdict:"correct", points:20, goTo:"s_close",
+          verdict:"incorrect", points:0, goTo:"s_close",
           consequence:"Interesting.… Thanks." },
         { id:"B", text:"I got a great Help Center article that summarizes everything you need to upgrade your menu. I’ll send you the link and you can follow along step by step!",
           verdict:"incorrect", points:0, goTo:"s_close",
@@ -702,11 +727,26 @@ window.SCENARIO = {
   function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   /* ---- call timer (authentic Communication-Panel touch) ---- */
-  let callSeconds = 0, timerHandle = null;
+  let callSeconds = 0, timerHandle = null, callStartTs = null;
   function mmss(t){ const m=Math.floor(t/60), s=t%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
-  function startTimer(){ const el=()=>document.getElementById('timer');
-    timerHandle = setInterval(()=>{ callSeconds++; const e=el(); if(e) e.textContent=mmss(callSeconds); }, 1000); }
+  // Drive the clock from a real timestamp, NOT a tick counter. Background tabs
+  // throttle/pause setInterval (e.g. after opening Resources and switching tab),
+  // which makes a "callSeconds++" counter fall behind real time. Deriving the
+  // value from elapsed wall-clock time keeps it accurate: it snaps to the right
+  // value on the next tick, and immediately when the tab is re-focused.
+  function tickTimer(){
+    if(callStartTs==null) return;
+    callSeconds = Math.round((Date.now()-callStartTs)/1000);
+    const e=document.getElementById('timer'); if(e) e.textContent=mmss(callSeconds);
+  }
+  function startTimer(){
+    callStartTs = Date.now() - callSeconds*1000;   // resume-safe
+    tickTimer();
+    timerHandle = setInterval(tickTimer, 1000);
+  }
   function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
+  // Correct the display the instant the tab becomes visible again.
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tickTimer(); });
 
   let chatEl, composerEl;
 
@@ -721,9 +761,9 @@ window.SCENARIO = {
       <section class="meet">
         <div class="portrait">${portrait}</div>
         <div class="body">
-          <div class="eyebrow">Practice Session · User Scenario</div>
+          <div class="eyebrow">Care Dojo · User Scenario</div>
           <h1 class="display">Meet ${escapeHtml(U.name)}</h1>
-          <p>${escapeHtml(U.bio)}</p>
+          <p>${escapeHtml(U.bio).replace(/\*([^*]+)\*/g,'<em>$1</em>')}</p>
           <div class="namefield">
             <label for="learnerName">Full Name</label>
             <input class="nameinput" id="learnerName" type="text" autocomplete="name"
@@ -763,45 +803,45 @@ window.SCENARIO = {
         emailError.classList.add('show'); emailInput.classList.add('invalid'); bad = true;
       }
       if(bad){ (!learner_name ? nameInput : emailInput).focus(); return; }
-      renderConfirm();
+      openConfirm();
     };
   }
 
-  /* =================== PHASE 1b — CONFIRM YOUR DETAILS ===================
-     A checkpoint between Meet and the call: the learner reviews the exact
-     name + email that will be attached to their results. "Back" returns to
-     Meet with their entries preserved; "These are correct" starts the call. */
-  function renderConfirm(){
-    stopTimer();
-    const portrait = U.image
-      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}"
-             onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'noimg\\'>[ ${escapeHtml(U.name)} ]</div>')">`
-      : `<div class="noimg">[ ${escapeHtml(U.name)} ]</div>`;
-    app.innerHTML = `
-      <section class="meet">
-        <div class="portrait">${portrait}</div>
-        <div class="body">
-          <div class="eyebrow">Practice Session · Confirm your details</div>
-          <h1 class="display">Are these correct?</h1>
-          <p>Make sure your first and last name and Wix email address are correct before we proceed.</p>
-          <div class="confirm-details">
-            <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${escapeHtml(learner_name)}</span></div>
-            <div class="confirm-row"><span class="confirm-label">Email</span><span class="confirm-value">${escapeHtml(learner_email)}</span></div>
-          </div>
-          <div class="confirm-actions">
-            <button class="btn btn-ghost btn-wide" id="backBtn" type="button">Back</button>
-            <button class="btn btn-dark btn-wide" id="confirmBtn" type="button">These are correct<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button>
-          </div>
+  /* =================== PHASE 1b — CONFIRM YOUR DETAILS (popup) ===================
+     A modal checkpoint over the Meet screen: the learner reviews the exact name
+     + email that will be attached to their results. Close/Back dismisses the
+     popup (Meet stays put); "These are correct" starts the call. */
+  function openConfirm(){
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>Are these correct?</h3><button class="mx" id="confirmClose" type="button" aria-label="Close">&times;</button></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">Make sure your first and last name and Wix email address are correct before we proceed. We'll attach these to your results.</p>
+        <div class="confirm-details">
+          <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${escapeHtml(learner_name)}</span></div>
+          <div class="confirm-row"><span class="confirm-label">Email</span><span class="confirm-value">${escapeHtml(learner_email)}</span></div>
         </div>
-      </section>`;
-    document.getElementById('backBtn').onclick = renderMeet;
-    document.getElementById('confirmBtn').onclick = startCall;
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="confirmYes" type="button">These are correct<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button>
+          <button class="btn btn-ghost" id="confirmBack" type="button">Back</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    const close = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#confirmClose').onclick = close;
+    dlg.querySelector('#confirmBack').onclick = close;
+    dlg.querySelector('#confirmYes').onclick = ()=>{ close(); startCall(); };
   }
 
   /* =================== PHASE 2 — THE LIVE CALL =================== */
+  // Fullscreen toggle icons (recreated inline — no image files). A circle with
+  // outward arrows = expand; inward arrows = collapse. Swapped on fullscreenchange.
+  const MAXIMIZE_SVG = `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="17.4462" stroke="#000624" stroke-width="1.10769"/><path d="M16.5893 18.8569C16.7609 19.0286 16.78 19.2951 16.6465 19.4878L16.5893 19.5563L12.4873 23.6571H15.7451V24.6462H10.8V19.7011H11.7891V22.9569L15.8899 18.8569C16.0831 18.6638 16.3962 18.6638 16.5893 18.8569ZM24.6462 10.8V15.7451H23.6572V12.4873L19.5563 16.5892C19.3632 16.7823 19.0501 16.7823 18.857 16.5892C18.6639 16.3961 18.6639 16.083 18.857 15.8899L22.957 11.789H19.7011V10.8H24.6462Z" fill="#000624"/></svg>`;
+  const MINIMIZE_SVG = `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="17.4462" stroke="#000624" stroke-width="1.10769"/><path d="M24.5012 11.6452C24.594 11.5523 24.6462 11.4264 24.6462 11.2951C24.6462 11.1638 24.594 11.0379 24.5012 10.945C24.4083 10.8522 24.2824 10.8 24.1511 10.8C24.0198 10.8 23.8939 10.8522 23.801 10.945L19.701 15.0461V11.7895H18.712V16.7342H23.6567V15.7452H20.4001L24.5012 11.6452ZM15.0461 19.7009H11.7896V18.712H16.7342V23.6566H15.7453V20.4001L11.6452 24.5012C11.5524 24.594 11.4264 24.6462 11.2951 24.6462C11.1638 24.6462 11.0379 24.594 10.9451 24.5012C10.8522 24.4083 10.8 24.2824 10.8 24.1511C10.8 24.0198 10.8522 23.8938 10.9451 23.801L15.0461 19.7009Z" fill="#000624"/></svg>`;
   function startCall(){
     const initial = (U.name||'?').trim().charAt(0).toUpperCase();
     app.innerHTML = `
+      <div class="sim-wrap" id="simWrap">
+      <button class="fs-fab" id="fsBtn" type="button" title="Enter fullscreen" aria-label="Enter fullscreen">${MAXIMIZE_SVG}</button>
       <section class="panel" id="sim">
         <div class="panel-head">
           <div class="avatar">${escapeHtml(initial)}</div>
@@ -810,27 +850,46 @@ window.SCENARIO = {
             <div class="who-sub"><span class="livedot"></span> Live chat · <span class="timer" id="timer">00:00</span></div>
           </div>
           <div class="head-spacer"></div>
-          <button class="btn-fs" id="fsBtn" type="button" title="Click to view fullscreen">⤢ Click to view fullscreen</button>
           <div class="helperbar-head" id="helperbar"></div>
           <button class="btn-end" id="endBtn">End</button>
         </div>
         <div class="chat" id="chat" aria-live="polite"></div>
-        <div class="composer">
-          <div id="composer"></div>
+        <div class="sheet min" id="sheet">
+          <button class="sheet-handle" id="sheetHandle" type="button" aria-expanded="false" aria-controls="composer">
+            <span class="sheet-grab"></span>
+            <span class="sheet-q" id="sheetQ"></span>
+            <span class="sheet-chev" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 15l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <div class="sheet-body"><div id="composer"></div></div>
         </div>
-      </section>`;
+      </section>
+      </div>`;
     chatEl = document.getElementById('chat');
+    lastBubbleKind = null;   // fresh chat — start a new speaker run
     composerEl = document.getElementById('composer');
+    const sheetHandle = document.getElementById('sheetHandle');
+    if(sheetHandle) sheetHandle.onclick = toggleSheet;
+    // The sheet grows/shrinks as its choices render (they're appended after it
+    // opens). Re-sync the chat's reserved bottom space whenever its size changes,
+    // so the newest messages always sit just above the choices.
+    const sheetEl = document.getElementById('sheet');
+    if(sheetEl && 'ResizeObserver' in window){
+      new ResizeObserver(()=>syncChatBottom()).observe(sheetEl);
+    }
     document.getElementById('endBtn').onclick = confirmEnd;
-    // "Click to view fullscreen" — expand the whole sim panel via the Fullscreen API.
-    const fsBtn = document.getElementById('fsBtn'), sim = document.getElementById('sim');
-    if(fsBtn && sim && document.fullscreenEnabled){
+    // Fullscreen toggle — expand the whole sim (wrapper incl. the floating icon)
+    // via the Fullscreen API, swapping the maximize/minimize icon on change.
+    const fsBtn = document.getElementById('fsBtn'), simWrap = document.getElementById('simWrap');
+    if(fsBtn && simWrap && document.fullscreenEnabled){
       fsBtn.onclick = ()=>{
         if(document.fullscreenElement) document.exitFullscreen();
-        else sim.requestFullscreen().catch(()=>{});
+        else simWrap.requestFullscreen().catch(()=>{});
       };
       document.addEventListener('fullscreenchange', ()=>{
-        fsBtn.innerHTML = document.fullscreenElement===sim ? '⤡ Exit fullscreen' : '⤢ Click to view fullscreen';
+        const on = document.fullscreenElement===simWrap;
+        fsBtn.innerHTML = on ? MINIMIZE_SVG : MAXIMIZE_SVG;
+        fsBtn.title = on ? 'Exit fullscreen' : 'Enter fullscreen';
+        fsBtn.setAttribute('aria-label', fsBtn.title);
       });
     } else if(fsBtn){ fsBtn.style.display='none'; }
     renderHelpers();
@@ -869,9 +928,16 @@ window.SCENARIO = {
     chatEl.appendChild(node); chatEl.scrollTop = chatEl.scrollHeight;
     return node;
   }
+  /* Group consecutive messages from the SAME speaker: the name label is shown
+     only on the FIRST bubble of a run, not repeated on back-to-back messages
+     from the same person. System notes are centered and never labeled; they
+     also break a run so the next spoken bubble re-shows its name. */
+  let lastBubbleKind = null;
   function appendBubble(kind, text, reaction){
-    const meta = kind==='system' ? '' :
+    const sameSpeaker = (kind !== 'system' && kind === lastBubbleKind);
+    const meta = (kind==='system' || sameSpeaker) ? '' :
       `${kind==='you' ? (firstName()||'You') : U.name} · ${mmss(callSeconds)}`;
+    lastBubbleKind = kind;
     return appendNode(bubbleMarkup(kind, text, meta, reaction));
   }
   /* Inline action note: an "[Action]" choice is something the Expert DOES, shown
@@ -887,18 +953,25 @@ window.SCENARIO = {
      (e.g. the Layers panel or the Accessibility Wizard). `img` is {src, alt,
      caption}. Rendered as a full-width figure so learners see the same thing
      the Expert would be looking at. Broken/absent sources hide gracefully. */
-  function appendImage(img){
+  function appendImage(img, autoOpen){
     if(!img || !img.src) return null;
+    lastBubbleKind = 'system';   // an image breaks a same-speaker run
     const alt = escapeHtml(img.alt || '');
     // No caption — learners read the screenshot and locate the info themselves.
     // Click (or Enter/Space) opens the image in a full-screen zoom lightbox.
-    return appendNode(
+    const node = appendNode(
       `<div class="msg system"><figure class="screenshot">`+
       `<img src="${escapeHtml(img.src)}" alt="${alt}" loading="lazy" tabindex="0" role="button" `+
       `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
       `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}" `+
       `onerror="this.closest('figure').innerHTML='<div class=\\'noimg\\'>[ screenshot not found ]</div>'">`+
       `</figure></div>`);
+    // Engine rule: a screenshot revealed by an ACTION (e.g. "You impersonate…and
+    // find the element in the Layers panel") pops straight into the full-screen
+    // lightbox so the learner sees the detail immediately; they close it (X / Esc /
+    // click-outside) to continue. It stays inline in the chat afterward too.
+    if(autoOpen) openLightbox(img.src, img.alt || '');
+    return node;
   }
 
   /* ---- Lightbox: click any inline screenshot to view it enlarged ---- */
@@ -913,7 +986,56 @@ window.SCENARIO = {
   }
   window.__openLightbox = openLightbox;
 
-  function setComposer(html){ composerEl.innerHTML = html; }
+  // setComposer also drives the slide-up sheet: any real content (the choices)
+  // auto-opens it; clearing it (transitions/retries) slides it back down so the
+  // learner can read the chat. The learner can also toggle it via the handle.
+  function setComposer(html){
+    composerEl.innerHTML = html;
+    const s = document.getElementById('sheet');
+    if(s){
+      const open = !!(html && html.trim());
+      s.classList.toggle('min', !open);
+      const h = document.getElementById('sheetHandle');
+      if(h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    syncChatBottom();
+  }
+  function setSheetQuestion(t){ const q=document.getElementById('sheetQ'); if(q) q.textContent = t; }
+  function toggleSheet(){
+    const s=document.getElementById('sheet'); if(!s) return;
+    const willOpen = s.classList.contains('min');
+    s.classList.toggle('min');
+    const h=document.getElementById('sheetHandle');
+    if(h) h.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    syncChatBottom();
+  }
+
+  /* ---- Slide-up sheet ⇄ chat spacing (engine rule — applies to every scenario) ----
+     The decision sheet is an overlay pinned to the panel's bottom edge, so on its
+     own it would COVER the newest chat messages. Rather than resize the chat
+     viewport, we reserve empty space INSIDE the chat equal to the sheet's currently
+     visible height: the last messages slide UP above the choices, and when the
+     sheet is minimized that reserved space shrinks so they slide back DOWN. The
+     newest message is always pinned into view. (Viewport height never changes.) */
+  function syncChatBottom(){
+    if(!chatEl) return;
+    const s = document.getElementById('sheet');
+    let cover = 0;
+    if(s){
+      // The sheet is pinned to the panel's bottom edge (its bottom == the chat's
+      // bottom), so the strip it covers equals its own height. Use offsetHeight,
+      // NOT getBoundingClientRect: offsetHeight ignores the slide-in transform, so
+      // it's correct even mid-animation. Minimized → only the ~3.25rem handle shows.
+      const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      cover = s.classList.contains('min') ? (3.25 * rootPx) : s.offsetHeight;
+    }
+    chatEl.style.paddingBottom = cover + 'px';   // reserve exactly the covered strip
+    chatEl.scrollTop = chatEl.scrollHeight;      // pin to newest (sits just above the sheet)
+  }
+  // The sheet's open height is a % of the panel, so re-sync when the panel resizes
+  // (window resize or entering/leaving fullscreen).
+  window.addEventListener('resize', syncChatBottom);
+  document.addEventListener('fullscreenchange', syncChatBottom);
 
   /* "[Action] ..." choices are actions, not spoken replies. */
   const ACTION_RE = /^\s*\[Action\]\s*/i;
@@ -1118,7 +1240,8 @@ window.SCENARIO = {
     const showChoices = ()=>{
       // (Screen screenshots are no longer shown automatically — they now reveal
       //  only when the learner picks the choice flagged with caption:"Samantha's Layers panel…".)
-      setComposer(`<div class="prompt">${escapeHtml(px(scr.prompt))}</div><div id="choices"></div>`);
+      setComposer(`<div id="choices"></div>`);
+      setSheetQuestion(px(scr.prompt));   // the question shows in the sheet handle
       const cWrap = document.getElementById('choices');
       scr.choices.forEach(ch=>{
         const b=document.createElement('button');
@@ -1133,6 +1256,7 @@ window.SCENARIO = {
         cWrap.appendChild(b);
       });
       markStepStart();   // start the clock for this screen's time_on_step_sec
+      syncChatBottom();  // choices are now in the DOM — slide the chat up above them
     };
 
     // The caller line (which may itself contain Expert:/Sarah: parts) is split
@@ -1182,9 +1306,10 @@ window.SCENARIO = {
     else appendBubble('you', ch.text);
 
     // Choice-gated screenshot: shows immediately on selection, before the reply.
-    if(ch.showsImage && (ch.image||scr.image)) appendImage(ch.image||scr.image);
+    // Action-revealed screenshots auto-open the full-screen lightbox (2nd arg).
+    if(ch.showsImage && (ch.image||scr.image)) appendImage(ch.image||scr.image, true);
     // Deferred screenshot: shown AFTER the consequence (reply) finishes revealing.
-    const showImageAfter = ()=>{ if(ch.showsImageAfter && (ch.image||scr.image)) appendImage(ch.image||scr.image); };
+    const showImageAfter = ()=>{ if(ch.showsImageAfter && (ch.image||scr.image)) appendImage(ch.image||scr.image, true); };
     const segs = splitDialogue(ch.consequence);
 
     if(ch.retry && !retriedIds.includes(ch.id)){
@@ -1349,15 +1474,25 @@ window.SCENARIO = {
       if(tx.style.display==='none'){
         // Mirror the live chat: split speaker/consequence into speaker bubbles,
         // render the pick as an action note or a blue reply bubble.
+        // Same back-to-back grouping as the live chat: name label only on the
+        // first bubble of a same-speaker run (txSeg tracks the previous kind).
+        let txLast = null;
+        const txSeg = (kind, text, actionNote) => {
+          const same = (kind !== 'system' && kind === txLast);
+          txLast = kind;
+          if(actionNote) return bubbleMarkup('system', text, '');
+          const who = (kind==='system' || same) ? '' : (kind==='you' ? (firstName()||'You') : U.name);
+          return bubbleMarkup(kind, text, who);
+        };
         tx.innerHTML = `<h3 style="margin-bottom:0.375rem">Conversation transcript</h3>` +
           `<div class="chat txchat">` +
           transcript.map(t=>{
             let h='';
-            if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=segMarkup(s.kind, s.text));
-            h += t.say ? segMarkup('you', t.say)
-               : isAction(t.picked) ? bubbleMarkup('system', actionNoteText(t.picked), '')
-               : segMarkup('you', t.picked);
-            if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=segMarkup(s.kind, s.text));
+            if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=txSeg(s.kind, s.text));
+            h += t.say ? txSeg('you', t.say)
+               : isAction(t.picked) ? txSeg('system', actionNoteText(t.picked), true)
+               : txSeg('you', t.picked);
+            if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=txSeg(s.kind, s.text));
             return h;
           }).join('') + `</div>`;
         tx.style.display='block'; btn.textContent='Hide conversation transcript';
