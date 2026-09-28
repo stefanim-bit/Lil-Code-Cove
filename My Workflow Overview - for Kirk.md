@@ -39,7 +39,6 @@ tools that work together.
 ## How I organize the files
 
 - **By Practice Session** (1–4) at the top level, then **by feature** (e.g., Layers, Sub-Pages).
-- Each feature has a **Current** vs **Previous Versions** folder — so the live version is never buried under old drafts.
 - A separate **Authoring & Code Rule Docs** folder holds my rules, content outlines, and reference screenshots — the "how we do it" lives right next to the work.
 
 ---

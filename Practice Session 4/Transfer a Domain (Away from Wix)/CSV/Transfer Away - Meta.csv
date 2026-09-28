@@ -1,0 +1,5 @@
+field,value,notes
+title,Practice Call - Domains: Transfer a Domain (Away from Wix),Shown in the chat header.
+userBio,"Kiera is a Wix Partner who wants to transfer a client's domain away from Wix. In this activity, you'll simulate a chat with them. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!",Meet screen bio.
+userName,Kiera,Caller name.
+start,s_open,First screen id.

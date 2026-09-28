@@ -615,25 +615,22 @@ building a scenario alongside its reviewer matrix.
    Docs/`) and fill in its tabs — **Meta, Stages, Screens, Choices, Resources** (the
    **Read Me** tab explains each). The tab columns map 1:1 to the Part 3 schema.
 2. Download it as `.xlsx`.
-3. Run the converter:
-   ```bash
-   python3 "Authoring & Code Rule Docs/scenario_xlsx_to_js.py" your_scenario.xlsx out.js
-   ```
-   (Needs Python 3 + `openpyxl`: `pip3 install openpyxl`. Omit `out.js` to print to
-   the screen instead.)
+3. Hand the filled-in spreadsheet to **Claude** (or another assistant) and ask it to
+   generate the `window.SCENARIO = { … }` JS block following the Part 3 schema. No
+   local script or Python install is needed.
 4. Paste the generated block into your copied engine file's `<script id="scenario">`
    tag, replacing the old block. Add the image files it references.
 
-The converter emits the **current** schema (`user{}`, `consequence`, the
-`correct:true` + `capIfUnchecked` resources model, choice `id`, `additive`, images) and
-**warns** if stage `max` values don't sum to 100, a `goTo` points nowhere, or any
-em-dash slips in. Screen order in the output follows the row order of the **Screens**
-tab. For multi-line `speaker`/`consequence` cells, use a real line break (Alt+Enter)
-and label the parts (`Samantha:` / `Expert:`).
+The generated block should use the **current** schema (`user{}`, `consequence`, the
+`correct:true` + `capIfUnchecked` resources model, choice `id`, `additive`, images).
+Have the assistant sanity-check that stage `max` values sum to 100, every `goTo` points
+somewhere real, and no em-dashes slip in. Screen order follows the row order of the
+**Screens** tab. For multi-line `speaker`/`consequence` cells, use a real line break
+(Alt+Enter) and label the parts (`Samantha:` / `Expert:`).
 
-> The converter and template are kept in sync with this schema. If you add a brand-new
-> engine field, update `scenario_xlsx_to_js.py` (and the template columns) too, or
-> author that field by hand.
+> The template columns map 1:1 to this schema. If you add a brand-new engine field,
+> update the template columns too and point the assistant at the new field so the
+> generated JS includes it, or author that field by hand.
 
 ---
 

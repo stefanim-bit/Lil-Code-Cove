@@ -1,0 +1,3 @@
+Add these screenshots (referenced by the scenario, revealed on action choices so they auto-open the zoom):
+- Component Finder.png  (Component Finder / search showing the image element)
+- Layers Panel Behind.png  (Layers panel showing the image nested behind another element)

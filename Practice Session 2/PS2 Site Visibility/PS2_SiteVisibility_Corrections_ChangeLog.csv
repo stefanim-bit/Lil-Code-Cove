@@ -1,0 +1,33 @@
+#,Status,Area,Location,Field,Current,Corrected / Action,Reason
+1,PROPOSED,Meta,Meta B2,title,Mobile Editor: Site Visibility,Practice Chat - Mobile Editor: Site Visibility,Matches the other PS2 titles.
+2,CONFIRMED,Meta,Meta B3,userBio,Meet Tomo / Tomo can't see their whole site on their phone. / In this activity...,"Tomo can't see their whole site on their phone. In this activity, you'll simulate a chat with them. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!",Standard bio format: 'Meet Tomo' only in the heading.
+3,CONFIRMED,Em-dash,Stages D6 (roadmap strength),strength,You told Tomo your plan — what you'd check and do next — so they weren't left guessing.,"You told Tomo your plan, what you'd check and do next, so they weren't left guessing.",No em-dashes.
+4,CONFIRMED,Resource name,Stages D8 + E8 (article),strength / improvement,...Mobile Editor: Editor Issues...,...Wix Editor: Editor Issues...,Your pasted article name.
+5,CONFIRMED,Em-dash,Stages E10 (solve improvement),improvement,...linked navigation — guiding them through it...,"...linked navigation, guiding them through it...",
+6,CONFIRMED,Em-dash,Screens E5 (s_clarify speaker),speaker,Yeah — on my phone the top and bottom...,"Yeah, on my phone the top and bottom...",
+7,CONFIRMED,Em-dash,Chat Choices C3 (s_open B),text,...I'm [name] — I hear you can't see...,...I'm [name]. I hear you can't see...,
+8,CONFIRMED,Em-dash,Chat Choices I6 (s_dynamics B),consequence,"...look on my phone — and boom, no good.","...look on my phone, and boom, no good.",
+9,CONFIRMED,Em-dash,Chat Choices I9 (s_familiarize B),consequence,Not exactly — there's just no navigation...,"Not exactly, there's just no navigation...",
+10,CONFIRMED,Content,Chat Choices C10 (s_familiarize C),text,"Thank you, Tomo! I see you sell materials for custom wooden frames — that's a neat craft.","Thank you, Tomo! I see you craft custom wooden frames and run woodworking workshops. That's a neat craft.",Matches the WoodCrafts screenshot.
+11,CONFIRMED,Em-dash,Chat Choices K10 (s_familiarize C),consequence 2,Exactly — you get it!,"Exactly, you get it!",
+12,CONFIRMED,Em-dash,Chat Choices I11 + J11 (s_clarify A),consequence,"I11: ...my menu — the buttons...  |  J11: Got it — a clear, visible way...","I11: ...my menu, the buttons...  |  J11: Got it, a clear, visible way...",
+13,CONFIRMED,Em-dash,Chat Choices C13 + I13 (s_clarify C),text / consequence,C13: ...the basics — your phone model...  |  I13: ...Brave — and yes...,"C13: ...the basics: your phone model...  |  I13: ...Brave, and yes...",
+14,CONFIRMED,Em-dash,Chat Choices J14 (s_clarify D),consequence,"Thanks — just to confirm, that's a Samsung?","Thanks, just to confirm, that's a Samsung?",
+15,PROPOSED,En-dash,"Chat Choices C15 + C17 (s_roadmap A, C)",text,2–3 minutes,2-3 minutes,Matches Video Autoplay.
+16,CONFIRMED,Schema,"Chat Choices J5, J18, J19, J20",consequence,[Inline] You find Tomo's account... / [Inline] On the duplicated site... / [Inline] Neither you nor... / [Inline] In Tomo's account...,"Replace '[Inline] ' with ( ): (You find Tomo's account and can see their site.) (On the duplicated site, the header and footer with the menu are missing on mobile too.) (Neither you nor your colleague sees a header or footer on Tomo's live site.) (In Tomo's account, the header and footer aren't showing on the mobile view.)",Engine inline-note syntax.
+17,CONFIRMED,Screenshot,Chat Choices row 18 (s_recreate A),image,(none),"Tomo Mobile Site Layers Panel.png, shows after the inline note",
+18,CONFIRMED,Screenshot,Chat Choices row 19 (s_recreate B),image,(none),"Tomo Mobile Site no header.png, shows after the inline note",
+19,CONFIRMED,Em-dash,Chat Choices I21 (s_recreate D),consequence,"Okay, great — I'm not crazy, lol.","Okay, great, I'm not crazy, lol.",
+20,PROPOSED,Schema,Chat Choices C22 (s_article A),text,"[Action] You've already seen the problem yourself, so skip the resources and explain the fix.","[Action] Skip the resources and explain the fix, since you've already seen the problem yourself.","Engine adds 'You ' in front, so the original reads 'You you've already seen...'."
+21,CONFIRMED,Resource name,Chat Choices C24 (s_article C),text,[Action] Reply using “Mobile Editor: Editor Issues.”,[Action] Reply using “Wix Editor: Editor Issues.”,
+22,CONFIRMED,Resource name,Chat Choices C26 (s_article E),text,[Action] Reply using “Hidden Elements in the Mobile Editor.”,[Action] Reply using “Wix Editor: Hidden Elements in Your Mobile Editor.”,
+23,CONFIRMED,Delete,Chat Choices row 28 (s_article G),row,[Action] Reply using the “Products Crossover Guide.”,(delete row),Crossover Guide removed from this scenario.
+24,CONFIRMED,Em-dash,Chat Choices J34 + K34 (s_solve2 B),consequence,J34: Great — open this page's Layout settings...  |  K34: Done — the menu's back!,"J34: Great, open this page's Layout settings...  |  K34: Done, the menu's back!",
+25,CONFIRMED,Em-dash,Chat Choices C36 (s_close A),text,...hid the menu on mobile — switching the layout brought...,"...hid the menu on mobile, and switching the layout brought...",
+26,CONFIRMED,Schema,"Chat Choices column C, all rows",text,Wrapped in “ ”,Remove wrapping quotes,Other scenarios don't use them.
+27,CONFIRMED,Resource name,Helpers - Articles C2,article_title,Mobile Editor: Editor Issues,Wix Editor: Editor Issues,
+28,CONFIRMED,Resource name,Helpers - Articles C5,article_title,Hidden Elements in the Mobile Editor,Wix Editor: Hidden Elements in Your Mobile Editor,
+29,CONFIRMED,Delete,Helpers - Articles row 7,row,Products Crossover Guide,(delete row),
+30,CONFIRMED,Resource URL,"Helpers - Articles, new column F (url)",url,(no URL column),F3 https://csinternal.wixanswers.com/kb/en/article/mobile-editor-live-site-issues | F4 https://support.wix.com/en/article/supported-devices-browsers-and-operating-systems,
+31,CONFIRMED,Resource URL,Helpers - Articles F2 / F5 / F6,url,(none),F2 https://csinternal.wixanswers.com/kb/en/article/wix-editor-elements-text-repeater-issues | F5 https://csinternal.wixanswers.com/kb/en/article/wix-editor-escalation-guide-6237429 | F6 https://csinternal.wixanswers.com/kb/en/article/products-crossover-guide,URLs as provided.
+32,REVIEW,Retry,Chat Choices G11/H11 (s_clarify A),retry,"partial 8, retry Y, cap 8",(unchanged),"Retry on a friendly partial: Tomo answers, the Expert says 'that helps', then the same question re-opens. Built as written; flagging."
