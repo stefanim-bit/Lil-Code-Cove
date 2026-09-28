@@ -1,0 +1,14 @@
+screen_id,stage,gate,speaker,prompt
+s_open,open,Y,"Hey, I was charged twice for my monthly plan. Can you please look into this and process a refund?",How do you open the conversation?
+s_verify_email,dynamics,Y,,What do you do next?
+s_roadmap,roadmap,Y,,What's next?
+s_dynamics,dynamics,Y,,What do you do next?
+s_dynamics2,dynamics,Y,,What do you ask Dan for?
+s_familiarize,familiarize,Y,,What do you reply next?
+s_clarify,clarify,Y,,What do you reply next?
+s_article,article,Y,,What do you check before you explain the fix to Dan?
+s_recreate,recreate,Y,,What do you do first?
+s_recreate2,recreate,Y,,What do you check next?
+s_solve,solve,Y,"(You confirm each invoice covers a different billing period, and that the first charge is last month's payment, which failed at the time and was retried a few days later.)",What do you say next?
+s_document,solve,Y,,"Before you close, what do you do?"
+s_close,open,Y,,How do you close?

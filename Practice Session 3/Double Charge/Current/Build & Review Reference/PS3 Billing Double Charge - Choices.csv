@@ -1,0 +1,41 @@
+screen_id,choice_id,text,verdict,points,goTo,retry,capIfRetried,stageOverride,note,consequence
+s_open,A,"“Hey, let me check it out.”",incorrect,0,s_verify_email,Y,3,,,Dan: Okay… thanks.
+s_open,B,"“Hey Dan, I'm [name]! Oh no, being charged twice definitely doesn't sound right. Let me find the duplicate straight away and get back to you with what I find.”",partial,3,s_verify_email,,,,,
+s_open,C,"“Hey Dan, you've reached Wix Customer Care, I'm [name]. Can you please confirm your email?”",correct,5,s_verify_email,,,,,Dan: My email is dannd@gmail.com.
+s_verify_email,A,[Action] Ask him to confirm what monthly plan was charged twice.,correct,8,s_roadmap,,,clarify,,"Dan: I think it's called the Core plan? I'm not sure, you'd have to check, but it's about $30."
+s_verify_email,B,[Action] Check the most recent payments via the “Plans” tab in User Manager (UM).,incorrect,0,s_roadmap,,,,,
+s_verify_email,C,[Action] Confirm the email he shared in User Manager (UM).,correct,5,s_roadmap,,,,,(The email matches the account on file.)
+s_roadmap,A,“Thank you. Give me 2-3 minutes while I look into next steps.”,partial,5,s_dynamics,,,,,
+s_roadmap,B,"“Thank you. First, I need to verify the charges and the card details with you, then I'll pull up your billing history and explain what each charge is.”",correct,10,s_dynamics,,,,,
+s_roadmap,C,“Thanks Dan. Let me take a quick look.”,incorrect,0,s_dynamics,,,,,
+s_dynamics,A,[Action] Check billing history and recent invoices in the “Sites” tab in UM.,incorrect,0,s_dynamics2,,,,,"(You didn't see any billing history or invoices here.) / Expert: Dan, can you please share the invoice numbers of the charges?"
+s_dynamics,B,[Action] Ask Dan to screenshot his bank statement.,incorrect,0,s_dynamics2,,,,,"Dan: My bank statement? Can I just tell you whatever info you need? / Expert: Yes, actually. Can you please share the invoice numbers of the charges?"
+s_dynamics,C,[Action] Ask Dan to provide the invoice numbers for the charges.,correct,3,s_dynamics2,,,,,
+s_dynamics,D,[Action] Send Dan the Charge Locator link so he can provide the details about the charge.,partial,2,s_dynamics2,,,,,
+s_dynamics2,A,"“Do you have access to the card's last 4 digits, the cardholder's name, transaction amount and the date of the charge? I will also need the card type and expiration.”",correct,5,s_familiarize,,,,,"Dan: Sure, it's a Visa ending 4417 that expires June of 2028. Name is Dan Owens. The first charge was 05/05/26 and the second was 05/08/26."
+s_dynamics2,B,[Action] Send Dan the Charge Locator link so he can provide the details about the charge.,incorrect,0,s_familiarize,,,,,"Dan: Ok but this is asking me for an invoice number and I don't have that. / Expert: Do you have access to the card's last 4 digits, the cardholder's name, transaction amount and the date of the charge? / Dan: Sure, it's a Visa ending 4417, Dan Owens. The charges were 05/05/26 and 05/08/26."
+s_dynamics2,C,"“Not at this time. Even if you have full editing permissions on the site, we can't make exceptions to this rule. This is just to ensure our users' accounts stay protected, I hope you understand!”",incorrect,0,s_document,,,,,"Dan: Wow, that's annoying. Next time, please let me know what information I need from the beginning so I can reach out when I have everything instead of wasting my time."
+s_familiarize,A,"“Thank you! While your account is loading up here, can you tell me a bit about what kind of site you run?”",partial,4,s_clarify,,,,,Dan: It's a site for my soap shop. / Expert: Cool!
+s_familiarize,B,"“Thank you! While your account is loading up here, tell me, how is your day going?”",incorrect,0,s_clarify,,,,,"Dan: It's great, yea! Just hoping to get this issue sorted soon. / Expert: Nice! I hear you, I'll do all I can to help."
+s_familiarize,C,"“Thank you! While your account is loading up here, is this the first time the billing's caught you off guard, or have you noticed this happen before?”",correct,10,s_clarify,,,,,"Dan: First time really, I just saw two charges and panicked."
+s_clarify,A,"“Dan, let me ask: are both charges definitely not from the same monthly subscription?”",partial,8,s_article,,,,,Dan: I doubt it since they came in so close together.
+s_clarify,B,"“Dan, do you pay for any other Wix products or services, like a domain, business email, or paid apps?”",correct,15,s_article,,,,,"Dan: No, just the one plan for the one site."
+s_clarify,C,"“So I've found that this is definitely a duplicate then, no question about it, let me go ahead and start the refund for the extra charge right now.”",incorrect,0,s_article,,,,,Dan: I'm still not sure it is…
+s_article,A,[Action] Reply using “Double Charge Appearing on Your Bank Statement”.,partial,10,s_recreate,,,,,
+s_article,B,[Action] Reply using “Payments for Wix Services”.,correct,20,s_recreate,,,,,
+s_article,C,[Action] Reply using “Billing Common Scenarios”.,correct,20,s_recreate,,,,,
+s_article,D,[Action] Reply using “Changing the Subscription Period of Your Premium Plan”.,incorrect,0,s_recreate,,,,,
+s_recreate,A,[Action] Ask Dan to screenshot his bank statement instead.,incorrect,0,s_recreate2,Y,5,,,"Dan: Okay, hang on, let me find it. (a minute later) My bank app won't let me screenshot, it says it's for security reasons."
+s_recreate,B,"[Action] In User Manager, open Dan's plan and review its renewal and payment history, checking for a recent failed or declined payment that was retried.",correct,5,s_recreate2,,,,,
+s_recreate2,C,"[Action] Open the SBS Invoices tab and check only that the two amounts match, then move on.",partial,2,s_solve,,,,,
+s_recreate2,D,"[Action] In SBS, open the Invoices tab and compare the Billing Period on each invoice. Confirm they cover two different periods, last month and this month, for the Wix Light Plan, and that the earlier charge is last month's payment that first failed and was then retried successfully.",correct,5,s_solve,,,,,
+s_solve,A,"[Action] Tell Dan you've seen this plenty of times before, so it's almost certainly two renewals, and move the conversation along.",incorrect,0,s_document,,,,,
+s_solve,B,"“You know what, looking at it again it does seem like a duplicate charge after all, so let me just go ahead and refund one of the two charges for you now.”",incorrect,0,s_document,,,,,Dan: I had a feeling. Thanks for confirming.
+s_solve,C,"“Good news, it's not a duplicate. These are two separate charges for two different billing periods of your Wix Light Plan, about $17 each. Last month's payment didn't go through at first, so our system automatically retried it and it went through on the 5th. Your regular renewal for this month then charged on the 8th, which is why they landed so close together. I can share the service, amount, date, payment method, billing period, and invoice number for each.”",correct,10,s_document,,,,,"Dan: Ah, that makes sense now. So both are just my normal plan. That's a relief."
+s_solve,D,"“Good news, it's not a duplicate. The charges cover two different periods. I think what's happened here is that you switched over to a yearly plan at some point, and that second charge is the yearly one.”",partial,2,s_document,,,,,"Dan: I never changed anything though. And why would it be the same amount just a couple of days after the first payment? Anyway, that's good news. Thanks."
+s_document,A,"[Action] Close the case now that Dan understands the charges, since he sounds happy and there's nothing left to sort out.",partial,2,s_close,,,,,
+s_document,B,"[Action] Document your findings in the internal note, then close the case.",correct,10,s_close,,,,,
+s_document,C,“I'll attach the article to your ticket so it's on record.”,incorrect,0,s_close,,,,,"Dan: Not really sure what that means, but thanks. Have a good one."
+s_close,A,"“Great, thanks for contacting Wix, Dan.”",partial,3,__end__,,,,,
+s_close,B,"“Glad that's cleared up! If you ever run into any other confusion about charges and you have the invoice number available, here's a link to the Charge Locator you can use to quickly find details about charges. Please let me know if you have any questions. Otherwise, have a good day!”",correct,5,__end__,,,,,
+s_close,C,"“You can always use the Charge Locator to quickly find details about charges, too. Please let me know if you have any questions.”",incorrect,0,__end__,,,,,

@@ -236,11 +236,22 @@ revealSegments(segs, true, ()=>{ …renderScreen(ch.goTo, {animateSpeaker:true})
 In scenario data (`consequence` strings):
 
 - **Inline note (goes green, 1s beat):** wrap in parentheses → `"(You find there's a button that says 'Set to Advanced'.)"`. These render as centered `system` bubbles.
-- **A thing the Expert DOES:** author the choice as `text:"[Action] …"` with **no** `say`. It renders as a green centered action note ("You …").
+- **A silent tool action the Expert DOES:** author the choice as `text:"[Action] …"` with **no** `say` (e.g. opening a tab, checking a record). It renders as a green centered action note ("You …").
+- **An "ask the caller" action:** when the `[Action]` is really the Expert *asking the caller something* (e.g. `[Action] Ask Dan to provide the invoice numbers`), give the choice a `say:` value holding the spoken question (e.g. `say:"Can you provide the invoice numbers for the charges?"`). It then renders as a **blue spoken Expert bubble** in the chat instead of a centered "You …" note, so the caller can visibly reply. The button label still shows the `[Action] …` intent; the `say` is what appears in the chat.
 - **A spoken reply (NOT green):** use a `say:` value, or a plain choice `text`, or a `Sarah:`/`Expert:` labeled line in a `consequence`. These stay normal-colored.
 
-Do **not** give an `[Action]` choice a `say:` value — that turns it into a spoken
-(blue) line instead of a green centered action note.
+Give an `[Action]` choice a `say:` value **only** when the action is the Expert **speaking/asking the caller** (see above) — that intentionally turns it into a spoken (blue) line. For a silent tool action, use `[Action]` with **no** `say` so it renders as a green centered action note.
+
+---
+
+## Authoring rule — never reveal the answer in helper/instructional text
+
+Helper text that is always visible **must not name or hint at the correct choice.** This applies to every scenario. Specifically:
+
+- The **Check Resources `note`** must not say which resource is correct or what confirming it proves (e.g. do **not** write "Full marks come from confirming X in *Billing Common Scenarios*"). Keep it about the *skill* ("Checking the right one before you answer is the skill, not remembering it."), never the answer.
+- The same goes for screen `prompt`s, stage names shown mid-sim, and any tooltip: phrase them neutrally so they never name the behavior being graded or point to the right option.
+
+Choosing/looking up the right thing **is** the graded skill — surfacing the answer in helper text defeats the exercise.
 
 ---
 

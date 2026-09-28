@@ -1,0 +1,6 @@
+field,value,notes
+title,Practice Call: Billing (Double Charge on a Monthly Plan),Shown in the chat header.
+userName,Dan,Caller name.
+userBio,"Meet Dan. Dan noticed he was charged twice for his monthly plan and wants it looked into. In this activity, you'll simulate a call with him. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!",Who they are + why they're contacting us.
+start,s_open,first screen.
+channel,Call,CALL build (identity verification present). A CHAT build also exists (no verification; Dynamics = UM/SBS lookup).

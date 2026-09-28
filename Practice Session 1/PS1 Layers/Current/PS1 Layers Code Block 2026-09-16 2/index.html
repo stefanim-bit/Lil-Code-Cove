@@ -119,6 +119,9 @@
     display:flex;align-items:center;justify-content:center;padding:0;
     overflow:hidden;min-height:0;
   }
+  /* Full-bleed cropped headshot — matches Amber's meet spec and the Layers
+     scenario: `cover` fills the container so the photo's own background always
+     reaches every edge and never leaves a gap. Use this for all future scenarios. */
   .meet .portrait img{width:100%;height:100%;object-fit:cover}
   .meet .portrait .noimg{align-self:center;color:var(--muted);font-size:0.875rem;text-align:center;padding:1.5rem}
   .meet .body{padding:2.5rem 3.75rem;display:flex;flex-direction:column;justify-content:center}
@@ -146,7 +149,7 @@
   .timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
   .head-spacer{flex:1}
   .helperbar-head{display:flex;gap:0.5rem;margin-right:0.5rem}
-  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.8125rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
+  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.875rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
   .btn-end:hover{filter:brightness(.94)}
 
 
@@ -161,10 +164,10 @@
   .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
   .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
   .msg.caller{align-self:flex-start;align-items:flex-start}
-  .msg.caller .bubble{background:var(--bg);border:0.0625rem solid var(--line);border-top-left-radius:0.3125rem;color:var(--ink)}
+  .msg.caller .bubble{background:#F5F5F5;border:0px;border-top-left-radius:0.3125rem;color:var(--ink)}
   .msg.you{align-self:flex-end;align-items:flex-end}
-  .msg.you .meta{text-align:right;color:var(--agent-deep)}
-  .msg.you .bubble{background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-top-right-radius:0.3125rem;color:var(--ink)}
+  .msg.you .meta{text-align:right;color:#707070}
+  .msg.you .bubble{background:#E4EFFE;border:0px;border-top-right-radius:0.3125rem;color:var(--ink)}
   .msg.system{align-self:center;max-width:90%;align-items:center}
   .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:normal;font-size:0.78125rem;padding:0.125rem 0.375rem;text-align:center}
   /* Inline screenshot figure (Layers panel, Accessibility Wizard, etc.) */
@@ -191,7 +194,7 @@
   .msg.reaction .bubble.action{color:#242424 !important}
 
   /* legacy in-header fullscreen text button (replaced by the .fs-fab icon) */
-  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.78125rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
+  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.875rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
   .btn-fs:hover{color:var(--agent);background:var(--agent-bubble)}
   .panel:fullscreen{border-radius:0;display:flex;flex-direction:column;overflow:auto}
   .panel:fullscreen .chat{min-height:0;flex:1}
@@ -208,11 +211,6 @@
      would sit on top of the End button. Pad the header right so the buttons
      shift left and clear the icon. */
   .sim-wrap:fullscreen .panel-head{padding-right:3.5rem}
-  /* Confirm-your-details popup rows */
-  .confirm-details{display:flex;flex-direction:column;gap:0.75rem;margin:0 0 1.25rem}
-  .confirm-row{display:flex;flex-direction:column;gap:0.1875rem;border-bottom:0.0625rem solid var(--line);padding-bottom:0.625rem}
-  .confirm-label{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase}
-  .confirm-value{font-size:1rem;color:#000000;word-break:break-word}
 
   /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
      from spoken replies, right inside the choice button. */
@@ -221,9 +219,9 @@
   /* composer / decision area — where the real panel's message box sits */
   .composer{border-top:0.0625rem solid var(--line);background:#FBFBFC;padding:0.875rem 1.125rem 1.125rem}
   .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
-  .hbtn{font-size:0.78125rem;font-weight:600;padding:0.4375rem 0.8125rem;border-radius:62.4375rem;border:0.0625rem solid var(--line-2);background:#fff;color:var(--ink-2);cursor:pointer}
-  .hbtn:hover{border-color:var(--agent);color:var(--agent)}
-  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0.125rem 0 0.625rem}
+  .hbtn{font-size:0.875rem;font-weight:500;padding:0.375rem 1.5rem;border-radius:18.75rem;border:1px solid #424242;background:#fff;color:#242424;cursor:pointer;height:32px}
+  .hbtn:hover{border-color:#424242;color:#fff;background:#424242}
+  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;margin:0.125rem 0 0.625rem}
   /* ---- slide-up decision sheet: the question + choices overlay the lower chat,
      so the panel height is FIXED and never grows. Click the handle to
      minimize/expand; it auto-opens for each new question, no backdrop dim. ---- */
@@ -257,6 +255,14 @@
   .nameinput.invalid{border-color:#E62214}
   .nameerror{font-size:0.75rem;color:#44485F;opacity:0;visibility:hidden;transition:opacity 200ms ease-out, visibility 200ms ease-out}
   .nameerror.show{opacity:1;visibility:visible}
+
+  /* confirm-your-details step (between Meet and the call) */
+  .confirm-details{display:flex;flex-direction:column;gap:0.75rem;margin:0 0 1.75rem;max-width:21.25rem}
+  .confirm-row{display:flex;flex-direction:column;gap:0.1875rem;border-bottom:0.0625rem solid var(--line);padding-bottom:0.625rem}
+  .confirm-label{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .confirm-value{font-size:1rem;color:#000000;word-break:break-word}
+  .confirm-actions{display:flex;gap:0.625rem;align-items:center}
+  .btn-wide{width:auto;padding:0.375rem 1.5rem}
 
   /* ============================ COMPLETE ============================ */
   .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
@@ -613,14 +619,15 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   let currentSpeakerShown = false;
 
   /* ---- learner name ----------------------------------------------------
-     Captured on the Meet screen. Used to (a) label the learner's own chat
-     bubbles, (b) substitute the [name] token anywhere in scenario text, and
-     (c) push the value out to a Rise/Storyline "learner_name" variable. */
+     Captured on the Meet screen (learners enter their FULL name). During the
+     simulation, the Expert is shown by FIRST NAME ONLY — this applies both to
+     (a) the label on the learner's own chat bubbles and (b) the [name] token
+     substituted anywhere in scenario text (e.g. "I'm [name]"). The full name
+     is still pushed to the Rise/Storyline "learner_name" variable and sent to
+     telemetry unchanged. */
   let learner_name = "";
-  // The scenario chat shows only the learner's FIRST name; the full name is
-  // still stored in learner_name (pushed to the Rise var + telemetry).
-  function learnerFirst(){ const n=(learner_name||"").trim(); return n ? n.split(/\s+/)[0] : ""; }
-  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, learnerFirst() || "you"); }
+  function firstName(){ return (learner_name || "").trim().split(/\s+/)[0] || ""; }
+  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, firstName() || "you"); }
   function setLearnerName(v){
     learner_name = (v||"").trim();
     pushRiseVar("learner_name", learner_name);
@@ -778,13 +785,13 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
           <h1 class="display">Meet ${escapeHtml(U.name)}</h1>
           <p>${escapeHtml(U.bio).replace(/\*([^*]+)\*/g,'<em>$1</em>')}</p>
           <div class="namefield">
-            <label for="learnerName">Name</label>
+            <label for="learnerName">Full Name</label>
             <input class="nameinput" id="learnerName" type="text" autocomplete="name"
                    placeholder="Enter your full name" value="${escapeHtml(learner_name)}">
             <div class="nameerror" id="nameError">Please enter your name to continue.</div>
           </div>
           <div class="namefield">
-            <label for="learnerEmail">Email</label>
+            <label for="learnerEmail">Wix Email</label>
             <input class="nameinput" id="learnerEmail" type="email" autocomplete="email"
                    placeholder="Enter your Wix email" value="${escapeHtml(learner_email)}">
             <div class="nameerror" id="emailError">Please enter a valid email to continue.</div>
@@ -949,7 +956,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   function appendBubble(kind, text, reaction){
     const sameSpeaker = (kind !== 'system' && kind === lastBubbleKind);
     const meta = (kind==='system' || sameSpeaker) ? '' :
-      `${kind==='you' ? (learnerFirst()||'You') : U.name} · ${mmss(callSeconds)}`;
+      `${kind==='you' ? (firstName()||'You') : U.name} · ${mmss(callSeconds)}`;
     lastBubbleKind = kind;
     return appendNode(bubbleMarkup(kind, text, meta, reaction));
   }
@@ -1088,7 +1095,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   }
   /* transcript bubbles: same markup, name label only (no live timer) */
   function segMarkup(kind, text){
-    const who = kind==='system' ? '' : (kind==='you' ? (learnerFirst()||'You') : U.name);
+    const who = kind==='system' ? '' : (kind==='you' ? (firstName()||'You') : U.name);
     return bubbleMarkup(kind, text, who);
   }
 
@@ -1105,7 +1112,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   function typingBubble(kind){
     const you = kind==='you';
     const side = you ? 'you' : 'caller';
-    const who  = you ? (learnerFirst()||'You') : U.name;
+    const who  = you ? (firstName()||'You') : U.name;
     return appendNode(
       `<div class="msg typing ${side}"><div class="meta">${escapeHtml(who)} · typing…</div>`+
       `<div class="bubble"><span class="tai-dot"></span><span class="tai-dot"></span><span class="tai-dot"></span></div></div>`);
@@ -1314,9 +1321,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     //   • `say` present  -> a blue Expert bubble of the spoken words ("Tell Sarah…")
     //   • an [Action]    -> an inline "You …" note (a tool action)
     //   • otherwise      -> a blue reply bubble of the choice text
-    if(ch.silent) { /* silent pick: render nothing in chat, just re-open for a retry */ }
-    else if(ch.say) appendBubble('you', ch.say);
-    else if(isAction(ch.text)) appendActionNote(ch.note ? px(ch.note) : actionNoteText(ch.text));
+    if(ch.say) appendBubble('you', ch.say);
+    else if(isAction(ch.text)) appendActionNote(actionNoteText(ch.text));
     else appendBubble('you', ch.text);
 
     // Choice-gated screenshot: shows immediately on selection, before the reply.
@@ -1327,7 +1333,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     const segs = splitDialogue(ch.consequence);
 
     if(ch.retry && !retriedIds.includes(ch.id)){
-      if(!ch.silent) transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
+      transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
       logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
                  text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
                  notes:'first attempt — caller pushed back, screen re-opened for a retry (capped at '+ch.capIfRetried+')' });
@@ -1345,7 +1351,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
                text:stripAction(px(ch.text)), verdict:ch.verdict, points:pts, seconds:secondsOnStep(),
                notes:(isAction(ch.text) ? 'action' : 'reply')
                      + (typeof cap==='number' ? '; retry attempt, capped at '+cap : '') });
-    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, say:ch.say, note:ch.note, consequence:ch.consequence });
+    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, say:ch.say, consequence:ch.consequence });
 
     setComposer('');
     // Auto-advance to the next screen — NO Continue button. The next caller line
@@ -1388,10 +1394,16 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       return p ? `<div class="pick">Your response: “${escapeHtml(p.text)}”</div>`
                : `<div class="pick miss">You didn't reach this step.</div>`;
     };
+    // A stage counts as "reached" only if the learner actually answered or was
+    // credited for it (decisivePick set). Stages skipped by ending the chat
+    // early get no coaching feedback — just a "didn't reach this step" note.
+    const reached = st => (st.id in decisivePick);
     const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
         .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
     const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
-        .map(st=>`<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`).join('');
+        .map(st=> reached(st)
+            ? `<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`
+            : `<li><b>${st.name}</b> — You didn't reach this step.</li>`).join('');
 
     // One collapsible row, styled like the wix.com "Website builder FAQs".
     const accItem = (id, title, inner) => `
@@ -1489,7 +1501,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
           const same = (kind !== 'system' && kind === txLast);
           txLast = kind;
           if(actionNote) return bubbleMarkup('system', text, '');
-          const who = (kind==='system' || same) ? '' : (kind==='you' ? (learnerFirst()||'You') : U.name);
+          const who = (kind==='system' || same) ? '' : (kind==='you' ? (firstName()||'You') : U.name);
           return bubbleMarkup(kind, text, who);
         };
         tx.innerHTML = `<h3 style="margin-bottom:0.375rem">Conversation transcript</h3>` +
@@ -1498,7 +1510,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
             let h='';
             if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=txSeg(s.kind, s.text));
             h += t.say ? txSeg('you', t.say)
-               : isAction(t.picked) ? txSeg('system', t.note ? px(t.note) : actionNoteText(t.picked), true)
+               : isAction(t.picked) ? txSeg('system', actionNoteText(t.picked), true)
                : txSeg('you', t.picked);
             if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=txSeg(s.kind, s.text));
             return h;
