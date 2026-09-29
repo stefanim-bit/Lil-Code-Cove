@@ -523,6 +523,41 @@ form-bound Apps Script with an installable **"On form submit"** trigger that
 owner-controlled). The `onFormSubmitToResponses` handler is already earmarked in
 `Code.gs`.
 
+### BPO copies — separate Form + Sheet (added 2026-09-28, tested working)
+
+BPO learners take **separate copies** of each course (Rise + Wix Smart) whose telemetry
+goes to its own Form → Sheet, so BPO and in-house data never mix.
+
+- **BPO Form endpoint:** `https://docs.google.com/forms/d/e/1FAIpQLSfaz9fhquxHvziwgOmLsycG5P-LaYkB11sRzTC_48I003VT_Q/formResponse`
+- **BPO Sheet:** `https://docs.google.com/spreadsheets/d/1h08lwfqm8qe35q_BUZXKXIb7HhiW1TraAZb_OEgnA9c/edit`
+- **`FIELD_IDS` are identical** to the main Form (the BPO Form was made with *Make a
+  copy*, and the prefilled link confirmed all 12 `entry.NNN` ids carried over).
+- **Only two lines differ** in a BPO `index.html`:
+  - `TELEMETRY_ENDPOINT` → the BPO endpoint above
+  - `const TELEMETRY_COURSE = S.title + ' (BPO)';` — so every row self-labels, even if
+    one ever lands in the wrong Sheet.
+- **Files:** each BPO build sits next to its original with ` - BPO` appended (folder +
+  zip), e.g. `PS2 Repeaters Code Block 2026-09-28 - BPO.zip`. All 12 current builds
+  (PS1–PS4) have BPO copies; SCORM (TEST) builds do not.
+- **When you update a scenario, update its BPO copy too** — re-copy the build, change
+  the two lines above, re-zip, and swap the zip into the BPO Rise course.
+
+**How it was set up (to repeat for another audience):**
+1. Main Form → ⋮ → **Make a copy**. In the copy: Responses → **Link to Sheets** →
+   *Create new spreadsheet*. Restrict Form edit + Sheet access to L&D.
+2. Copy → ⋮ → **Get pre-filled link**, type each field's name into its box → *Get
+   link*. Compare the `entry.NNN` ids in the URL to `FIELD_IDS`; update any that differ.
+3. Copy each build folder, change `TELEMETRY_ENDPOINT` (ends in `/formResponse`, not
+   `/viewform`) and the `TELEMETRY_COURSE` label, re-zip with `index.html` at the zip root.
+4. Test locally: play a few screens → rows appear in the new Sheet only.
+5. Rise: ⋯ → **Duplicate** the course, rename "… – BPO", replace each Code Block zip,
+   preview + check the Sheet, export.
+6. Wix Smart: upload the export as a **new** course, assign to the BPO audience only,
+   test-launch once.
+
+The runbook and "never sort/filter the live Form Responses tab" rule above apply to
+the BPO Sheet too. BPO learners are external vendor staff — see PII below.
+
 ### PII
 
 Learner work emails written to a Sheet outside the LMS are new PII in a new place.

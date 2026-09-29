@@ -1,0 +1,1535 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Care Dojo — Interactive Scenario (Rise Code Block Template · v2 · RISE BUILD)</title>
+
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION  ·  INTERACTIVE SCENARIO TEMPLATE  (Rise Code Block)
+  v2 — Wix-branded redesign. SAME interaction/scoring model as v1; look only.
+==================================================================================
+
+  HOW TO READ THIS FILE (for stakeholders / non-coders)
+  -----------------------------------------------------
+  Two parts, on purpose:
+    1) THE SCENARIO  (<script id="scenario">) — the CONTENT. Reads like a table.
+    2) THE ENGINE    (<script id="engine">)   — the machinery that plays ANY scenario.
+
+  WHAT CHANGED IN v2 (design only — the model below is unchanged)
+  --------------------------------------------------------------
+    • Wix Madefor typography (Display for headings, Text for body) via Google Fonts.
+    • Three phases in one self-contained embed: MEET THE USER → LIVE CHAT → COMPLETE.
+    • The live chat mirrors the real Wix Communication Panel: gray customer bubbles
+      (left), blue agent bubbles (right), a call timer, and a red "End" button.
+      (No sentiment chip — deliberately omitted.)
+    • Brand palette applied. The END scorecard keeps the locked correctness legend
+      (green / amber / red · done / partial / missed) — unchanged.
+    • Helper pop-ups use the native <dialog> element (MDN-recommended for modals).
+
+  THE INTERACTION MODEL (unchanged from v1)
+  -----------------------------------------
+  Each scenario mirrors a real Expert <-> user interaction across eight graded
+  behaviors (the rubric, 100 pts):
+     open(5) · dynamics(10) · familiarize(10) · clarify(15)
+     roadmap(10) · article(20) · recreate(10) · solve(20)
+
+  Rules:
+    • FEEDBACK IS SAVED FOR THE END. No grade, no correctness colors, no running
+      score during play. Choosing an answer simply advances the call.
+    • IN-CHARACTER REACTIONS ARE NOT FEEDBACK. A weak choice may draw a caller
+      reaction in dialogue; that line is part of the sim, not a grade.
+    • MOSTLY GATED, SOME FREEDOM — "gate:true" screens must be finished to advance.
+    • RETRY ONLY IF THE USER PROMPTS — a choice marked "retry:true" re-opens the
+      screen because the caller pushed back; the retry is capped by "capIfRetried".
+    • SKIPS ARE RECOVERABLE — each stage keeps its own best score.
+    • ROADMAP FLOATS — attach roadmap credit to any choice via credits:[...].
+
+  FIELD GUIDE
+  -----------
+    user   : { name, image, bio } — shown on the MEET screen and in the call header.
+    STAGE  : id, name, max, strength (shown at end if done), improvement (if missed).
+    SCREEN : stage, gate, speaker (caller line), prompt, choices[].
+    CHOICE : text, verdict, points, goTo, credits[], retry/capIfRetried,
+             consequence, stageOverride.
+==================================================================================
+-->
+
+<link rel="preconnect" href="https://static.parastorage.com">
+<link href="https://static.parastorage.com/fonts/v2/f73e760d-c6b3-4659-9a8c-9ce1d76c1173/madefor-text.var.original.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="https://static.parastorage.com/fonts/v2/26656ec7-c27d-4bdc-a9f4-6b498bbfad69/madefor-display.var.original.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: 'Wix Madefor Text';
+    src: url('https://static.parastorage.com/fonts/v2/f73e760d-c6b3-4659-9a8c-9ce1d76c1173/madefor-text.var.original.woff2') format('woff2-variations');
+    font-weight: 100 900;
+  }
+  @font-face {
+    font-family: 'Wix Madefor Display';
+    src: url('https://static.parastorage.com/fonts/v2/26656ec7-c27d-4bdc-a9f4-6b498bbfad69/madefor-display.var.original.woff2') format('woff2-variations');
+    font-weight: 100 900;
+  }
+</style>
+
+<style>
+  :root{
+    /* ---- Brand palette (the exact hexes supplied) ---- */
+    --ink:#242424; --ink-2:#424242; --muted:#707070;
+    --line:#E0E0E0; --line-2:#D1D1D1; --bg:#F5F5F5; --paper:#ffffff;
+    --brand:#DA3B01;                 /* Wix orange-red — the End button + accents   */
+    --agent:#0F62E6; --agent-deep:#1464A0;  /* agent (you) blue                     */
+    --positive:#5BBE7E;
+    --agent-bubble:#EAF1FE; --agent-bubble-line:#CFE0FF;
+    /* ---- LOCKED end-screen correctness legend (scorecard only) ---- */
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    /* ---- shape ---- */
+    --r-lg:1.25rem; --r-md:0.875rem; --r-sm:0.625rem;
+    --shadow:0 0.625rem 1.875rem rgba(20,24,40,.10);
+    --font-display:'Wix Madefor Display','Wix Madefor Text',system-ui,Arial,sans-serif;
+    --font-text:'Wix Madefor Text',system-ui,Arial,Helvetica,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  html{font-size:16px}
+  html,body{margin:0}
+  body{
+    font-family:var(--font-text); color:var(--ink); line-height:1.5;
+    background:
+      radial-gradient(68.75rem 31.25rem at 12% -10%, #EEF3FF 0%, rgba(238,243,255,0) 60%),
+      radial-gradient(56.25rem 31.25rem at 105% 0%, #F3F0FA 0%, rgba(243,240,250,0) 55%),
+      var(--bg);
+    min-height:100vh;
+  }
+  .app{max-width:66.25rem;margin:0 auto;padding:1.5rem 1.25rem}
+  h1,h2,h3{font-family:var(--font-display);letter-spacing:-.01em;margin:0}
+  .display{font-weight:800;line-height:1.05}
+
+  /* ============================ MEET THE USER ============================ */
+  .meet{
+    display:grid;grid-template-columns:0.37fr 0.65fr;gap:0;
+    background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow);overflow:hidden;height:37.5rem;
+  }
+  .meet .portrait{
+    position:relative;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;padding:0;
+    overflow:hidden;min-height:0;
+  }
+  /* Full-bleed cropped headshot — matches Amber's meet spec and the Layers
+     scenario: `cover` fills the container so the photo's own background always
+     reaches every edge and never leaves a gap. Use this for all future scenarios. */
+  .meet .portrait img{width:100%;height:100%;object-fit:cover}
+  .meet .portrait .noimg{align-self:center;color:var(--muted);font-size:0.875rem;text-align:center;padding:1.5rem}
+  .meet .body{padding:2.5rem 3.75rem;display:flex;flex-direction:column;justify-content:center}
+  .eyebrow{font-size:0.75rem;font-weight:700;color:#101585;text-transform:uppercase;letter-spacing:0;margin-bottom:0.625rem}
+  .meet .body h1{font-weight:400;font-size:2.5rem;line-height:2.625rem;margin-bottom:1.125rem;color:#000000}
+  .meet .body p{font-size:1rem;color:#000000;line-height:1.5rem;margin:0 0 1.75rem;max-width:65ch}
+
+  /* black pill buttons — matches the Rise course (Get Started / Next / Restart) */
+  .btn{font-family:var(--font-text);font-weight:500;font-size:0.875rem;cursor:pointer;border:0;border-radius:18.75rem;padding:0.375rem 1.5rem;transition:transform .12s ease, box-shadow .12s ease, background .12s ease, padding .12s ease;display:flex;align-items:center;justify-content:center;white-space:nowrap;position:relative}
+  .btn-dark{background:#000000;color:#fff;width:126px;height:32px;padding:0.375rem 1.5rem}
+  .btn-dark:hover{background:#000;padding:0.375rem 1rem}
+  .btn-arrow{width:11px;height:8px;opacity:0;margin-left:-11px;transition:opacity 200ms ease-out, margin-left 200ms ease-out;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+  .btn-arrow svg{width:100%;height:100%;display:block}
+  .btn-dark:hover .btn-arrow{opacity:1;margin-left:0.3125rem}
+  .btn-ghost{background:var(--paper);color:var(--ink);border:0.0625rem solid var(--line-2)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  /* ============================ THE CALL (Communication Panel) ============================ */
+  .panel{position:relative;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;height:600px;display:flex;flex-direction:column}
+  .panel-head{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1.125rem;border-bottom:0.0625rem solid var(--line);background:#fff;flex:0 0 auto}
+  .avatar{width:2.375rem;height:2.375rem;border-radius:50%;background:var(--agent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.9375rem;flex:0 0 auto}
+  .who-name{font-weight:700;font-size:0.9375rem}
+  .who-sub{display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.78125rem;margin-top:0.0625rem}
+  .livedot{width:0.5rem;height:0.5rem;border-radius:50%;background:var(--positive);display:inline-block;box-shadow:0 0 0 0.1875rem rgba(91,190,126,.20)}
+  .timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
+  .head-spacer{flex:1}
+  .helperbar-head{display:flex;gap:0.5rem;margin-right:0.5rem}
+  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.875rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
+  .btn-end:hover{filter:brightness(.94)}
+
+
+  /* Fixed height so the chat window stays the SAME SIZE for the whole call —
+     it no longer grows message-by-message; overflow scrolls internally. */
+  /* Fixed-height chat window: it stays ONE consistent size on every screen and
+     scrolls internally, so the response options below always sit on screen and
+     can be read in full without scrolling the page. 40vh is tuned so the
+     options fit for the common (≤4 option) screens. */
+  .chat{padding:1rem 1.125rem 3.5rem;display:flex;flex-direction:column;gap:0.875rem;flex:1;min-height:0;overflow-y:auto}
+  .msg{display:flex;flex-direction:column;max-width:78%}
+  .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
+  .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
+  .msg.caller{align-self:flex-start;align-items:flex-start}
+  .msg.caller .bubble{background:#F5F5F5;border:0px;border-top-left-radius:0.3125rem;color:var(--ink)}
+  .msg.you{align-self:flex-end;align-items:flex-end}
+  .msg.you .meta{text-align:right;color:#707070}
+  .msg.you .bubble{background:#E4EFFE;border:0px;border-top-right-radius:0.3125rem;color:var(--ink)}
+  .msg.system{align-self:center;max-width:90%;align-items:center}
+  .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:normal;font-size:0.78125rem;padding:0.125rem 0.375rem;text-align:center}
+  /* Inline screenshot figure (Layers panel, Accessibility Wizard, etc.) */
+  .msg.system .screenshot{margin:0.25rem 0;max-width:100%;display:flex;flex-direction:column;align-items:center}
+  .msg.system .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
+
+  /* Lightbox: click-to-enlarge overlay for inline screenshots */
+  .lightbox{border:0;padding:0;background:transparent;max-width:95vw;max-height:95vh}
+  .lightbox::backdrop{background:rgba(15,17,25,0.82)}
+  .lightbox img{display:block;max-width:95vw;max-height:95vh;object-fit:contain;border-radius:0.5rem;box-shadow:0 1.5rem 3rem rgba(0,0,0,0.35)}
+  .lightbox-close{position:fixed;top:1rem;right:1.5rem;background:rgba(255,255,255,0.92);border:0;border-radius:50%;width:2.5rem;height:2.5rem;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink)}
+  .lightbox-close:hover{background:#fff}
+  .msg.system .screenshot figcaption{font-size:0.6875rem;color:var(--muted);font-style:italic;margin-top:0.375rem;text-align:center}
+  .msg.system .screenshot .noimg{color:var(--muted);font-size:0.8125rem;padding:1rem;border:0.0625rem dashed var(--line);border-radius:0.5rem}
+
+  /* [Action] choices render their result as an inline centered system note in the
+     chat stream (reusing .msg.system), so there's no separate action bar. */
+  .msg.system .bubble.action{font-style:normal;color:#242424;background:none;border:none;border-radius:62.4375rem;padding:0.25rem 0.75rem}
+
+  /* Inline notes — the centered "system" bubbles only: an action you take
+     ("You clone the site…") or a thing you find ("(You find…)"). These are the
+     ONLY lines painted green; caller replies are untouched. */
+  .msg.reaction .bubble,
+  .msg.reaction .bubble.action{color:#242424 !important}
+
+  /* legacy in-header fullscreen text button (replaced by the .fs-fab icon) */
+  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.875rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
+  .btn-fs:hover{color:var(--agent);background:var(--agent-bubble)}
+  .panel:fullscreen{border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .panel:fullscreen .chat{min-height:0;flex:1}
+  /* Fullscreen toggle — a round icon that lives OUTSIDE the chat panel (top-right). */
+  .sim-wrap{position:relative;padding-top:3rem}
+  .fs-fab{position:absolute;top:0;right:0;width:2.25rem;height:2.25rem;padding:0;border:0;border-radius:50%;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 0.0625rem 0.25rem rgba(20,24,40,.14);transition:transform .12s ease}
+  .fs-fab:hover{transform:scale(1.08)}
+  .fs-fab svg{width:100%;height:100%;display:block}
+  .sim-wrap:fullscreen{padding-top:0;background:var(--bg);display:flex;flex-direction:column}
+  .sim-wrap:fullscreen .panel{flex:1;height:auto;border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .sim-wrap:fullscreen .chat{min-height:0;flex:1}
+  .sim-wrap:fullscreen .fs-fab{top:0.75rem;right:0.75rem;z-index:20}
+  /* In fullscreen the round fullscreen icon floats at the panel's top-right and
+     would sit on top of the End button. Pad the header right so the buttons
+     shift left and clear the icon. */
+  .sim-wrap:fullscreen .panel-head{padding-right:3.5rem}
+
+  /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
+     from spoken replies, right inside the choice button. */
+  .cbadge{display:inline-block;font-weight:700;font-size:0.625rem;text-transform:uppercase;letter-spacing:.05em;color:var(--agent-deep);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:0.375rem;padding:0.0625rem 0.375rem;margin-right:0.5rem;vertical-align:0.05rem}
+
+  /* composer / decision area — where the real panel's message box sits */
+  .composer{border-top:0.0625rem solid var(--line);background:#FBFBFC;padding:0.875rem 1.125rem 1.125rem}
+  .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
+  .hbtn{font-size:0.875rem;font-weight:500;padding:0.375rem 1.5rem;border-radius:18.75rem;border:1px solid #424242;background:#fff;color:#242424;cursor:pointer;height:32px}
+  .hbtn:hover{border-color:#424242;color:#fff;background:#424242}
+  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;margin:0.125rem 0 0.625rem}
+  /* ---- slide-up decision sheet: the question + choices overlay the lower chat,
+     so the panel height is FIXED and never grows. Click the handle to
+     minimize/expand; it auto-opens for each new question, no backdrop dim. ---- */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#FBFBFC;border-top:0.0625rem solid var(--line);border-top-left-radius:var(--r-md);border-top-right-radius:var(--r-md);box-shadow:0 -0.5rem 1.5rem rgba(20,24,40,.10);display:flex;flex-direction:column;max-height:82%;transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:2}
+  .sheet.min{transform:translateY(calc(100% - 3.25rem))}
+  .sheet-handle{position:relative;flex:0 0 auto;height:3.25rem;width:100%;display:flex;align-items:center;gap:0.75rem;padding:0 1.125rem;cursor:pointer;user-select:none;background:none;border:0;font-family:var(--font-text);text-align:left}
+  .sheet-handle:hover{background:#F3F4F7}
+  .sheet-grab{position:absolute;top:0.4375rem;left:50%;transform:translateX(-50%);width:2.25rem;height:0.25rem;border-radius:62.4375rem;background:var(--line-2)}
+  .sheet-q{flex:1;font-weight:700;font-size:0.8125rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:0.25rem}
+  .sheet-chev{flex:0 0 auto;color:var(--ink-2);display:inline-flex;transition:transform .28s ease;padding-top:0.25rem}
+  .sheet:not(.min) .sheet-chev{transform:rotate(180deg)}
+  .sheet-body{flex:1;min-height:0;overflow-y:auto;padding:0.25rem 1.125rem 1.125rem}
+  .choice{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.8125rem 0.9375rem;margin:0.5rem 0;font-size:0.90625rem;font-family:var(--font-text);color:var(--ink);cursor:pointer;transition:border-color .12s ease, box-shadow .12s ease, background .12s ease}
+  .choice:hover:not(:disabled){border-color:var(--agent);box-shadow:0 0.125rem 0.625rem rgba(15,98,230,.10);background:#fff}
+  .choice:disabled{opacity:.45;cursor:not-allowed}
+  .next{margin-top:0.75rem}
+
+  /* typing awareness indicator (TAI) — the user "typing…" bubble before a reply */
+  .msg.typing .bubble{display:inline-flex;align-items:center;gap:0.3125rem;padding:0.8125rem 0.9375rem}
+  .tai-dot{width:0.4375rem;height:0.4375rem;border-radius:50%;background:var(--muted);opacity:.4;animation:tai-blink 1.2s infinite ease-in-out}
+  .tai-dot:nth-child(2){animation-delay:.2s}
+  .tai-dot:nth-child(3){animation-delay:.4s}
+  @keyframes tai-blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:.9;transform:translateY(-0.125rem)}}
+
+  /* learner name field on the Meet screen */
+  .namefield{display:flex;flex-direction:column;gap:0.3125rem;margin:0 0 1.5rem;max-width:21.25rem}
+  .namefield label{font-size:0.875rem;font-weight:400;color:#000000}
+  .nameinput{font-family:var(--font-text);font-size:1rem;padding:0.375rem 0.375rem;border:0.0625rem solid #D6E6FE;border-radius:0.375rem;color:var(--ink);background:#fff}
+  .nameinput::placeholder{color:#868AA5;font-size:1rem}
+  .nameinput:focus{outline:none;border-color:#116DFF}
+  .nameinput.invalid{border-color:#E62214}
+  .nameerror{font-size:0.75rem;color:#44485F;opacity:0;visibility:hidden;transition:opacity 200ms ease-out, visibility 200ms ease-out}
+  .nameerror.show{opacity:1;visibility:visible}
+
+  /* confirm-your-details step (between Meet and the call) */
+  .confirm-details{display:flex;flex-direction:column;gap:0.75rem;margin:0 0 1.75rem;max-width:21.25rem}
+  .confirm-row{display:flex;flex-direction:column;gap:0.1875rem;border-bottom:0.0625rem solid var(--line);padding-bottom:0.625rem}
+  .confirm-label{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .confirm-value{font-size:1rem;color:#000000;word-break:break-word}
+  .confirm-actions{display:flex;gap:0.625rem;align-items:center}
+  .btn-wide{width:auto;padding:0.375rem 1.5rem}
+
+  /* ============================ COMPLETE ============================ */
+  .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
+  .complete-hero .portrait{background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0}
+  .complete-hero .portrait img{width:100%;height:100%;object-fit:cover}
+  .complete-hero .body{padding:2.5rem 2.75rem;display:flex;flex-direction:column;justify-content:center}
+  .complete-hero h1{font-size:3rem;margin-bottom:0.75rem}
+  .complete-hero .lead{font-size:1rem;color:var(--ink-2);margin:0 0 1.375rem;max-width:46ch}
+  .scorenum{font-family:var(--font-display);font-weight:800;font-size:3.5rem;line-height:1}
+  .scorenum small{font-size:1.375rem;color:var(--muted);font-weight:700}
+
+  .card{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);padding:1.25rem 1.375rem;margin-top:1rem;box-shadow:0 0.25rem 1rem rgba(20,24,40,.05)}
+  .card h3{font-size:0.9375rem;margin:0 0 0.5rem}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;padding:0.5625rem 0;border-bottom:0.0625rem solid #F1F1F1}
+  .srow:last-child{border-bottom:0}
+  .sdot{width:0.5625rem;height:0.5625rem;border-radius:50%;margin-right:0.5625rem;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .sval{font-variant-numeric:tabular-nums;font-weight:600}
+  .list{margin:0.5rem 0 0;padding-left:0;list-style:none}
+  .list li{padding:0.5625rem 0 0.5625rem 1.625rem;position:relative;font-size:0.875rem;border-bottom:0.0625rem solid #F4F4F4}
+  .list li:last-child{border-bottom:0}
+  .list.str li:before{content:"✓";position:absolute;left:0.125rem;color:var(--correct);font-weight:800}
+  .list.imp li:before{content:"→";position:absolute;left:0.125rem;color:var(--partial);font-weight:800}
+  .pick{font-size:0.78125rem;color:var(--muted);margin-top:0.3125rem;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+
+  /* ---- End-screen accordion — mirrors wix.com "Website builder FAQs" ----
+     Flat list of rows with divider lines and a +/× toggle. Each row opens
+     independently (multiple can be open at once). All start collapsed so the
+     completion gate below is meaningful. */
+  .acc{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);box-shadow:0 0.25rem 1rem rgba(20,24,40,.05);margin-top:1rem;overflow:hidden}
+  .acc-item{border-top:0.0625rem solid var(--line)}
+  .acc-item:first-child{border-top:0}
+  .acc-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:none;border:0;cursor:pointer;font-family:var(--font-display);font-size:1.0625rem;font-weight:500;letter-spacing:-.01em;color:var(--ink);text-align:left;padding:1.125rem 1.375rem}
+  .acc-head:hover{color:#000}
+  .acc-head:focus-visible{outline:0.125rem solid var(--agent);outline-offset:-0.125rem}
+  .acc-icon{position:relative;width:1rem;height:1rem;flex:0 0 auto;transition:transform .2s ease}
+  .acc-icon::before,.acc-icon::after{content:"";position:absolute;background:var(--ink)}
+  .acc-icon::before{left:0;top:calc(50% - 0.03125rem);width:1rem;height:0.0625rem}
+  .acc-icon::after{top:0;left:calc(50% - 0.03125rem);width:0.0625rem;height:1rem}
+  .acc-item.open .acc-icon{transform:rotate(45deg)}
+  .acc-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+  .acc-item.open .acc-panel{grid-template-rows:1fr}
+  .acc-clip{overflow:hidden;min-height:0}
+  .acc-inner{padding:0.25rem 1.375rem 1.25rem}
+  .acc-inner .list{margin-top:0}
+  .acc-inner .srow:last-child{border-bottom:0}
+
+  /* completion gate */
+  .gate{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:1.125rem}
+  .gate .hint{font-size:0.8125rem;color:var(--muted)}
+  .gate .hint.ready{color:var(--correct);font-weight:600}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;pointer-events:none}
+  .btn.done{background:var(--correct);color:#fff;cursor:default;pointer-events:none;opacity:1;width:auto;padding:0.375rem 1.25rem}
+
+  .actions{display:flex;gap:0.625rem;flex-wrap:wrap;margin-top:1.125rem}
+  /* end-screen transcript reuses the LIVE chat bubbles (.msg/.bubble) so it
+     mirrors the simulation exactly — gray Sarah left, blue Expert right,
+     centered action/system notes. */
+  .txchat{display:flex;flex-direction:column;gap:0.75rem;padding:0.5rem 0 0.25rem}
+
+  /* ============================ helper <dialog> ============================ */
+  dialog.modal{border:0;border-radius:var(--r-md);max-width:35rem;width:calc(100% - 2rem);padding:0;box-shadow:0 1.5rem 3.75rem rgba(20,24,40,.28)}
+  dialog.modal::backdrop{background:rgba(20,24,40,.45)}
+  .modal-inner{padding:1.25rem 1.375rem 1.375rem}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+  .mhead h3{font-size:1.0625rem}
+  .mx{border:0;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--muted)}
+  .mx:hover{color:var(--ink)}
+  .mopt{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.6875rem 0.8125rem;margin:0 0 0.5rem;font-size:0.875rem;font-family:var(--font-text);color:var(--ink);cursor:pointer}
+  .mopt:hover{border-color:var(--agent)}
+  .tabrow{display:flex;gap:0.375rem;margin-bottom:0.625rem}
+  .tab{font-size:0.8125rem;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:0.0625rem solid var(--line-2);background:#fff;font-family:var(--font-text);cursor:pointer}
+  .tab.active{border-color:var(--agent);color:var(--agent);font-weight:700}
+  .article-body{white-space:pre-wrap;font-size:0.875rem;background:var(--bg);border-radius:var(--r-sm);padding:0.8125rem;min-height:5.625rem;line-height:1.5}
+  .mnote{font-size:0.78125rem;color:var(--muted);margin-top:0.5rem}
+  .speakerbox{background:var(--bg);border:0.0625rem solid var(--line);padding:0.6875rem 0.8125rem;border-radius:var(--r-sm);font-size:0.875rem}
+
+  /* MDN: honour users who prefer less motion */
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important}
+  }
+  @media (max-width:45rem){
+    .meet,.complete-hero{grid-template-columns:1fr}
+    .meet .portrait,.complete-hero .portrait{min-height:16.25rem}
+    .meet .body{padding:1.75rem 1.5rem 2rem}
+    .meet .body h1{font-size:2.125rem}
+    .complete-hero .body{padding:1.75rem 1.5rem}
+    .msg{max-width:88%}
+  }
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Practice Chat - Wix Editor: Repeaters",
+
+  user: {
+    name: "Elliot",
+    image: "Elliot/Elliot_Meet.png",
+    completeImage: "Elliot/Elliot_Close.png",
+    bio: "Elliot's repeater items aren't lining up on his events page. In this activity, you'll simulate a chat with him. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!"
+  },
+
+  resources: {
+    title: "Check Resources",
+    stage: "article", capIfUnchecked: 10,
+    note: "Open the resources below. Checking the right one before you answer is the skill, not remembering it.",
+    items: [
+      { label:"Wix Editor: Identifying Editor Elements", url:"https://csinternal.wixanswers.com/kb/en/article/wix-editor-identifying-editor-elements", correct:true },
+      { label:"Wix Editor: Elements, Text & Repeater Issues", url:"https://csinternal.wixanswers.com/kb/en/article/wix-editor-elements-text-repeater-issues", correct:true },
+      { label:"Products Crossover Guide", url:"https://csinternal.wixanswers.com/" },
+      { label:"CMS - Repeaters: Content Not Displaying Correctly on the Live Site", url:"https://csinternal.wixanswers.com/" },
+      { label:"Wix Editor: Troubleshooting Common Issues (Repeater Issues)", url:"https://csinternal.wixanswers.com/" }
+    ]
+  },
+
+  stages: [
+    { id:"open", name:"Opening & closing", max:5,
+      strength:"You greeted Elliot warmly, confirmed the site you were working on, and closed with a clear recap and an offer of more help.",
+      improvement:"Greet Elliot warmly, confirm which site you're working on, and close with a recap and next steps." },
+    { id:"dynamics", name:"Use Dynamics", max:10,
+      strength:"You found Elliot in User Manager and impersonated his site so you could see the repeater yourself instead of relying on his description.",
+      improvement:"Look Elliot up in User Manager and impersonate his site so you can see the repeater directly rather than asking him to describe it." },
+    { id:"familiarize", name:"Familiarize", max:10,
+      strength:"You asked what the repeater is for on houseparty.com, tying the fix to Elliot's events listings.",
+      improvement:"Ask a question that connects the repeater to Elliot's actual goal, like what the events list is meant to do." },
+    { id:"clarify", name:"Clarify the issue", max:15,
+      strength:"You confirmed the repeater is built from regular elements rather than a CMS collection, and pinned down that the misalignment shows on the desktop events page.",
+      improvement:"Confirm whether the repeater is connected to a collection or is regular elements, and whether the issue is on desktop or mobile, before choosing a fix." },
+    { id:"roadmap", name:"Roadmapping", max:10,
+      strength:"You gave Elliot a clear plan: check the elements, clone the site, review the Layers panel, then even out the items before making changes.",
+      improvement:"Give Elliot a clear step by step plan so he knows what you'll check and change." },
+    { id:"recreate", name:"Recreate the issue", max:10,
+      strength:"You cloned Elliot's site and used the Layers panel to reproduce the misalignment instead of editing his live site or deleting anything.",
+      improvement:"Recreate the issue on a clone and use the Layers panel to confirm the cause, and never delete elements on the user's live site." },
+    { id:"article", name:"Article / Copilot", max:20,
+      strength:"You checked 'Wix Editor: Identifying Editor Elements' and 'Wix Editor: Elements, Text & Repeater Issues' rather than working from memory.",
+      improvement:"Open 'Wix Editor: Identifying Editor Elements' first, then 'Wix Editor: Elements, Text & Repeater Issues' to confirm the exact steps." },
+    { id:"solve", name:"Solve the issue", max:20, additive:true,
+      strength:"You evened out the items by matching the text box sizes and line counts, using Shift + Enter to equalize lines, and you checked the mobile view too.",
+      improvement:"Match the text box sizes and line spacing across items, use Shift + Enter to equalize the number of lines, and check the mobile view." }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open", gate:true,
+      speaker:"Hi. The rows on my events page are all uneven and it looks really messy. Can you fix it?",
+      prompt:"How do you open the conversation?",
+      choices:[
+        { id:"A", text:"Just click each item and drag the boxes until they line up. That usually does it.",
+          verdict:"incorrect", points:0, goTo:"s_familiarize",
+          consequence:"Elliot: I tried dragging them and it only made it worse." },
+        { id:"B", text:"Hi Elliot, repeaters can be finicky. Let me see what's happening on your side.",
+          verdict:"partial", points:3, goTo:"s_familiarize",
+          consequence:"Elliot: Ok, hopefully it's something small." },
+        { id:"C", text:"Hi Elliot, thanks for reaching out to Wix Customer Care. My name is [Name] and I'd be glad to help. Uneven rows are usually a quick fix once we spot the cause, so let's take a look together.",
+          verdict:"correct", points:5, goTo:"s_familiarize",
+          consequence:"Elliot: Thank you, that's a relief." }
+      ]
+    },
+
+    s_familiarize: {
+      stage:"familiarize", gate:true,
+      prompt:"What do you ask to understand his goal?",
+      choices:[
+        { id:"A", text:"How long have you had this repeater on your page?",
+          verdict:"partial", points:5, goTo:"s_clarify",
+          consequence:"Elliot: A couple of weeks I think.",
+          credits:[{ stage:"clarify", points:4, verdict:"partial" }] },
+        { id:"B", text:"Can you tell me a bit about what this section is for on houseparty.com and what each item is meant to show?",
+          verdict:"correct", points:10, goTo:"s_clarify",
+          consequence:"Elliot: It's the upcoming events list for my venue. Each item has an event title, a date, and a short description. Some events have a lot of detail and some barely have any." },
+        { id:"C", text:"Don't worry, this happens all the time. Give me 2 to 3 minutes on hold while I look into it.",
+          verdict:"incorrect", points:0, goTo:"s_clarify",
+          consequence:"Elliot: Sure." }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify", gate:true,
+      speaker:"So how do we get the rows to match up?",
+      prompt:"What's the first thing you clarify?",
+      choices:[
+        { id:"A", text:"Are your repeater items connected to a collection, a database, or are they just regular elements you added yourself?",
+          verdict:"correct", points:15, goTo:"s_clarify2",
+          consequence:"Elliot: They're just regular elements. I built each one myself, there's no database." },
+        { id:"B", text:"Did you change anything in your DNS or domain settings recently?",
+          verdict:"incorrect", points:0, goTo:"s_clarify2",
+          consequence:"Elliot: No, this is about how the page looks, not the domain." },
+        { id:"C", text:"Have you tried republishing the site?",
+          verdict:"partial", points:6, goTo:"s_clarify2", retry:true, capIfRetried:8,
+          consequence:"Elliot: Yes, a few times, the rows are still uneven." }
+      ]
+    },
+
+    s_clarify2: {
+      stage:"clarify", gate:true,
+      prompt:"What else do you clarify before you start?",
+      choices:[
+        { id:"A", text:"Got it. Is the misalignment happening on the desktop view, the mobile view, or both? And which page is it on?",
+          verdict:"correct", points:15, goTo:"s_dynamics",
+          consequence:"Elliot: It's on my main events page, and mostly on desktop. I haven't really checked mobile." },
+        { id:"B", text:"Ok, can you send me the exact error message you're seeing?",
+          verdict:"partial", points:6, goTo:"s_dynamics",
+          consequence:"Elliot: There's no error, it just looks uneven." },
+        { id:"C", text:"No need, uneven rows are always the same fix. Let's just move on.",
+          verdict:"incorrect", points:0, goTo:"s_dynamics" }
+      ]
+    },
+
+    s_dynamics: {
+      stage:"dynamics", gate:true,
+      speaker:"Expert: Thanks Elliot, let me pull up your account.\n\nElliot: Sounds good.",
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"Can you describe exactly what each row looks like so I can picture it?",
+          verdict:"partial", points:4, goTo:"s_roadmap",
+          consequence:"Elliot: Umm, one has three lines of text, the next has one. It's hard to describe." },
+        { id:"B", text:"Can you email me a screenshot of your screen so I can see it?",
+          verdict:"incorrect", points:0, goTo:"s_roadmap",
+          consequence:"Elliot: I'd rather you just look, I'm not great with screenshots." },
+        { id:"C", text:"[Action] Look Elliot up in User Manager and open the site so you can see it yourself.",
+          verdict:"correct", points:10, goTo:"s_roadmap",
+          consequence:"(You open User Manager, find Elliot's account, and open houseparty.com in the Editor. The upcoming events repeater has rows of different heights.)",
+          image:{ src:"Scenario Screenshots/Repeater Misaligned.png" }, showsImageAfter:true }
+      ]
+    },
+
+    s_roadmap: {
+      stage:"roadmap", gate:false,
+      speaker:"Elliot: Okay, so what happens now?",
+      prompt:"What do you tell Elliot about the plan?",
+      choices:[
+        { id:"A", text:"Let me put you on hold for 5 minutes while I figure out the best approach.",
+          verdict:"incorrect", points:0, goTo:"s_recreate",
+          consequence:"Elliot: Ok I guess." },
+        { id:"B", text:"Here's what I'll do: I'll make a copy of your site so we don't touch your live page, check the items in the Layers panel to see what's different, and then even them out. I'll walk you through each step.",
+          verdict:"correct", points:10, goTo:"s_recreate",
+          consequence:"Elliot: That sounds great, thank you." },
+        { id:"C", text:"I'll take a look and try a few things on your page to see what sticks.",
+          verdict:"partial", points:4, goTo:"s_recreate",
+          consequence:"Elliot: Please be careful with my live page." }
+      ]
+    },
+
+    s_recreate: {
+      stage:"recreate", gate:true,
+      prompt:"How do you reproduce the issue safely?",
+      choices:[
+        { id:"A", text:"[Action] Clone Elliot's site, then open the Layers panel to compare the items and their text boxes.",
+          verdict:"correct", points:10, goTo:"s_article",
+          consequence:"(You clone the site and open the Layers panel. Each item's text box is a different height because the descriptions have different numbers of lines. The elements themselves are fine, they're just uneven in size.)",
+          image:{ src:"Scenario Screenshots/Layers Panel.png" }, showsImageAfter:true },
+        { id:"B", text:"[Action] Delete one of the items on Elliot's live site to see how the others react.",
+          verdict:"incorrect", points:0, goTo:"s_article", retry:true, capIfRetried:5,
+          consequence:"Elliot: Wait, please don't delete anything on my live site." },
+        { id:"C", text:"[Action] Impersonate Elliot and republish the live site to see if it resolves.",
+          verdict:"partial", points:4, goTo:"s_article",
+          consequence:"(You republish. The rows are still uneven, so republishing isn't the fix.)" }
+      ]
+    },
+
+    s_article: {
+      stage:"article", gate:true,
+      speaker:"(You open CSI.)", speakerIf:"resourceOpened",
+      prompt:"What do you check before you answer?",
+      choices:[
+        { id:"A", text:"[Action] Reply using “Wix Editor: Elements, Text & Repeater Issues.”",
+          verdict:"correct", points:20, goTo:"s_solve" },
+        { id:"B", text:"[Action] Reply using “Wix Editor: Identifying Editor Elements.”",
+          verdict:"partial", points:10, goTo:"s_solve" },
+        { id:"C", text:"[Action] Reply using “CMS - Repeaters: Content Not Displaying Correctly on the Live Site.”",
+          verdict:"incorrect", points:0, goTo:"s_solve" },
+        { id:"D", text:"Answer from memory, resizing text boxes is usually all it takes.",
+          verdict:"partial", points:8, goTo:"s_solve" }
+      ]
+    },
+
+    s_solve: {
+      stage:"solve", gate:true,
+      speaker:"So what's actually making them uneven?",
+      prompt:"How do you explain the cause and the fix?",
+      choices:[
+        { id:"A", text:"It's a bug in the repeater. I'll report it and it should sort itself out in a future update.",
+          verdict:"incorrect", points:0, goTo:"s_solve2",
+          consequence:"Elliot: So there's nothing we can do right now?" },
+        { id:"B", text:"The items are regular elements, so each one sizes to its own text. Because the descriptions have different numbers of lines, the boxes end up different heights. We'll make the text boxes the same size and give each the same number of lines so the rows match.",
+          verdict:"correct", points:12, goTo:"s_solve2",
+          consequence:"Elliot: Ah, that makes sense. Some of mine have way more text than others." },
+        { id:"C", text:"The rows are uneven, so let's just resize them by hand until they look right.",
+          verdict:"partial", points:5, goTo:"s_solve2",
+          consequence:"Elliot: I tried that and they kept jumping around." }
+      ]
+    },
+
+    s_solve2: {
+      stage:"solve", gate:true,
+      speaker:"Okay, walk me through what to change.",
+      prompt:"What steps do you give Elliot?",
+      choices:[
+        { id:"A", text:"Just make each text box smaller and it'll be fine.",
+          verdict:"incorrect", points:0, goTo:"s_close",
+          consequence:"Elliot: Now the text is cut off on the longer events." },
+        { id:"B", text:"Match the text box sizes across the items and republish. That should even them out.",
+          verdict:"partial", points:4, goTo:"s_close",
+          consequence:"Elliot: A bit better, but the shorter items still sit higher than the others." },
+        { id:"C", text:"In the Editor, select each item's text box and set them all to the same size in the toolbar. Where a description is short, use Shift + Enter to add line breaks so every item has the same number of lines, and keep the line spacing the same. Then switch to the mobile view and check it lines up there too.",
+          verdict:"correct", points:8, goTo:"s_close",
+          consequence:"Elliot: That worked, the rows are even now, and mobile looks good too. Thank you." }
+      ]
+    },
+
+    s_close: {
+      stage:"open", gate:true,
+      prompt:"How do you close?",
+      choices:[
+        { id:"A", text:"You're all set, Elliot. We matched the text box sizes and evened out the lines with Shift + Enter, so your events rows line up on desktop and mobile. Is there anything else I can help with?",
+          verdict:"correct", points:5, goTo:"__end__",
+          consequence:"Elliot: Nope, that covered it. Thanks so much for the help!" },
+        { id:"B", text:"Glad that's sorted. Reach back out if it happens again.",
+          verdict:"partial", points:3, goTo:"__end__",
+          consequence:"Elliot: Thanks, bye." },
+        { id:"C", text:"All done. Keep this chat open in case the rows shift again.",
+          verdict:"incorrect", points:0, goTo:"__end__",
+          consequence:"Elliot: Um, okay?" }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const app = document.getElementById('app');
+  const U = S.user || { name:(S.userBio? "the user":"User"), image:null, bio:S.userBio||"" };
+
+  const earned = {};        // stageId -> best points (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response that set that stage's score
+  const transcript = [];    // ordered record of the whole conversation
+  const stageCfg = {};      // stageId -> stage config (for additive/max lookups)
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; stageCfg[st.id]=st; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+  const help = { used:false, checkedCorrectArticle:false, openedAnyResourceLink:false, openedLabels:new Set() };
+  // Whether the CURRENT screen's speaker line actually played (passed its
+  // speakerIf gate) — read when the choice is recorded so the end-of-call
+  // transcript replay matches exactly what the learner saw live.
+  let currentSpeakerShown = false;
+
+  /* ---- learner name ----------------------------------------------------
+     Captured on the Meet screen (learners enter their FULL name). During the
+     simulation, the Expert is shown by FIRST NAME ONLY — this applies both to
+     (a) the label on the learner's own chat bubbles and (b) the [name] token
+     substituted anywhere in scenario text (e.g. "I'm [name]"). The full name
+     is still pushed to the Rise/Storyline "learner_name" variable and sent to
+     telemetry unchanged. */
+  let learner_name = "";
+  function firstName(){ return (learner_name || "").trim().split(/\s+/)[0] || ""; }
+  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, firstName() || "you"); }
+  function setLearnerName(v){
+    learner_name = (v||"").trim();
+    pushRiseVar("learner_name", learner_name);
+  }
+
+  /* ---- learner email ---------------------------------------------------
+     Also captured on the Meet screen (required, basic format check). Unlike
+     the name, it is NOT pushed to a Rise/Storyline variable — it is only
+     sent to the telemetry Form (see FIELD_IDS.learner_email below). */
+  let learner_email = "";
+  function setLearnerEmail(v){ learner_email = (v||"").trim(); }
+
+  // Best-effort write to the host course's variable. Storyline exposes
+  // GetPlayer(); Rise/other hosts can listen for the postMessage below.
+  function pushRiseVar(name, value){
+    try {
+      const p = (window.parent && window.parent.GetPlayer && window.parent.GetPlayer())
+             || (window.top && window.top.GetPlayer && window.top.GetPlayer());
+      if(p && p.SetVar) p.SetVar(name, value);
+    } catch(e){}
+    try { window.parent && window.parent.postMessage({ type:'setVar', name:name, value:value }, '*'); } catch(e){}
+  }
+
+  // Stamp each screen with its own id so retry can re-open it.
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  /* =========================== TELEMETRY ===========================
+     Posts one row per learner action to a Google Form, whose responses feed
+     the Sheet. A Google Form's formResponse endpoint accepts anonymous,
+     cross-origin POSTs with no auth, no deployment permissions, and no shared
+     key — which is why this works where the Apps Script Web App returned 401.
+     (This is the same mechanism proven in the working Rise POC.)
+
+     Each field is addressed by its Form `entry.NNN` id, not by column name.
+     Body is application/x-www-form-urlencoded (entry.123=value&...). If the
+     Form's questions ever change, refresh the ids in FIELD_IDS below by
+     opening the live form's prefilled-link tool or viewing its HTML source.
+
+     mode:'no-cors' makes the response opaque, so a rejected/misrouted write is
+     invisible here and fails silently. Verify the first run by watching rows
+     actually land in the Sheet.
+
+     learner_email IS collected on the Meet screen in this scenario and sent to
+     the Form's learner_email field (entry.1276253364). All other values are
+     derived dynamically from the scenario/screen, so every scenario self-labels
+     with no per-scenario editing here. */
+  const TELEMETRY_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSfaz9fhquxHvziwgOmLsycG5P-LaYkB11sRzTC_48I003VT_Q/formResponse';
+  const FIELD_IDS = {
+    learner_email:    'entry.1276253364',
+    learner_name:     'entry.2005409239',
+    attempt_id:       'entry.1673953677',
+    course:           'entry.2010105379',
+    scene:            'entry.1283761747',
+    interaction:      'entry.1781563601',
+    question:         'entry.786197073',
+    response:         'entry.2057562952',
+    correct:          'entry.1897805741',
+    points:           'entry.1780599104',
+    time_on_step_sec: 'entry.1327709145',
+    notes:            'entry.1963386753'
+  };
+  const TELEMETRY_COURSE = S.title + ' (BPO)';           // written to the `course` field
+
+  // One id per play-through, so a learner's rows can be grouped in the Sheet.
+  const attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // `time_on_step_sec` — seconds between a screen appearing and the learner acting.
+  let stepStartedAt = null;
+  function markStepStart(){ stepStartedAt = callSeconds; }
+  function secondsOnStep(){ return stepStartedAt==null ? '' : Math.max(0, callSeconds - stepStartedAt); }
+
+  // Same idea for the Check Resources modal: seconds since it was opened, not the call clock.
+  let resourcesOpenedAt = null;
+  function secondsOnResources(){ return resourcesOpenedAt==null ? '' : Math.max(0, callSeconds - resourcesOpenedAt); }
+
+  // verdict -> the `correct` field
+  function correctCol(verdict){
+    if(verdict==='correct')   return 'yes';
+    if(verdict==='partial')   return 'partial';
+    if(verdict==='incorrect') return 'no';
+    return '';
+  }
+
+  function logEvent(evt){
+    evt = evt || {};
+    // Map this event onto the Form fields.
+    const row = {
+      learner_email:    learner_email,
+      learner_name:     learner_name,
+      attempt_id:       attemptId,
+      course:           TELEMETRY_COURSE,
+      scene:            evt.screen   || '',
+      interaction:      evt.stage    || evt.helper || evt.type || '',
+      question:         evt.question || '',
+      response:         evt.text     || evt.action || '',
+      correct:          correctCol(evt.verdict),
+      points:           evt.points  == null ? '' : evt.points,
+      time_on_step_sec: evt.seconds == null ? '' : evt.seconds,
+      notes:            evt.notes    || ''
+    };
+    // Build the urlencoded body keyed by Form entry ids.
+    const body = [];
+    for(const k in row){
+      if(!FIELD_IDS[k]) continue;              // skip any field without an entry id
+      const v = row[k];
+      body.push(FIELD_IDS[k] + '=' + encodeURIComponent(v == null ? '' : v));
+    }
+    try{
+      fetch(TELEMETRY_ENDPOINT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body: body.join('&')
+      }).catch(()=>{});  // best-effort telemetry; never blocks the learner's flow
+    } catch(e){}
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---- call timer (authentic Communication-Panel touch) ---- */
+  let callSeconds = 0, timerHandle = null, callStartTs = null;
+  function mmss(t){ const m=Math.floor(t/60), s=t%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+  // Drive the clock from a real timestamp, NOT a tick counter. Background tabs
+  // throttle/pause setInterval (e.g. after opening Resources and switching tab),
+  // which makes a "callSeconds++" counter fall behind real time. Deriving the
+  // value from elapsed wall-clock time keeps it accurate: it snaps to the right
+  // value on the next tick, and immediately when the tab is re-focused.
+  function tickTimer(){
+    if(callStartTs==null) return;
+    callSeconds = Math.round((Date.now()-callStartTs)/1000);
+    const e=document.getElementById('timer'); if(e) e.textContent=mmss(callSeconds);
+  }
+  function startTimer(){
+    callStartTs = Date.now() - callSeconds*1000;   // resume-safe
+    tickTimer();
+    timerHandle = setInterval(tickTimer, 1000);
+  }
+  function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
+  // Correct the display the instant the tab becomes visible again.
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tickTimer(); });
+
+  let chatEl, composerEl;
+
+  /* =================== PHASE 1 — MEET THE USER =================== */
+  function renderMeet(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}"
+             onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'noimg\\'>[ ${escapeHtml(U.name)} ]<br><span style=&quot;font-size:0.75rem&quot;>character image not found</span></div>')">`
+      : `<div class="noimg">[ ${escapeHtml(U.name)} ]</div>`;
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Care Dojo · User Scenario</div>
+          <h1 class="display">Meet ${escapeHtml(U.name)}</h1>
+          <p>${escapeHtml(U.bio).replace(/\*([^*]+)\*/g,'<em>$1</em>')}</p>
+          <div class="namefield">
+            <label for="learnerName">Full Name</label>
+            <input class="nameinput" id="learnerName" type="text" autocomplete="name"
+                   placeholder="Enter your full name" value="${escapeHtml(learner_name)}">
+            <div class="nameerror" id="nameError">Please enter your name to continue.</div>
+          </div>
+          <div class="namefield">
+            <label for="learnerEmail">Wix Email</label>
+            <input class="nameinput" id="learnerEmail" type="email" autocomplete="email"
+                   placeholder="Enter your Wix email" value="${escapeHtml(learner_email)}">
+            <div class="nameerror" id="emailError">Please enter a valid email to continue.</div>
+          </div>
+          <div><button class="btn btn-dark" id="startBtn">Get Started<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button></div>
+        </div>
+      </section>`;
+    const nameInput  = document.getElementById('learnerName');
+    const nameError  = document.getElementById('nameError');
+    const emailInput = document.getElementById('learnerEmail');
+    const emailError = document.getElementById('emailError');
+    const emailOk = v => /^\S+@\S+\.\S+$/.test((v||'').trim());
+    nameInput.addEventListener('input', e => {
+      setLearnerName(e.target.value);
+      if(learner_name) { nameError.classList.remove('show'); nameInput.classList.remove('invalid'); }
+    });
+    emailInput.addEventListener('input', e => {
+      setLearnerEmail(e.target.value);
+      if(emailOk(learner_email)) { emailError.classList.remove('show'); emailInput.classList.remove('invalid'); }
+    });
+    document.getElementById('startBtn').onclick = () => {
+      setLearnerName(nameInput.value);
+      setLearnerEmail(emailInput.value);
+      let bad = false;
+      if(!learner_name){
+        nameError.classList.add('show'); nameInput.classList.add('invalid'); bad = true;
+      }
+      if(!emailOk(learner_email)){
+        emailError.classList.add('show'); emailInput.classList.add('invalid'); bad = true;
+      }
+      if(bad){ (!learner_name ? nameInput : emailInput).focus(); return; }
+      openConfirm();
+    };
+  }
+
+  /* =================== PHASE 1b — CONFIRM YOUR DETAILS (popup) ===================
+     A modal checkpoint over the Meet screen: the learner reviews the exact name
+     + email that will be attached to their results. Close/Back dismisses the
+     popup (Meet stays put); "These are correct" starts the call. */
+  function openConfirm(){
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>Are these correct?</h3><button class="mx" id="confirmClose" type="button" aria-label="Close">&times;</button></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">Make sure your first and last name and Wix email address are correct before we proceed. We'll attach these to your results.</p>
+        <div class="confirm-details">
+          <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${escapeHtml(learner_name)}</span></div>
+          <div class="confirm-row"><span class="confirm-label">Email</span><span class="confirm-value">${escapeHtml(learner_email)}</span></div>
+        </div>
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="confirmYes" type="button">These are correct<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button>
+          <button class="btn btn-ghost" id="confirmBack" type="button">Back</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    const close = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#confirmClose').onclick = close;
+    dlg.querySelector('#confirmBack').onclick = close;
+    dlg.querySelector('#confirmYes').onclick = ()=>{ close(); startCall(); };
+  }
+
+  /* =================== PHASE 2 — THE LIVE CALL =================== */
+  // Fullscreen toggle icons (recreated inline — no image files). A circle with
+  // outward arrows = expand; inward arrows = collapse. Swapped on fullscreenchange.
+  const MAXIMIZE_SVG = `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="17.4462" stroke="#000624" stroke-width="1.10769"/><path d="M16.5893 18.8569C16.7609 19.0286 16.78 19.2951 16.6465 19.4878L16.5893 19.5563L12.4873 23.6571H15.7451V24.6462H10.8V19.7011H11.7891V22.9569L15.8899 18.8569C16.0831 18.6638 16.3962 18.6638 16.5893 18.8569ZM24.6462 10.8V15.7451H23.6572V12.4873L19.5563 16.5892C19.3632 16.7823 19.0501 16.7823 18.857 16.5892C18.6639 16.3961 18.6639 16.083 18.857 15.8899L22.957 11.789H19.7011V10.8H24.6462Z" fill="#000624"/></svg>`;
+  const MINIMIZE_SVG = `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="17.4462" stroke="#000624" stroke-width="1.10769"/><path d="M24.5012 11.6452C24.594 11.5523 24.6462 11.4264 24.6462 11.2951C24.6462 11.1638 24.594 11.0379 24.5012 10.945C24.4083 10.8522 24.2824 10.8 24.1511 10.8C24.0198 10.8 23.8939 10.8522 23.801 10.945L19.701 15.0461V11.7895H18.712V16.7342H23.6567V15.7452H20.4001L24.5012 11.6452ZM15.0461 19.7009H11.7896V18.712H16.7342V23.6566H15.7453V20.4001L11.6452 24.5012C11.5524 24.594 11.4264 24.6462 11.2951 24.6462C11.1638 24.6462 11.0379 24.594 10.9451 24.5012C10.8522 24.4083 10.8 24.2824 10.8 24.1511C10.8 24.0198 10.8522 23.8938 10.9451 23.801L15.0461 19.7009Z" fill="#000624"/></svg>`;
+  function startCall(){
+    const initial = (U.name||'?').trim().charAt(0).toUpperCase();
+    app.innerHTML = `
+      <div class="sim-wrap" id="simWrap">
+      <button class="fs-fab" id="fsBtn" type="button" title="Enter fullscreen" aria-label="Enter fullscreen">${MAXIMIZE_SVG}</button>
+      <section class="panel" id="sim">
+        <div class="panel-head">
+          <div class="avatar">${escapeHtml(initial)}</div>
+          <div>
+            <div class="who-name">${escapeHtml(U.name)}</div>
+            <div class="who-sub"><span class="livedot"></span> Live chat · <span class="timer" id="timer">00:00</span></div>
+          </div>
+          <div class="head-spacer"></div>
+          <div class="helperbar-head" id="helperbar"></div>
+          <button class="btn-end" id="endBtn">End</button>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="sheet min" id="sheet">
+          <button class="sheet-handle" id="sheetHandle" type="button" aria-expanded="false" aria-controls="composer">
+            <span class="sheet-grab"></span>
+            <span class="sheet-q" id="sheetQ"></span>
+            <span class="sheet-chev" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 15l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <div class="sheet-body"><div id="composer"></div></div>
+        </div>
+      </section>
+      </div>`;
+    chatEl = document.getElementById('chat');
+    lastBubbleKind = null;   // fresh chat — start a new speaker run
+    composerEl = document.getElementById('composer');
+    const sheetHandle = document.getElementById('sheetHandle');
+    if(sheetHandle) sheetHandle.onclick = toggleSheet;
+    // The sheet grows/shrinks as its choices render (they're appended after it
+    // opens). Re-sync the chat's reserved bottom space whenever its size changes,
+    // so the newest messages always sit just above the choices.
+    const sheetEl = document.getElementById('sheet');
+    if(sheetEl && 'ResizeObserver' in window){
+      new ResizeObserver(()=>syncChatBottom()).observe(sheetEl);
+    }
+    document.getElementById('endBtn').onclick = confirmEnd;
+    // Fullscreen toggle — expand the whole sim (wrapper incl. the floating icon)
+    // via the Fullscreen API, swapping the maximize/minimize icon on change.
+    const fsBtn = document.getElementById('fsBtn'), simWrap = document.getElementById('simWrap');
+    if(fsBtn && simWrap && document.fullscreenEnabled){
+      fsBtn.onclick = ()=>{
+        if(document.fullscreenElement) document.exitFullscreen();
+        else simWrap.requestFullscreen().catch(()=>{});
+      };
+      document.addEventListener('fullscreenchange', ()=>{
+        const on = document.fullscreenElement===simWrap;
+        fsBtn.innerHTML = on ? MINIMIZE_SVG : MAXIMIZE_SVG;
+        fsBtn.title = on ? 'Exit fullscreen' : 'Enter fullscreen';
+        fsBtn.setAttribute('aria-label', fsBtn.title);
+      });
+    } else if(fsBtn){ fsBtn.style.display='none'; }
+    renderHelpers();
+    startTimer();
+    renderScreen(S.start, { animateSpeaker:false });  // first line appears immediately
+  }
+
+  function confirmEnd(){
+    // Ending early is allowed — skips are recoverable, unreached stages simply score 0.
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>End the chat?</h3></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">You'll go straight to your results. Anything you haven't done yet won't score.</p>
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="endYes">End &amp; see results</button>
+          <button class="btn btn-ghost" id="endNo">Keep going</button>
+        </div></div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.querySelector('#endNo').onclick = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#endYes').onclick = ()=>{ dlg.close(); dlg.remove(); renderFinal(); };
+  }
+
+  /* ---- Bubble markup (shared by the LIVE chat and the END transcript) ----
+     'system' bubbles are inline notes (pill), used for both tool/observation
+     lines and action notes — anything that isn't a direct spoken quote. */
+  function bubbleMarkup(kind, text, metaText, reaction){
+    const meta = metaText ? `<div class="meta">${escapeHtml(metaText)}</div>` : '';
+    const cls  = 'bubble' + (kind==='system' ? ' action' : '');
+    const msgCls = 'msg ' + kind + (reaction ? ' reaction' : '');
+    const body = escapeHtml(px(text)).replace(/\n/g,'<br>');
+    return `<div class="${msgCls}">${meta}<div class="${cls}">${body}</div></div>`;
+  }
+  function appendNode(html){
+    const tmp = document.createElement('div'); tmp.innerHTML = html;
+    const node = tmp.firstElementChild;
+    chatEl.appendChild(node); chatEl.scrollTop = chatEl.scrollHeight;
+    return node;
+  }
+  /* Group consecutive messages from the SAME speaker: the name label is shown
+     only on the FIRST bubble of a run, not repeated on back-to-back messages
+     from the same person. System notes are centered and never labeled; they
+     also break a run so the next spoken bubble re-shows its name. */
+  let lastBubbleKind = null;
+  function appendBubble(kind, text, reaction){
+    const sameSpeaker = (kind !== 'system' && kind === lastBubbleKind);
+    const meta = (kind==='system' || sameSpeaker) ? '' :
+      `${kind==='you' ? (firstName()||'You') : U.name} · ${mmss(callSeconds)}`;
+    lastBubbleKind = kind;
+    return appendNode(bubbleMarkup(kind, text, meta, reaction));
+  }
+  /* Inline action note: an "[Action]" choice is something the Expert DOES, shown
+     as a centered system note in the stream (e.g. "You open User Manager."). */
+  function actionNoteText(raw){
+    const t = stripAction(px(raw)).trim().replace(/\s+/g,' ');
+    const note = 'You ' + t.charAt(0).toLowerCase() + t.slice(1);
+    return /[.!?]$/.test(note) ? note : note + '.';
+  }
+  function appendActionNote(text){ return appendBubble('system', text, true); }
+
+  /* Inline screen image: a screenshot shown in the stream for a given screen
+     (e.g. the Layers panel or the Accessibility Wizard). `img` is {src, alt,
+     caption}. Rendered as a full-width figure so learners see the same thing
+     the Expert would be looking at. Broken/absent sources hide gracefully. */
+  function appendImage(img, autoOpen){
+    if(!img || !img.src) return null;
+    lastBubbleKind = 'system';   // an image breaks a same-speaker run
+    const alt = escapeHtml(img.alt || '');
+    // No caption — learners read the screenshot and locate the info themselves.
+    // Click (or Enter/Space) opens the image in a full-screen zoom lightbox.
+    const node = appendNode(
+      `<div class="msg system"><figure class="screenshot">`+
+      `<img src="${escapeHtml(img.src)}" alt="${alt}" loading="lazy" tabindex="0" role="button" `+
+      `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
+      `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}" `+
+      `onerror="this.closest('figure').innerHTML='<div class=\\'noimg\\'>[ screenshot not found ]</div>'">`+
+      `</figure></div>`);
+    // Engine rule: a screenshot revealed by an ACTION (e.g. "You impersonate…and
+    // find the element in the Layers panel") pops straight into the full-screen
+    // lightbox so the learner sees the detail immediately; they close it (X / Esc /
+    // click-outside) to continue. It stays inline in the chat afterward too.
+    if(autoOpen) openLightbox(img.src, img.alt || '');
+    return node;
+  }
+
+  /* ---- Lightbox: click any inline screenshot to view it enlarged ---- */
+  function openLightbox(src, alt){
+    const dlg = document.createElement('dialog'); dlg.className='lightbox';
+    dlg.innerHTML = `<button class="lightbox-close" aria-label="Close">&times;</button>`+
+      `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt||'')}">`;
+    document.body.appendChild(dlg); dlg.showModal();
+    const close = ()=>{ try{dlg.close();}catch(e){} dlg.remove(); };
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) close(); });
+    dlg.querySelector('.lightbox-close').onclick = close;
+  }
+  window.__openLightbox = openLightbox;
+
+  // setComposer also drives the slide-up sheet: any real content (the choices)
+  // auto-opens it; clearing it (transitions/retries) slides it back down so the
+  // learner can read the chat. The learner can also toggle it via the handle.
+  function setComposer(html){
+    composerEl.innerHTML = html;
+    const s = document.getElementById('sheet');
+    if(s){
+      const open = !!(html && html.trim());
+      s.classList.toggle('min', !open);
+      const h = document.getElementById('sheetHandle');
+      if(h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    syncChatBottom();
+  }
+  function setSheetQuestion(t){ const q=document.getElementById('sheetQ'); if(q) q.textContent = t; }
+  function toggleSheet(){
+    const s=document.getElementById('sheet'); if(!s) return;
+    const willOpen = s.classList.contains('min');
+    s.classList.toggle('min');
+    const h=document.getElementById('sheetHandle');
+    if(h) h.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    syncChatBottom();
+  }
+
+  /* ---- Slide-up sheet ⇄ chat spacing (engine rule — applies to every scenario) ----
+     The decision sheet is an overlay pinned to the panel's bottom edge, so on its
+     own it would COVER the newest chat messages. Rather than resize the chat
+     viewport, we reserve empty space INSIDE the chat equal to the sheet's currently
+     visible height: the last messages slide UP above the choices, and when the
+     sheet is minimized that reserved space shrinks so they slide back DOWN. The
+     newest message is always pinned into view. (Viewport height never changes.) */
+  function syncChatBottom(){
+    if(!chatEl) return;
+    const s = document.getElementById('sheet');
+    let cover = 0;
+    if(s){
+      // The sheet is pinned to the panel's bottom edge (its bottom == the chat's
+      // bottom), so the strip it covers equals its own height. Use offsetHeight,
+      // NOT getBoundingClientRect: offsetHeight ignores the slide-in transform, so
+      // it's correct even mid-animation. Minimized → only the ~3.25rem handle shows.
+      const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      cover = s.classList.contains('min') ? (3.25 * rootPx) : s.offsetHeight;
+    }
+    chatEl.style.paddingBottom = cover + 'px';   // reserve exactly the covered strip
+    chatEl.scrollTop = chatEl.scrollHeight;      // pin to newest (sits just above the sheet)
+  }
+  // The sheet's open height is a % of the panel, so re-sync when the panel resizes
+  // (window resize or entering/leaving fullscreen).
+  window.addEventListener('resize', syncChatBottom);
+  document.addEventListener('fullscreenchange', syncChatBottom);
+
+  /* "[Action] ..." choices are actions, not spoken replies. */
+  const ACTION_RE = /^\s*\[Action\]\s*/i;
+  function isAction(text){ return ACTION_RE.test(text||''); }
+  function stripAction(text){ return (text||'').replace(ACTION_RE, ''); }
+
+  /* ---- Split a scripted line (speaker OR consequence) into ordered segments,
+     one bubble per speaker. Segments break ONLY at a speaker label at the start
+     of a line — NOT at blank lines — so a single message that contains its own
+     paragraph break (e.g. the "Set to Advanced" upgrade steps) stays one bubble.
+       "Expert:"            -> your blue bubble (right)
+       "Sarah:"/name/caller -> gray caller bubble (left)
+       "(...)"              -> inline system note (tool result / stage direction)
+       unlabeled            -> caller (spoken) by default
+     Speaker labels, wrapping quotes, and the ( ) around system notes are
+     stripped so bubbles read as clean chat. ---- */
+  const YOU_LABEL = /^\s*expert\s*[:：]\s*/i;
+  function callerLabelRe(){
+    const nm = (U.name||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return new RegExp('^\\s*(?:' + (nm?nm+'|':'') + 'sarah|caller|customer)\\s*[:：]\\s*','i');
+  }
+  function stripQuotes(s){ return s.replace(/^\s*["'“”‘’]+/,'').replace(/["'“”‘’]+\s*$/,'').trim(); }
+  function splitDialogue(text){
+    if(!text) return [];
+    const clr = callerLabelRe(); const segs=[]; let cur=null;
+    String(text).split('\n').forEach(line=>{
+      if(YOU_LABEL.test(line)){ cur={kind:'you',    text:line.replace(YOU_LABEL,'')}; segs.push(cur); }
+      else if(clr.test(line)){  cur={kind:'caller', text:line.replace(clr,'')};        segs.push(cur); }
+      else if(!cur && /^\s*\(/.test(line)){ cur={kind:'system', text:line};            segs.push(cur); }
+      else if(!cur){            cur={kind:'caller', text:line};                         segs.push(cur); }
+      else cur.text += '\n' + line;
+    });
+    return segs.map(s=>{
+      let t = s.kind==='system' ? s.text.replace(/^\s*\(/,'').replace(/\)\s*$/,'') : s.text;
+      return { kind:s.kind, text:stripQuotes(t) };
+    }).filter(s=>s.text.length);
+  }
+  /* transcript bubbles: same markup, name label only (no live timer) */
+  function segMarkup(kind, text){
+    const who = kind==='system' ? '' : (kind==='you' ? (firstName()||'You') : U.name);
+    return bubbleMarkup(kind, text, who);
+  }
+
+  /* ---- Typing indicator + auto-advance reveal ----
+     Sarah's "typing…" dots show before her first reply to a pick; follow-on
+     caller lines in the same beat use a shorter delay; your/system lines appear
+     after a short beat. animate=false reveals everything at once (first load). */
+  const TAI_MS = 5000, TAI_FOLLOW_MS = 1500, YOU_MS = 700, SYS_MS = 500;
+  // Consequence beats:
+  //  • inline notes (centered system bubbles) reveal 2s apart;
+  //  • spoken consequence lines (Samantha OR the Expert) show a 5s typing
+  //    indicator before landing.
+  const REACT_INLINE_MS = 2000, REACT_TYPING_MS = 5000;
+  function typingBubble(kind){
+    const you = kind==='you';
+    const side = you ? 'you' : 'caller';
+    const who  = you ? (firstName()||'You') : U.name;
+    return appendNode(
+      `<div class="msg typing ${side}"><div class="meta">${escapeHtml(who)} · typing…</div>`+
+      `<div class="bubble"><span class="tai-dot"></span><span class="tai-dot"></span><span class="tai-dot"></span></div></div>`);
+  }
+  function revealSegments(segs, animate, done, opts){
+    opts = opts || {};
+    const reaction = !!opts.reaction;
+    let i=0, sawCaller=false;
+    (function next(){
+      if(i>=segs.length){ if(done) done(); return; }
+      const s=segs[i++];
+      // In a consequence (reaction) reveal:
+      //  • centered inline notes (system) turn green and reveal 2s apart;
+      //  • spoken lines — Samantha (caller) OR the Expert (you) — show a 5s
+      //    typing indicator, then land.
+      const inlineNote = reaction && s.kind==='system';
+      if(!animate){ appendBubble(s.kind, s.text, inlineNote); return next(); }
+      if(inlineNote){
+        setTimeout(()=>{ appendBubble('system', s.text, true); next(); }, REACT_INLINE_MS);
+      } else if(reaction && (s.kind==='caller' || s.kind==='you')){
+        const dots=typingBubble(s.kind);
+        setTimeout(()=>{ dots.remove(); appendBubble(s.kind, s.text); next(); }, REACT_TYPING_MS);
+      } else if(s.kind==='caller'){
+        const t = sawCaller ? TAI_FOLLOW_MS : TAI_MS; sawCaller=true;
+        const dots=typingBubble();
+        setTimeout(()=>{ dots.remove(); appendBubble('caller', s.text); next(); }, t);
+      } else {
+        setTimeout(()=>{ appendBubble(s.kind, s.text); next(); }, s.kind==='you'?YOU_MS:SYS_MS);
+      }
+    })();
+  }
+
+  /* ---- Helper buttons (native <dialog>) ---- */
+  function openModal(title, node){
+    const dlg = document.createElement('dialog'); dlg.className='modal'; dlg.id='modal';
+    const inner = document.createElement('div'); inner.className='modal-inner';
+    const head = document.createElement('div'); head.className='mhead';
+    head.innerHTML = `<h3>${escapeHtml(title)}</h3>`;
+    const x = document.createElement('button'); x.className='mx'; x.innerHTML='&times;'; x.setAttribute('aria-label','Close');
+    x.onclick = closeModal; head.appendChild(x);
+    inner.appendChild(head); inner.appendChild(node); dlg.appendChild(inner);
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) closeModal(); });  // backdrop click
+  }
+  function closeModal(){ const m=document.getElementById('modal'); if(m){ try{m.close();}catch(e){} m.remove(); } }
+
+  function renderHelpers(){
+    const bar = document.getElementById('helperbar');
+    if(!S.resources){ bar.style.display='none'; return; }
+    bar.innerHTML='';
+    const b=document.createElement('button');
+    b.className='hbtn';
+    b.textContent = S.resources.title || 'Check Resources';
+    b.onclick = openResources;
+    bar.appendChild(b);
+  }
+  /* Opens the scenario's dynamic links in a modal. Opening the resource
+     marked correct:true is what lifts the article-stage cap in renderFinal —
+     but only if it happens at/after RESOURCE_CREDIT_MIN_SECONDS into the call.
+     Opening it earlier doesn't count; the learner can still open it again
+     later (any time before ending the chat) to earn credit. */
+  const RESOURCE_CREDIT_MIN_SECONDS = 30;
+  function openResources(){
+    const r=S.resources, wrap=document.createElement('div');
+    resourcesOpenedAt = callSeconds;   // start the clock for this modal's dwell time
+    logEvent({type:'helper', helper:'resources', action:'opened Check Resources', seconds:0});
+    if(r.note) wrap.innerHTML='<div class="mnote" style="margin:0 0 0.625rem">'+escapeHtml(r.note)+'</div>';
+    (r.items||[]).forEach(it=>{
+      const a=document.createElement('a');
+      a.className='mopt'; a.href=it.url||'#'; a.target='_blank'; a.rel='noopener noreferrer';
+      a.textContent=it.label + '  ↗';
+      a.onclick=()=>{
+        // Any resource link click (correct or distractor) counts as "opened a
+        // resource" — this gates speaker lines like "(You open CSI.)" that
+        // should only appear if the learner actually looked something up.
+        help.openedAnyResourceLink = true;
+        help.openedLabels.add((it.label||'').trim().toLowerCase());
+        if(it.correct){
+          if(callSeconds >= RESOURCE_CREDIT_MIN_SECONDS){
+            help.checkedCorrectArticle=true;
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      verdict:'correct', seconds:secondsOnResources(), notes:'opened the correct resource'});
+          } else {
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      seconds:secondsOnResources(), notes:'opened the correct resource too early to earn credit (before '+RESOURCE_CREDIT_MIN_SECONDS+'s)'});
+          }
+        } else logEvent({type:'helper', helper:'resources', action:it.label,
+                         verdict:'incorrect', seconds:secondsOnResources(), notes:'opened a distractor resource'});
+      };
+      wrap.appendChild(a);
+    });
+    openModal(r.title||'Check Resources', wrap);
+    document.getElementById('modal').addEventListener('close', ()=>{
+      logEvent({type:'helper', helper:'resources', action:'closed Check Resources', seconds:secondsOnResources()});
+    }, {once:true});
+  }
+
+  /* Centered in-sim notice (styled like the Check Resources panel) shown when a
+     learner tries to reply from an article they never opened in Check Resources —
+     replaces the old browser alert(). */
+  function notifyResourceNotOpened(){
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<div class="mnote" style="margin:0;font-size:0.875rem;color:var(--ink-2)">'
+      + 'It looks like you didn’t open this article using Check Resources. '
+      + 'Remember to always check the resource before answering from memory.</div>';
+    openModal('Check the resource first', wrap);
+  }
+
+  /* Progress bar removed — kept as a no-op so existing call sites are harmless. */
+  function paintProgress(){}
+
+  function applyCredit(stg, pts, verdict, pickText){
+    if(!(stg in earned)) return;
+    const cfg = stageCfg[stg] || {};
+    if(cfg.additive){
+      // Stage spans more than one screen (e.g. solve = s_solve + s_solve2):
+      // sum contributions, capped at the stage max, rather than taking the best.
+      const next = Math.min(cfg.max==null ? Infinity : cfg.max, earned[stg] + Math.max(0, pts));
+      if(pts > 0 || !(stg in decisivePick)) decisivePick[stg] = {text:pickText, verdict:verdict, points:next};
+      earned[stg] = next;
+      if(verdict==='correct') status[stg]='done';
+      else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+      return;
+    }
+    if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+    if(pts > earned[stg]) earned[stg] = pts;
+    if(verdict==='correct') status[stg]='done';
+    else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+  }
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text));
+  }
+
+  function renderScreen(id, opts){
+    opts = opts || {};
+    const retriedIds = opts.retriedIds || [];
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    setComposer('');   // choices appear only AFTER the caller's line has landed
+
+    const showChoices = ()=>{
+      // (Screen screenshots are no longer shown automatically — they now reveal
+      //  only when the learner picks the choice flagged with caption:"Samantha's Layers panel…".)
+      setComposer(`<div id="choices"></div>`);
+      setSheetQuestion(px(scr.prompt));   // the question shows in the sheet handle
+      const cWrap = document.getElementById('choices');
+      scr.choices.forEach(ch=>{
+        const b=document.createElement('button');
+        // A choice with `say` is the Expert SPEAKING (rendered as a bubble), so
+        // it isn't a tool action — no badge, even if its label reads "[Action]".
+        const badge = isAction(ch.text) && !ch.say;
+        b.className = 'choice' + (badge ? ' choice-action' : '');
+        b.innerHTML = (badge ? '<span class="cbadge">Action</span>' : '')
+                    + escapeHtml(stripAction(px(ch.text)));
+        if(retriedIds.includes(ch.id)) b.disabled=true;
+        b.onclick=()=>choose(scr,ch,retriedIds,opts.cap);
+        cWrap.appendChild(b);
+      });
+      markStepStart();   // start the clock for this screen's time_on_step_sec
+      syncChatBottom();  // choices are now in the DOM — slide the chat up above them
+    };
+
+    // The caller line (which may itself contain Expert:/Sarah: parts) is split
+    // into its own bubbles. On auto-advance it animates in with typing dots.
+    currentSpeakerShown = !!(scr.speaker && !opts.skipSpeaker && speakerGateMet(scr));
+    if(currentSpeakerShown){
+      revealSegments(splitDialogue(scr.speaker), !!opts.animateSpeaker, showChoices);
+    } else {
+      showChoices();
+    }
+  }
+
+  /* Some speaker lines only make sense if the learner actually did something
+     first. `speakerIf:"resourceOpened"` on a screen gates its speaker line so
+     it's skipped entirely unless the learner clicked a resource link in Check
+     Resources at some point in the call. Add more gate keys here as needed. */
+  function speakerGateMet(scr){
+    if(!scr.speakerIf) return true;
+    if(scr.speakerIf === 'resourceOpened') return !!help.openedAnyResourceLink;
+    return true;
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    // Stage lock: a choice phrased "Reply using …" / "Provide a response using …"
+    // requires the learner to have opened the quoted article(s) in Check
+    // Resources first. Matching is normalized (case/punctuation/&-and, plus a
+    // prefix-tolerant substring test) and ALL quoted articles must be opened.
+    if(/\b(?:reply using|provide a response using)\b/i.test(px(ch.text)||'')){
+      const toks = s => new Set((s||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean));
+      const subset = (a,b) => [...a].every(t => b.has(t));   // a ⊆ b
+      const opened = [...help.openedLabels].map(toks).filter(s => s.size);
+      const needed = (px(ch.text).match(/["“”'‘’]([^"“”'‘’]+)["“”'‘’]/g)||[])
+                       .map(q => toks(q.replace(/["“”'‘’]/g,''))).filter(s => s.size);
+      const missing = needed.some(n => !opened.some(o => subset(n,o) || subset(o,n)));
+      if(!needed.length || missing){
+        notifyResourceNotOpened();
+        return;
+      }
+    }
+    [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    // The learner's pick renders as:
+    //   • `say` present  -> a blue Expert bubble of the spoken words ("Tell Sarah…")
+    //   • an [Action]    -> an inline "You …" note (a tool action)
+    //   • otherwise      -> a blue reply bubble of the choice text
+    if(ch.say) appendBubble('you', ch.say);
+    else if(isAction(ch.text)) appendActionNote(actionNoteText(ch.text));
+    else appendBubble('you', ch.text);
+
+    // Choice-gated screenshot: shows immediately on selection, before the reply.
+    // Action-revealed screenshots auto-open the full-screen lightbox (2nd arg).
+    if(ch.showsImage && (ch.image||scr.image)) appendImage(ch.image||scr.image, true);
+    // Deferred screenshot: shown AFTER the consequence (reply) finishes revealing.
+    const showImageAfter = ()=>{ if(ch.showsImageAfter && (ch.image||scr.image)) appendImage(ch.image||scr.image, true); };
+    const segs = splitDialogue(ch.consequence);
+
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
+      logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+                 text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
+                 notes:'first attempt — caller pushed back, screen re-opened for a retry (capped at '+ch.capIfRetried+')' });
+      setComposer('');
+      // Auto-advance: once the pushback lands, re-open the same screen (no button).
+      revealSegments(segs, true, ()=>renderScreen(scr.id,
+        { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true }), { reaction:true });
+      return;
+    }
+
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+    logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+               text:stripAction(px(ch.text)), verdict:ch.verdict, points:pts, seconds:secondsOnStep(),
+               notes:(isAction(ch.text) ? 'action' : 'reply')
+                     + (typeof cap==='number' ? '; retry attempt, capped at '+cap : '') });
+    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, say:ch.say, consequence:ch.consequence });
+
+    setComposer('');
+    // Auto-advance to the next screen — NO Continue button. The next caller line
+    // arrives via its own typing indicator, straight into the next choices.
+    revealSegments(segs, true, ()=>{
+      showImageAfter();
+      if(ch.goTo==='__end__') renderFinal();
+      else renderScreen(ch.goTo, { animateSpeaker:true });
+    }, { reaction:true });
+  }
+
+  /* =================== PHASE 3 — COMPLETE =================== */
+  function renderFinal(){
+    stopTimer();
+
+    // Apply the Check-Resources penalty before tallying (same rule the old
+    // "Check the Articles" used: no verify of the correct resource → capped).
+    const helpNotes = [];
+    const res = S.resources;
+    if(res && !help.checkedCorrectArticle && (res.stage in earned) && earned[res.stage] > res.capIfUnchecked){
+      earned[res.stage] = res.capIfUnchecked;
+      helpNotes.push("You reached the right answer, but didn't verify it in the source resource — checking the resource is the skill, not remembering.");
+    }
+    S.stages.forEach(st=>{ if(earned[st.id] >= st.max) status[st.id]='done'; else if(earned[st.id] > 0 && status[st.id]==='done') status[st.id]='partial'; });
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+
+    // One summary row per attempt: the total score only.
+    logEvent({ type:'final', points:sum, seconds:callSeconds,
+               notes:'final score ' + sum + ' / ' + maxTotal });
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span class="sval">${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      return p ? `<div class="pick">Your response: “${escapeHtml(p.text)}”</div>`
+               : `<div class="pick miss">You didn't reach this step.</div>`;
+    };
+    // A stage counts as "reached" only if the learner actually answered or was
+    // credited for it (decisivePick set). Stages skipped by ending the chat
+    // early get no coaching feedback — just a "didn't reach this step" note.
+    const reached = st => (st.id in decisivePick);
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=> reached(st)
+            ? `<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`
+            : `<li><b>${st.name}</b> — You didn't reach this step.</li>`).join('');
+
+    // One collapsible row, styled like the wix.com "Website builder FAQs".
+    const accItem = (id, title, inner) => `
+      <div class="acc-item" data-acc="${id}">
+        <button class="acc-head" type="button" aria-expanded="false" aria-controls="accp-${id}">
+          <span>${title}</span><span class="acc-icon" aria-hidden="true"></span>
+        </button>
+        <div class="acc-panel" id="accp-${id}" role="region">
+          <div class="acc-clip"><div class="acc-inner">${inner}</div></div>
+        </div>
+      </div>`;
+
+    const completeImg = U.completeImage || U.image;
+    const portrait = completeImg
+      ? `<img src="${escapeHtml(completeImg)}" alt="" onerror="this.style.display='none'">` : '';
+
+    app.innerHTML = `
+      <section class="complete-hero">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <h1 class="display">Complete!</h1>
+          <p class="lead">Here's how the chat went, stage by stage — with the exact response that set each score.</p>
+          <div class="scorenum">${sum}<small> / ${maxTotal}</small></div>
+        </div>
+      </section>
+
+      <div class="acc">
+        ${accItem('scorecard','Scorecard', rows)}
+        ${accItem('strengths','Top strengths', `<ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>`)}
+        ${accItem('areas','Areas for improvement', `<ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>`)}
+      </div>
+
+      ${helpNotes.length ? `<div class="card"><h3>Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
+
+      <div class="gate">
+        <button class="btn btn-dark" id="finishBtn" type="button" disabled>Finish</button>
+        <span class="hint" id="gateHint">Open all three sections to finish.</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="txBtn">View conversation transcript</button>
+        <button class="btn btn-dark" onclick="location.reload()">Restart</button>
+      </div>
+      <div id="tx" class="card" style="display:none"></div>`;
+
+    // ---- Accordion toggle + completion gate ----------------------------------
+    // Each row opens independently (mirrors the Wix FAQ). The Finish button
+    // unlocks only once all three rows have each been opened at least once;
+    // re-collapsing a row does not re-lock it. Finishing pushes the Rise/
+    // Storyline variable that marks the activity complete.
+    const needIds = ['scorecard','strengths','areas'];
+    const opened  = new Set();
+    const finishBtn = document.getElementById('finishBtn');
+    const gateHint  = document.getElementById('gateHint');
+    let finished = false;
+
+    app.querySelectorAll('.acc-head').forEach(head=>{
+      head.onclick = () => {
+        const item = head.closest('.acc-item');
+        const isOpen = item.classList.toggle('open');
+        head.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if(isOpen){
+          opened.add(item.getAttribute('data-acc'));
+          if(!finished && needIds.every(id=>opened.has(id))){
+            finishBtn.disabled = false;
+            gateHint.textContent = 'All sections reviewed — you can finish.';
+            gateHint.classList.add('ready');
+          }
+        }
+      };
+    });
+
+    finishBtn.onclick = () => {
+      if(finishBtn.disabled || finished) return;
+      finished = true;
+      pushRiseVar('activity_complete', 'true');
+      logEvent({ type:'complete', points:sum, seconds:callSeconds,
+                 notes:'learner reviewed all end-screen sections and finished — ' + sum + ' / ' + maxTotal });
+      finishBtn.classList.remove('btn-dark');
+      finishBtn.classList.add('done');
+      finishBtn.textContent = 'Completed ✓';
+      gateHint.textContent = 'Marked complete.';
+      gateHint.classList.add('ready');
+    };
+
+    document.getElementById('txBtn').onclick = () => {
+      const tx = document.getElementById('tx'), btn = document.getElementById('txBtn');
+      if(tx.style.display==='none'){
+        // Mirror the live chat: split speaker/consequence into speaker bubbles,
+        // render the pick as an action note or a blue reply bubble.
+        // Same back-to-back grouping as the live chat: name label only on the
+        // first bubble of a same-speaker run (txSeg tracks the previous kind).
+        let txLast = null;
+        const txSeg = (kind, text, actionNote) => {
+          const same = (kind !== 'system' && kind === txLast);
+          txLast = kind;
+          if(actionNote) return bubbleMarkup('system', text, '');
+          const who = (kind==='system' || same) ? '' : (kind==='you' ? (firstName()||'You') : U.name);
+          return bubbleMarkup(kind, text, who);
+        };
+        tx.innerHTML = `<h3 style="margin-bottom:0.375rem">Conversation transcript</h3>` +
+          `<div class="chat txchat">` +
+          transcript.map(t=>{
+            let h='';
+            if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=txSeg(s.kind, s.text));
+            h += t.say ? txSeg('you', t.say)
+               : isAction(t.picked) ? txSeg('system', actionNoteText(t.picked), true)
+               : txSeg('you', t.picked);
+            if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=txSeg(s.kind, s.text));
+            return h;
+          }).join('') + `</div>`;
+        tx.style.display='block'; btn.textContent='Hide conversation transcript';
+      } else { tx.style.display='none'; btn.textContent='View conversation transcript'; }
+    };
+  }
+
+  /* ---- boot ---- */
+  renderMeet();
+
+  /* Signal the Rise 360 code block that the project has loaded and can display. */
+  try { window.parent.postMessage({ type: 'complete' }, '*'); } catch(e){}
+})();
+</script>
+</body>
+</html>
