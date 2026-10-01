@@ -1,16 +1,16 @@
 screen_id,stage,gate (Y/N),speaker (caller line),speakerIf,prompt
 s_open,open,Y,"Hi, I want to move my domain from Wix to GoDaddy. I manage a lot of sites so I'm comfortable in the dashboard — I just need to get this one moved over for a client.",,How do you open the conversation?
 s_dynamics,dynamics,Y,,,What do you do next?
-s_dynamics2,dynamics,Y,Kiera: Here's the account. What do you see on your end?,,What do you do?
+s_dynamics2,dynamics,Y,Katy: Here's the account. What do you see on your end?,,What do you do?
 s_familiarize,familiarize,Y,,,What do you say?
-s_clarify,clarify,Y,Kiera: So the client's consolidating everything under their own GoDaddy account. I want this domain fully moved over.,,What do you clarify first?
+s_clarify,clarify,Y,Katy: So the client's consolidating everything under their own GoDaddy account. I want this domain fully moved over.,,What do you clarify first?
 s_clarify2,clarify,Y,,,What else do you confirm before planning the steps?
-s_roadmap,roadmap,N,"Kiera: Okay, so what's the plan?",,What's next?
+s_roadmap,roadmap,N,"Katy: Okay, so what's the plan?",,What's next?
 s_recreate,recreate,Y,,,What do you check first?
 s_article,article,Y,(You open the resources.),resourceOpened,What do you reference for the exact steps?
-s_connect_q,clarify,Y,"Kiera: Actually — quick thought. Instead of a full transfer, could I just repoint the domain to GoDaddy's name servers and manage it there? Would that be faster?",,How do you respond?
-s_solve,solve,Y,Kiera: Okay — so what's the actual process for this one?,,How do you guide Kiera?
-s_solve2,solve,Y,,,What are the steps you give Kiera?
-s_pushback,solve,Y,Kiera: One thing though — the Wix help article I skimmed said you get an EPP code from Wix and it takes about 7 days. Doesn't that apply here?,,How do you respond?
-s_solve3,solve,Y,Kiera: And how long once it's actually underway? Can I cancel if the client changes their mind?,,How do you set expectations?
+s_connect_q,clarify,Y,"Katy: Actually — quick thought. Instead of a full transfer, could I just repoint the domain to GoDaddy's name servers and manage it there? Would that be faster?",,How do you respond?
+s_solve,solve,Y,Katy: Okay — so what's the actual process for this one?,,How do you guide Katy?
+s_solve2,solve,Y,,,What are the steps you give Katy?
+s_pushback,solve,Y,Katy: One thing though — the Wix help article I skimmed said you get an EPP code from Wix and it takes about 7 days. Doesn't that apply here?,,How do you respond?
+s_solve3,solve,Y,Katy: And how long once it's actually underway? Can I cancel if the client changes their mind?,,How do you set expectations?
 s_close,open,Y,,,How do you close?

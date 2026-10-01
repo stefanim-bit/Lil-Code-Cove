@@ -179,6 +179,7 @@
   .lightbox::backdrop{background:rgba(15,17,25,0.82)}
   .lightbox img{display:block;max-width:95vw;max-height:95vh;object-fit:contain;border-radius:0.5rem;box-shadow:0 1.5rem 3rem rgba(0,0,0,0.35)}
   .lightbox-close{position:fixed;top:1rem;right:1.5rem;background:rgba(255,255,255,0.92);border:0;border-radius:50%;width:2.5rem;height:2.5rem;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink)}
+  .lightbox-caption{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%);max-width:min(90vw,40rem);background:rgba(255,255,255,0.94);color:var(--ink);font-size:0.875rem;line-height:1.4;padding:0.5rem 0.875rem;border-radius:0.5rem;text-align:center}
   .lightbox-close:hover{background:#fff}
   .msg.system .screenshot figcaption{font-size:0.6875rem;color:var(--muted);font-style:italic;margin-top:0.375rem;text-align:center}
   .msg.system .screenshot .noimg{color:var(--muted);font-size:0.8125rem;padding:1rem;border:0.0625rem dashed var(--line);border-radius:0.5rem}
@@ -265,6 +266,36 @@
   .mc-notes{margin:0 0 1rem;padding-left:1.125rem;font-size:0.875rem;color:var(--ink-2);line-height:1.5}
   .mc-notes li{margin:0 0 0.375rem}
   .mc-row{margin:0 0 0.25rem}
+  .mc-code{display:block;font-size:0.75rem;color:var(--muted);margin-top:0.25rem}
+  /* Action-only step: mic shown but switched off */
+  .voice-off{background:#F5F5F5;border-color:var(--line)}
+  /* Expert follow-up line the learner says aloud */
+  .say-line{background:#E4EFFE;border-radius:var(--r-sm);border-top-right-radius:0.3125rem;padding:0.8125rem 0.9375rem;margin:0.25rem 0 0.75rem;font-size:0.90625rem;line-height:1.45;color:var(--ink)}
+  /* Results: volume events + volume-through-the-call graph */
+  .dv-section{font-size:0.8125rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:1rem 0 0.5rem}
+  .dv-ev-count{display:inline-block;min-width:1.375rem;padding:0 0.375rem;margin-left:0.375rem;border-radius:62rem;background:var(--bg);color:var(--ink);text-align:center;letter-spacing:0}
+  .dv-ev-sub{font-size:0.8125rem;color:var(--ink-2);margin:0 0 0.5rem}
+  .dv-ev-list{list-style:none;margin:0;padding:0}
+  .dv-ev{width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:0.25rem 0.625rem;align-items:center;text-align:left;background:#fff;border:0.0625rem solid var(--line);border-radius:var(--r-sm);padding:0.5rem 0.75rem;margin:0 0 0.375rem;font-family:var(--font-text);color:var(--ink);cursor:pointer}
+  .dv-ev:hover,.dv-ev:focus-visible{border-color:var(--agent);outline:none}
+  .dv-ev.static{cursor:default} .dv-ev.static:hover{border-color:var(--line)}
+  .dv-ev-tag{font-size:0.75rem;font-weight:700;color:#fff;border-radius:62rem;padding:0.125rem 0.5rem;white-space:nowrap}
+  .dv-ev-tag.quiet{background:#D0210F} .dv-ev-tag.loud{background:#E0900A}
+  .dv-ev-where{font-size:0.8125rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dv-ev-time{font-size:0.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .dv-ev-said{grid-column:2 / 4;min-width:0;font-size:0.8125rem;color:var(--ink-2);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dv-graph{position:relative;cursor:pointer;outline:none;touch-action:none}
+  .dv-plot{position:relative;height:7rem}
+  .dv-plot svg{position:absolute;inset:0;display:block;overflow:visible}
+  .dv-dim{position:absolute;top:0;bottom:0;right:0;left:100%;background:rgba(255,255,255,.6);pointer-events:none}
+  .dv-head{position:absolute;top:-0.25rem;bottom:-0.25rem;left:0;width:2px;margin-left:-1px;border-radius:1px;background:#116DFF;opacity:0;pointer-events:none}
+  .dv-graph:not(.static) .dv-head{opacity:1}
+  .dv-graph:focus-visible .dv-plot{outline:0.125rem solid var(--agent);outline-offset:0.25rem;border-radius:0.25rem}
+  .dv-graph.static{cursor:default}
+  .dv-times{display:flex;justify-content:space-between;margin:0.3125rem 0 0.5rem;font-size:0.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .dv-times b{color:var(--ink);font-weight:600}
+  .dv-legend{display:flex;gap:0.5rem 0.875rem;flex-wrap:wrap;margin:0 0 0.25rem;font-size:0.75rem;color:var(--ink-2)}
+  .dv-legend i{display:inline-block;width:0.625rem;height:0.625rem;border-radius:0.125rem;margin-right:0.3125rem;vertical-align:-0.0625rem}
   .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
   .hbtn{font-size:0.875rem;font-weight:500;padding:0.375rem 1.5rem;border-radius:18.75rem;border:1px solid #424242;background:#fff;color:#242424;cursor:pointer;height:32px}
   .hbtn:hover{border-color:#424242;color:#fff;background:#424242}
@@ -415,10 +446,10 @@ window.SCENARIO = {
   title: "Practice Call - Domains: Transfer a Domain (Away from Wix) (Call)",
 
   user: {
-    name: "Kiera",
-    image: "Kiera/Kiera_Meet.png",
-    completeImage: "Kiera/Kiera_Close.png",
-    bio: "Kiera is a Wix Partner who wants to transfer a client's domain away from Wix. In this activity, you'll simulate a call with them. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!"
+    name: "Katy",
+    image: "Katy/Katy_Meet.png",
+    completeImage: "Katy/Katy_Close.png",
+    bio: "Katy is a Wix Partner who wants to transfer a client's domain away from Wix. In this activity, you'll simulate a call with them. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!"
   },
 
   resources: {
@@ -440,16 +471,16 @@ window.SCENARIO = {
 
   stages: [
     { id:"open", name:"Opening & closing", max:5,
-      strength:"You greeted Kiera professionally and closed with a clear recap of the .com.br transfer steps and an offer of further help.",
-      improvement:"Greet Kiera warmly and close with a recap of the correct next steps." },
+      strength:"You greeted Katy professionally and closed with a clear recap of the .com.br transfer steps and an offer of further help.",
+      improvement:"Greet Katy warmly and close with a recap of the correct next steps." },
     { id:"dynamics", name:"Use Dynamics", max:10,
-      strength:"You used User Manager/SBS to confirm Kiera is the verified owner-of-record and that the domain is a Wix-registered .com.br before proceeding.",
+      strength:"You used User Manager/SBS to confirm Katy is the verified owner-of-record and that the domain is a Wix-registered .com.br before proceeding.",
       improvement:"Use User Manager/SBS to confirm the domain's registrar, type (.com.br), and owner before advising on the transfer." },
     { id:"familiarize", name:"Familiarize", max:10,
-      strength:"You asked a meaningful question about Kiera's agency work, building rapport with a fellow Wix Partner.",
+      strength:"You asked a meaningful question about Katy's agency work, building rapport with a fellow Wix Partner.",
       improvement:"Ask a familiarization question that connects to the user's role or business." },
     { id:"clarify", name:"Clarify the issue", max:15, additive:true,
-      strength:"You clarified that Kiera wants a full registration transfer (not just a DNS repoint), confirmed the registrant email and GoDaddy access, and distinguished connecting from transferring.",
+      strength:"You clarified that Katy wants a full registration transfer (not just a DNS repoint), confirmed the registrant email and GoDaddy access, and distinguished connecting from transferring.",
       improvement:"Clarify whether the user wants to transfer registration or only repoint DNS, confirm the registrant contact email, and confirm they can accept the transfer at the gaining registrar (GoDaddy)." },
     { id:"roadmap", name:"Roadmapping", max:10,
       strength:"You outlined a clear plan — confirm eligibility via Whois, pull the correct steps, then walk through initiating the transfer — before acting.",
@@ -475,13 +506,13 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"Sure, just open Domains, click the Domain Actions icon, choose Transfer Away, and you'll get the EPP code by email in a few minutes.",
           verdict:"incorrect", points:0, goTo:"s_dynamics",
-          consequence:"Kiera: I figured it'd be something like that, but I'd rather confirm the domain's actually eligible before I kick anything off — I've been burned by this before." },
-        { id:"B", text:"Hi Kiera, thanks for calling Wix Customer Care, my name is [name], and I'd be glad to help you move this one over. Let me pull up the account first so we're looking at the same details.",
+          consequence:"Katy: I figured it'd be something like that, but I'd rather confirm the domain's actually eligible before I kick anything off — I've been burned by this before." },
+        { id:"B", text:"Hi Katy, thanks for calling Wix Customer Care, my name is [name], and I'd be glad to help you move this one over. Let me pull up the account first so we're looking at the same details.",
           verdict:"correct", points:5, goTo:"s_dynamics",
-          consequence:"Kiera: Perfect, thanks." },
-        { id:"C", text:"Hi Kiera! Happy to help with a transfer. Which site is this for?",
+          consequence:"Katy: Perfect, thanks." },
+        { id:"C", text:"Hi Katy! Happy to help with a transfer. Which site is this for?",
           verdict:"partial", points:3, goTo:"s_dynamics",
-          consequence:"Kiera: It's for one of my clients — my agency builds and manages their site." }
+          consequence:"Katy: It's for one of my clients — my agency builds and manages their site." }
       ]
     },
 
@@ -491,30 +522,30 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"Can you confirm the domain name, that it's registered with Wix (not just connected), and which account it sits under?",
           verdict:"partial", points:5, goTo:"s_dynamics2",
-          consequence:"Kiera: It's registered through Wix — I bought it inside the client's Wix account. It's under their account, and I'm the owner-of-record." },
+          consequence:"Katy: It's registered through Wix — I bought it inside the client's Wix account. It's under their account, and I'm the owner-of-record." },
         { id:"B", text:"Since you're a Partner and know your way around, go ahead and start the transfer on your end and tell me if it errors out.",
           verdict:"incorrect", points:0, goTo:"s_dynamics2",
-          consequence:"Kiera: I'd really rather confirm it's eligible first — that's kind of why I reached out instead of just doing it myself." },
+          consequence:"Katy: I'd really rather confirm it's eligible first — that's kind of why I reached out instead of just doing it myself." },
         { id:"C", text:"Sure — which site is the domain connected to?",
           verdict:"partial", points:3, goTo:"s_dynamics2",
-          consequence:"Kiera: My client's site, but the domain's the part I care about here." }
+          consequence:"Katy: My client's site, but the domain's the part I care about here." }
       ]
     },
 
     s_dynamics2: {
       stage:"dynamics", gate:true,
-      speaker:"Kiera: So what are you seeing on your end?",
+      speaker:"Katy: So what are you seeing on your end?",
       prompt:"What do you do?",
       choices:[
         { id:"A", text:"[Action] Look the account up in User Manager / SBS to confirm the domain's registrar, type, and status.",
           verdict:"correct", points:10, goTo:"s_familiarize",
-          consequence:"(User Manager confirms Kiera is the verified owner-of-record. The site is on a Premium plan, the domain is registered through Wix — and it's a .com.br, a Brazilian ccTLD.)" },
-        { id:"B", text:"[Action] Check the Overview tab to confirm Kiera's identity.",
+          consequence:"(User Manager confirms Katy is the verified owner-of-record. The site is on a Premium plan, the domain is registered through Wix — and it's a .com.br, a Brazilian ccTLD.)" },
+        { id:"B", text:"[Action] Check the Overview tab to confirm Katy's identity.",
           verdict:"partial", points:5, goTo:"s_familiarize",
-          consequence:"(The Overview tab confirms Kiera's identity, but not the domain's registrar or type.)" },
-        { id:"C", text:"[Action] Ask Kiera to read out what they see in the GoDaddy dashboard.",
+          consequence:"(The Overview tab confirms Katy's identity, but not the domain's registrar or type.)" },
+        { id:"C", text:"[Action] Ask Katy to read out what they see in the GoDaddy dashboard.",
           verdict:"incorrect", points:0, goTo:"s_familiarize",
-          consequence:"Kiera: There's nothing to read out yet. GoDaddy's the destination, not where the domain lives right now." }
+          consequence:"Katy: There's nothing to read out yet. GoDaddy's the destination, not where the domain lives right now." }
       ]
     },
 
@@ -524,30 +555,30 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"I see you co-own One Creative — how many client sites are you managing on Wix these days? Always great to work with a Partner.",
           verdict:"correct", points:10, goTo:"s_clarify",
-          consequence:"Kiera: Quite a few! We build and manage sites across a bunch of clients — this one's a Brazilian nonprofit we launched last year. Nice to talk to someone who gets the Partner side of things.\n\nExpert: Love it — I'll keep this efficient then." },
+          consequence:"Katy: Quite a few! We build and manage sites across a bunch of clients — this one's a Brazilian nonprofit we launched last year. Nice to talk to someone who gets the Partner side of things.\n\nExpert: Love it — I'll keep this efficient then." },
         { id:"B", text:"How long have you managed this particular domain?",
           verdict:"partial", points:4, goTo:"s_clarify",
-          consequence:"Kiera: About a year now." },
+          consequence:"Katy: About a year now." },
         { id:"C", text:"Okay, let's just get into it.",
           verdict:"incorrect", points:0, goTo:"s_clarify",
-          consequence:"Kiera: Sure." }
+          consequence:"Katy: Sure." }
       ]
     },
 
     s_clarify: {
       stage:"clarify", gate:true,
-      speaker:"Kiera: So the client's consolidating everything under their own GoDaddy account. I want this domain fully moved over.",
+      speaker:"Katy: So the client's consolidating everything under their own GoDaddy account. I want this domain fully moved over.",
       prompt:"What do you clarify first?",
       choices:[
         { id:"A", text:"To scope this correctly: are you looking to transfer the domain's registration/ownership to GoDaddy, or just point its name servers/DNS to GoDaddy while it stays registered with Wix?",
           verdict:"correct", points:8, goTo:"s_clarify2",
-          consequence:"Kiera: Full registration transfer — they want it off Wix entirely, not just pointed." },
+          consequence:"Katy: Full registration transfer — they want it off Wix entirely, not just pointed." },
         { id:"B", text:"Got it — you want to transfer it, not just update DNS, correct?",
           verdict:"partial", points:4, goTo:"s_clarify2",
-          consequence:"Kiera: Right, a full registration transfer." },
+          consequence:"Katy: Right, a full registration transfer." },
         { id:"C", text:"No problem — head to GoDaddy and add an A record plus a CNAME pointing to Wix and you'll be set.",
           verdict:"incorrect", points:0, goTo:"s_clarify2", retry:true, capIfRetried:4,
-          consequence:"Kiera: That's connecting a domain, not transferring it — I want the registration moved off Wix completely." }
+          consequence:"Katy: That's connecting a domain, not transferring it — I want the registration moved off Wix completely." }
       ]
     },
 
@@ -557,30 +588,30 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"A couple of things: can you confirm the client's registrant contact email on the domain is current — that's where the transfer authorization goes — and that you have access to the GoDaddy account to accept the incoming transfer?",
           verdict:"correct", points:7, goTo:"s_roadmap",
-          consequence:"Kiera: Registrant email is current, and yes, we have the client's GoDaddy login ready to accept it." },
+          consequence:"Katy: Registrant email is current, and yes, we have the client's GoDaddy login ready to accept it." },
         { id:"B", text:"Do you have the GoDaddy login handy to accept the transfer?",
           verdict:"partial", points:4, goTo:"s_roadmap",
-          consequence:"Kiera: Yep, ready to go." },
+          consequence:"Katy: Yep, ready to go." },
         { id:"C", text:"Can you grab the EPP/authorization code from GoDaddy so we can start?",
           verdict:"incorrect", points:0, goTo:"s_roadmap",
-          consequence:"Kiera: GoDaddy's the gaining registrar — the auth code comes from the losing side, right? That's part of what I'm trying to sort out." }
+          consequence:"Katy: GoDaddy's the gaining registrar — the auth code comes from the losing side, right? That's part of what I'm trying to sort out." }
       ]
     },
 
     s_roadmap: {
       stage:"roadmap", gate:false,
-      speaker:"Kiera: Okay, so what's the plan?",
+      speaker:"Katy: Okay, so what's the plan?",
       prompt:"What's next?",
       choices:[
         { id:"A", text:"Here's my plan: first I'll confirm the domain's status with a Whois lookup to make sure it's unlocked and eligible, then I'll pull up the correct transfer steps for this specific domain and walk you through initiating it. Do you mind if I place you on a brief hold while I check the status?",
           verdict:"correct", points:10, goTo:"s_recreate",
-          consequence:"Kiera: Sure, go ahead. I appreciate you actually checking first." },
+          consequence:"Katy: Sure, go ahead. I appreciate you actually checking first." },
         { id:"B", text:"I'm going to place you on a quick hold while I look into it.",
           verdict:"partial", points:5, goTo:"s_recreate", retry:true, capIfRetried:5,
-          consequence:"Kiera: Sure, though if you tell me what you're checking I can follow along on my end." },
+          consequence:"Katy: Sure, though if you tell me what you're checking I can follow along on my end." },
         { id:"C", text:"Go ahead and start the transfer in Wix now and we'll troubleshoot whatever comes up.",
           verdict:"incorrect", points:0, goTo:"s_recreate",
-          consequence:"Kiera: I'd rather not kick it off until we know it's eligible." }
+          consequence:"Katy: I'd rather not kick it off until we know it's eligible." }
       ]
     },
 
@@ -594,9 +625,9 @@ window.SCENARIO = {
         { id:"B", text:"[Action] Open the domain in a browser to see if the live site loads.",
           verdict:"partial", points:5, goTo:"s_article",
           consequence:"(The site loads fine — but that only tells you the site is live, not whether the domain is eligible to transfer.)" },
-        { id:"C", text:"[Action] Tell Kiera to unlock the domain and disable DNSSEC in GoDaddy right now.",
+        { id:"C", text:"[Action] Tell Katy to unlock the domain and disable DNSSEC in GoDaddy right now.",
           verdict:"incorrect", points:0, goTo:"s_article", retry:true, capIfRetried:5,
-          consequence:"Kiera: The domain isn't at GoDaddy yet — that's where it's going. And shouldn't we check the current status before I change anything?" }
+          consequence:"Katy: The domain isn't at GoDaddy yet — that's where it's going. And shouldn't we check the current status before I change anything?" }
       ]
     },
 
@@ -611,93 +642,93 @@ window.SCENARIO = {
           verdict:"partial", points:10, goTo:"s_connect_q" },
         { id:"C", text:"[Action] Reply using “Domain Registration”.",
           verdict:"incorrect", points:0, goTo:"s_connect_q" },
-        { id:"D", text:"Walk Kiera through the standard Transfer-Away steps from memory.",
+        { id:"D", text:"Walk Katy through the standard Transfer-Away steps from memory.",
           verdict:"partial", points:8, goTo:"s_connect_q",
-          consequence:"Kiera: I appreciate it, but for a .br I'd want to be sure — those have their quirks." }
+          consequence:"Katy: I appreciate it, but for a .br I'd want to be sure — those have their quirks." }
       ]
     },
 
     s_connect_q: {
       stage:"clarify", gate:true,
-      speaker:"Kiera: Actually — quick thought. Instead of a full transfer, could I just repoint the domain to GoDaddy's name servers and manage it there? Would that be faster?",
+      speaker:"Katy: Actually — quick thought. Instead of a full transfer, could I just repoint the domain to GoDaddy's name servers and manage it there? Would that be faster?",
       prompt:"How do you respond?",
       choices:[
         { id:"A", text:"Those are two different things: pointing the name servers just changes where DNS is managed — the domain stays registered with Wix. Since the client wants it off Wix entirely, you'll want a full registration transfer, which is what we'll set up.",
           verdict:"correct", points:4, goTo:"s_solve",
-          consequence:"Kiera: Right, that's what I thought — full transfer it is." },
+          consequence:"Katy: Right, that's what I thought — full transfer it is." },
         { id:"B", text:"You could, but a transfer is cleaner. Let's do the transfer.",
           verdict:"partial", points:2, goTo:"s_solve",
-          consequence:"Kiera: Okay, let's do the transfer." },
+          consequence:"Katy: Okay, let's do the transfer." },
         { id:"C", text:"Sure, that works — just repoint the name servers to GoDaddy and you're done.",
           verdict:"incorrect", points:0, goTo:"s_solve",
-          consequence:"Kiera: But then it'd still be registered with Wix, wouldn't it? The client wants it fully moved." }
+          consequence:"Katy: But then it'd still be registered with Wix, wouldn't it? The client wants it fully moved." }
       ]
     },
 
     s_solve: {
       stage:"solve", gate:true,
-      speaker:"Kiera: Okay — so what's the actual process for this one?",
-      prompt:"How do you guide Kiera?",
+      speaker:"Katy: Okay — so what's the actual process for this one?",
+      prompt:"How do you guide Katy?",
       choices:[
         { id:"A", text:"Important detail for this domain: because it's a .com.br, the transfer isn't initiated from Wix like a standard gTLD. .br domains are managed through Registro.br, so the transfer has to be started there — not from the Wix Domains page.",
           verdict:"correct", points:6, goTo:"s_solve2",
-          consequence:"Kiera: Ah — that's exactly the kind of thing I wanted to confirm. So Wix isn't where I start it." },
+          consequence:"Katy: Ah — that's exactly the kind of thing I wanted to confirm. So Wix isn't where I start it." },
         { id:"B", text:"Go to the Wix Domains page, click Transfer Away, and you'll get the EPP/authorization code by email to hand to GoDaddy.",
           verdict:"incorrect", points:0, goTo:"s_solve2",
-          consequence:"Kiera: Wait — does that actually work for a .com.br? I didn't think Wix issued auth codes for .br domains." },
+          consequence:"Katy: Wait — does that actually work for a .com.br? I didn't think Wix issued auth codes for .br domains." },
         { id:"C", text:"This one's a .br, so it works a little differently — let me pull up the exact steps.",
           verdict:"partial", points:3, goTo:"s_solve2",
-          consequence:"Kiera: Okay, go ahead." }
+          consequence:"Katy: Okay, go ahead." }
       ]
     },
 
     s_solve2: {
       stage:"solve", gate:true,
-      prompt:"What are the steps you give Kiera?",
+      prompt:"What are the steps you give Katy?",
       choices:[
         { id:"A", text:"Here's the flow for a .com.br. First, update the registrant information at Registro.br. Next, cancel the domain's auto-renewal in the Wix account. Then, start the transfer from your Registro.br account, not from Wix. Finally, accept and complete it on the GoDaddy side.",
           verdict:"correct", points:6, goTo:"s_pushback",
-          consequence:"Kiera: Got it — Registro.br to start it, cancel auto-renewal in Wix first. That's clear." },
+          consequence:"Katy: Got it — Registro.br to start it, cancel auto-renewal in Wix first. That's clear." },
         { id:"B", text:"You'll do it from Registro.br — update the registrant info there and start the transfer from that portal.",
           verdict:"partial", points:3, goTo:"s_pushback",
-          consequence:"Kiera: Okay. Anything I need to do on the Wix side first?\n\nExpert: Yes — cancel the domain's auto-renewal in Wix before you start.\n\nKiera: Good to know." },
+          consequence:"Katy: Okay. Anything I need to do on the Wix side first?\n\nExpert: Yes — cancel the domain's auto-renewal in Wix before you start.\n\nKaty: Good to know." },
         { id:"C", text:"Just cancel the domain in Wix and re-register it at GoDaddy.",
           verdict:"incorrect", points:0, goTo:"s_pushback",
-          consequence:"Kiera: I don't want to drop it and risk losing the name — I want to transfer it, not delete it." }
+          consequence:"Katy: I don't want to drop it and risk losing the name — I want to transfer it, not delete it." }
       ]
     },
 
     s_pushback: {
       stage:"solve", gate:true,
-      speaker:"Kiera: One thing though — the Wix help article I skimmed said you get an EPP code from Wix and it takes about 7 days. Doesn't that apply here?",
+      speaker:"Katy: One thing though — the Wix help article I skimmed said you get an EPP code from Wix and it takes about 7 days. Doesn't that apply here?",
       prompt:"How do you respond?",
       choices:[
         { id:"A", text:"The timeline part holds, but the EPP part is the standard flow for most domains. A .com.br is handled through Registro.br, so you won't get an EPP code from Wix. That's why we're starting it at Registro.br instead.",
           verdict:"correct", points:4, goTo:"s_solve3",
-          consequence:"Kiera: Makes sense — good thing I asked before following the generic steps." },
+          consequence:"Katy: Makes sense — good thing I asked before following the generic steps." },
         { id:"B", text:"That article is more of a general guide — for a .br, go with the Registro.br steps I gave you.",
           verdict:"partial", points:2, goTo:"s_solve3",
-          consequence:"Kiera: Okay, I'll trust the .br-specific steps." },
+          consequence:"Katy: Okay, I'll trust the .br-specific steps." },
         { id:"C", text:"Yes — grab the EPP code from Wix and hand it to GoDaddy, and you're all set.",
           verdict:"incorrect", points:0, goTo:"s_solve3",
-          consequence:"Kiera: But you just said this one starts at Registro.br — now I'm confused about which it is." }
+          consequence:"Katy: But you just said this one starts at Registro.br — now I'm confused about which it is." }
       ]
     },
 
     s_solve3: {
       stage:"solve", gate:true,
-      speaker:"Kiera: And how long once it's actually underway? Can I cancel if the client changes their mind?",
+      speaker:"Katy: And how long once it's actually underway? Can I cancel if the client changes their mind?",
       prompt:"How do you set expectations?",
       choices:[
         { id:"A", text:"A transfer usually takes up to 7 days to complete, and it may show as pending in the meantime, which is normal. Once it's started, Wix can't track its status, so check progress with GoDaddy. If the client changes their mind, contact GoDaddy to reject the incoming transfer.",
           verdict:"correct", points:4, goTo:"s_close",
-          consequence:"Kiera: Perfect, that's what I needed. Thanks for being precise about it." },
+          consequence:"Katy: Perfect, that's what I needed. Thanks for being precise about it." },
         { id:"B", text:"It usually takes up to 7 days, so keep an eye out for the confirmation.",
           verdict:"partial", points:2, goTo:"s_close",
-          consequence:"Kiera: Okay. And if they change their mind partway through?\n\nExpert: You'd contact GoDaddy to reject the incoming transfer.\n\nKiera: Got it." },
+          consequence:"Katy: Okay. And if they change their mind partway through?\n\nExpert: You'd contact GoDaddy to reject the incoming transfer.\n\nKaty: Got it." },
         { id:"C", text:"There's no set timeframe, but Wix will notify you as soon as it's processed. If the client changes their mind, you can cancel it anytime from the Wix Domains page.",
           verdict:"incorrect", points:0, goTo:"s_close",
-          consequence:"Kiera: Really? I thought once it leaves Wix you can't track or cancel it from here. I'll double-check with GoDaddy." }
+          consequence:"Katy: Really? I thought once it leaves Wix you can't track or cancel it from here. I'll double-check with GoDaddy." }
       ]
     },
 
@@ -707,13 +738,13 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"To recap: this is a .com.br, so you'll update the registrant info and start the transfer at Registro.br — not Wix — after cancelling auto-renewal in the Wix account, then finish it on GoDaddy's side. It usually takes up to 7 days, and GoDaddy is where you'll track it. Anything else I can help with?",
           verdict:"correct", points:5, goTo:"__end__",
-          consequence:"Kiera: That's everything — really clear, thank you!" },
+          consequence:"Katy: That's everything — really clear, thank you!" },
         { id:"B", text:"You're all set — start it from Registro.br and reach out if you hit a snag. Have a great one!",
           verdict:"partial", points:3, goTo:"__end__",
-          consequence:"Kiera: Thanks!" },
+          consequence:"Katy: Thanks!" },
         { id:"C", text:"Great, you should be good. Stay on the line with me in case the transfer fails.",
           verdict:"incorrect", points:0, goTo:"__end__",
-          consequence:"Kiera: Um, okay?" }
+          consequence:"Katy: Um, okay?" }
       ]
     }
 
@@ -773,6 +804,8 @@ window.SCENARIO = {
       if(p && p.SetVar) p.SetVar(name, value);
     } catch(e){}
     try { window.parent && window.parent.postMessage({ type:'setVar', name:name, value:value }, '*'); } catch(e){}
+    // Call tab: pass it back to the course copy, which forwards it to Rise.
+    try { if(IS_CALL_TAB && window.opener) window.opener.postMessage({ type:'cd-relay', payload:{ type:'setVar', name:name, value:value } }, '*'); } catch(e){}
   }
 
   // Stamp each screen with its own id so retry can re-open it.
@@ -816,7 +849,7 @@ window.SCENARIO = {
   const TELEMETRY_COURSE = S.title;           // written to the `course` field
 
   // One id per play-through, so a learner's rows can be grouped in the Sheet.
-  const attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  let attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
   // `time_on_step_sec` — seconds between a screen appearing and the learner acting.
   let stepStartedAt = null;
@@ -889,6 +922,9 @@ window.SCENARIO = {
          file lands in the OWNER's Drive; learners need no Drive permissions.
        • Paste the resulting /exec URL into RECORDING_ENDPOINT below.
      Until a URL is set, recording silently no-ops and the sim runs unchanged. */
+  // !! The mic-test popup tells learners "We don't store recordings after the
+  // !! simulation is complete." That is only true while this stays EMPTY. If you
+  // !! ever paste a URL here, update that note in openMicCheck() first.
   const RECORDING_ENDPOINT = '';   // <-- paste the Apps Script Web App /exec URL here
 
   function uploadRecording(blob){
@@ -941,6 +977,7 @@ window.SCENARIO = {
       audio.oncontextmenu = () => false;   // no "save audio as" right-click
       slot.innerHTML = '';
       slot.appendChild(audio);
+      if(window.CallMode && window.CallMode.bindGraph) window.CallMode.bindGraph(audio);   // playhead follows playback
     } catch(e){ wrap.classList.add('is-empty'); }
   }
 
@@ -1039,10 +1076,6 @@ window.SCENARIO = {
           <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${escapeHtml(learner_name)}</span></div>
           <div class="confirm-row"><span class="confirm-label">Email</span><span class="confirm-value">${escapeHtml(learner_email)}</span></div>
         </div>
-        <div class="confirm-consent">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 8h.01M11 11.5h1v5h1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span>To give you feedback on how you sound on a call, your spoken responses are recorded once you start. The recording is stored with your name and email for coaching and review by the Wix L&amp;D team. Tap a written response instead of speaking if you'd prefer not to be recorded.</span>
-        </div>
         <div class="actions" style="margin:0">
           <button class="btn btn-dark" id="confirmYes" type="button">These are correct<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button>
           <button class="btn btn-ghost" id="confirmBack" type="button">Back</button>
@@ -1057,14 +1090,23 @@ window.SCENARIO = {
 
   /* =================== PHASE 1c — MIC CHECK (call mode) ===================
      Shown after Confirm, before the call: a browser note (speaking responses
-     only works in Chrome or Edge), a reminder to allow microphone access, and a
-     live test so the learner knows their headset mic is heard. "Start the call"
-     unlocks once their voice clears the minimum-volume mark. They can always
-     continue without speaking and tap their responses instead. */
+     only works in Chrome or Edge), a reminder to allow microphone access, the
+     personal-learning recording note, and a live test so the learner knows their
+     headset mic is heard. "Start the call" unlocks once their voice clears the
+     minimum-volume mark. They can always continue without speaking and tap.
+
+     If the page this activity is EMBEDDED in forbids the microphone (Rise code
+     blocks and Wix Smart do), Chrome blocks it without asking and nothing here can
+     grant it. So instead of the test, the learner gets "Open the call in a new
+     tab": a standalone tab isn't embedded, so Chrome shows its normal Allow
+     prompt there. See CALL TAB below for the handoff and completion relay. */
   function openMicCheck(){
     const CM = window.CallMode;
     if(!CM || !CM.micCheck){ startCall(); return; }
     const ok = CM.supported;
+    const embedded = ok && CM.embeddedBlocked();
+    const canTab = embedded && /^https?:$/.test(location.protocol);
+    const RED = t => `<span style="color:#C81C0F;font-weight:700">${t}</span>`;
     const dlg = document.createElement('dialog'); dlg.className='modal';
     dlg.innerHTML = `<div class="modal-inner">
         <div class="mhead"><h3>Test your microphone</h3></div>
@@ -1072,32 +1114,45 @@ window.SCENARIO = {
         <ul class="mc-notes">
           <li><b>Use Google Chrome or Microsoft Edge.</b> Speaking your responses only works in these browsers.</li>
           <li><b>Allow microphone access.</b> When your browser asks to use your microphone, click <b>Allow</b>.</li>
+          ${ok ? `<li><b>Your call is recorded only for your personal learning.</b> You can listen back to it on the results screen. We don't store recordings after the simulation is complete.</li>` : ''}
         </ul>
-        ${ok ? `
-        <div class="voice-row mc-row">
+        ${!ok ? `<div class="voice-unsupported">This browser doesn't support speaking your responses. Switch to Chrome or Edge, or continue and tap your responses instead.</div>`
+          : embedded ? `<p class="voice-status" id="mcStatus">${RED("Speaking isn't available inside this course page.")} ${canTab
+                ? "Open the call in a new tab to speak your responses there, or continue here and tap them."
+                : "Continue without speaking to tap your responses."}</p>`
+          : `<div class="voice-row mc-row">
           <button class="mic-btn" id="mcTest" type="button"><span class="mic-ico"></span>Test my mic</button>
           <div class="meter"><div class="meter-fill" id="mcFill"></div><div class="meter-mark" style="left:22%"></div></div>
         </div>
-        <p class="voice-status" id="mcStatus">Click Test my mic, then say a sentence at your normal call volume.</p>`
-        : `<div class="voice-unsupported">This browser doesn't support speaking your responses. Switch to Chrome or Edge, or continue and tap your responses instead.</div>`}
+        <p class="voice-status" id="mcStatus">Click Test my mic, then say a sentence at your normal call volume.</p>`}
         <div class="actions" style="margin-top:1rem">
-          ${ok ? `<button class="btn btn-dark btn-wide" id="mcStart" type="button" disabled>Start the call</button>` : ''}
+          ${ok && !embedded ? `<button class="btn btn-dark btn-wide" id="mcStart" type="button" disabled>Start the call</button>` : ''}
+          ${canTab ? `<button class="btn btn-dark btn-wide" id="mcTab" type="button">Open the call in a new tab</button>` : ''}
           <button class="btn btn-ghost btn-wide" id="mcSkip" type="button">Continue without speaking</button>
         </div>
       </div>`;
     document.body.appendChild(dlg); dlg.showModal();
     dlg.addEventListener('cancel', e=>e.preventDefault());   // Esc doesn't skip the check
     let check = null;
-    const done = (action)=>{
-      if(check) check.stop();
-      dlg.close(); dlg.remove();
-      logEvent({ type:'helper', helper:'mic_check', action:action });
-      startCall();
-    };
+    const close = ()=>{ if(check) check.stop(); dlg.close(); dlg.remove(); };
+    const done = (action, voice)=>{ close(); if(CM.setVoiceMode) CM.setVoiceMode(!!voice); logEvent({ type:'helper', helper:'mic_check', action:action }); startCall(); };
     dlg.querySelector('#mcSkip').onclick = ()=>done('continued without speaking');
-    if(!ok){ return; }
+    if(canTab){
+      dlg.querySelector('#mcTab').onclick = ()=>{
+        if(openCallTab()){
+          close();
+          logEvent({ type:'helper', helper:'mic_check', action:'opened the call in a new tab' });
+          renderWaiting();
+        } else {
+          logEvent({ type:'helper', helper:'mic_check', action:'new tab was blocked' });
+          dlg.querySelector('#mcStatus').innerHTML = RED("The new tab was blocked.")
+            + " Your browser or course stopped it from opening. Allow pop-ups for this course and try again, or continue without speaking.";
+        }
+      };
+    }
+    if(!ok || embedded){ return; }
     const testB = dlg.querySelector('#mcTest'), startB = dlg.querySelector('#mcStart'), st = dlg.querySelector('#mcStatus');
-    startB.onclick = ()=>done('passed mic check, started call');
+    startB.onclick = ()=>done('passed mic check, started call', true);
     testB.onclick = ()=>{
       if(check) return;
       testB.disabled = true;
@@ -1108,11 +1163,100 @@ window.SCENARIO = {
       });
       check.ready.then(()=>{
         if(startB.disabled) st.textContent = 'Listening… say a sentence at your normal call volume.';
-      }).catch(()=>{
+      }).catch(err=>{
         check = null; testB.disabled = false;
-        st.innerHTML = '<span style="color:#C81C0F">Microphone access is blocked.</span> Click the microphone icon in your browser\'s address bar, choose <b>Allow</b>, then click Test my mic again.';
+        logEvent({ type:'helper', helper:'mic_check', action:'mic failed: ' + ((err && err.name) || 'Error') + (CM.embeddedBlocked() ? ' (embedded page blocks microphone)' : '') });
+        CM.micErrorMessage(err).then(h=>{ st.innerHTML = h; });
       });
     };
+  }
+
+  /* =================== CALL TAB — take the call in a standalone tab ===================
+     The embedded copy (inside Rise/Smart) opens this same page in a new tab with
+     ?cdCallTab=1 and keeps a handle to it. The two talk by postMessage:
+       new tab  -> course : {type:'cd-call-ready'}           "I've loaded"
+       course   -> new tab: {type:'cd-call-details', ...}    name, email, attempt_id
+       new tab  -> course : {type:'cd-relay', payload}       every Rise variable push
+     Name and email travel by message, never in the URL. The course copy forwards
+     each relayed variable to Rise exactly as if it had set it itself, so the
+     activity_complete signal still reaches the course. If the tab loses its
+     link back (no window.opener), it simply starts at the Meet screen and the
+     learner can still take the call; only the completion relay is lost. */
+  const IS_CALL_TAB = new URLSearchParams(location.search).get('cdCallTab') === '1';
+  let callTabWin = null;
+  const msgTarget = (location.origin && location.origin !== 'null') ? location.origin : '*';
+
+  function openCallTab(){
+    try{
+      const url = new URL(location.href);
+      url.searchParams.set('cdCallTab', '1');
+      callTabWin = window.open(url.toString(), '_blank');
+    } catch(e){ callTabWin = null; }
+    return !!callTabWin;
+  }
+
+  // Course side: hand the details over, then forward whatever the tab relays.
+  window.addEventListener('message', e=>{
+    if(!callTabWin || e.source !== callTabWin || !e.data) return;
+    if(e.data.type === 'cd-call-ready'){
+      try{ callTabWin.postMessage({ type:'cd-call-details', name:learner_name, email:learner_email, attemptId:attemptId }, msgTarget); }catch(_){}
+    } else if(e.data.type === 'cd-relay' && e.data.payload && e.data.payload.type === 'setVar'){
+      const p = e.data.payload;
+      if(p.name === 'learner_name') return;   // the course copy already set this itself
+      pushRiseVar(p.name, p.value);
+      if(p.name === 'activity_complete' && String(p.value) === 'true') markWaitingDone();
+    }
+  });
+
+  function renderWaiting(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}" onerror="this.style.display='none'">` : '';
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Care Dojo · Call in progress</div>
+          <h1 class="display" id="wtTitle">Your call is open in a new tab</h1>
+          <p id="wtText">Take the call with ${escapeHtml(U.name)} in the new tab. When you click Finish on the results screen there, this activity is marked complete here.</p>
+          <div class="actions" id="wtActions">
+            <button class="btn btn-dark btn-wide" id="wtFocus" type="button">Go to the call tab</button>
+            <button class="btn btn-ghost btn-wide" id="wtHere" type="button">Take the call here instead</button>
+          </div>
+        </div>
+      </section>`;
+    document.getElementById('wtFocus').onclick = ()=>{
+      if(callTabWin && !callTabWin.closed){ try{ callTabWin.focus(); }catch(_){} }
+      else if(!openCallTab()){
+        document.getElementById('wtText').textContent = "The new tab was blocked. Allow pop-ups for this course and try again, or take the call here instead.";
+      }
+    };
+    document.getElementById('wtHere').onclick = ()=>{
+      logEvent({ type:'helper', helper:'mic_check', action:'took the call here instead of the new tab' });
+      startCall();
+    };
+  }
+  function markWaitingDone(){
+    const t = document.getElementById('wtTitle'); if(!t) return;
+    t.textContent = 'Call complete ✓';
+    document.getElementById('wtText').textContent = "You finished the call in the other tab, so this activity is marked complete. You can close that tab.";
+    document.getElementById('wtActions').style.display = 'none';
+  }
+
+  // Tab side: ask the course copy for the learner's details; start at Meet if none arrive.
+  function bootCallTab(){
+    let settled = false;
+    const fallback = ()=>{ if(settled) return; settled = true; renderMeet(); };
+    window.addEventListener('message', e=>{
+      if(settled || e.source !== window.opener || !e.data || e.data.type !== 'cd-call-details') return;
+      settled = true;
+      if(e.data.attemptId) attemptId = e.data.attemptId;     // keep one attempt across both copies
+      setLearnerName(e.data.name); setLearnerEmail(e.data.email);
+      renderMeet();       // backdrop behind the mic check
+      openMicCheck();     // not embedded here, so Chrome shows its normal Allow prompt
+    });
+    try{ window.opener.postMessage({ type:'cd-call-ready' }, '*'); }catch(_){ fallback(); return; }
+    setTimeout(fallback, 3000);
   }
 
   /* =================== PHASE 2 — THE LIVE CALL =================== */
@@ -1253,16 +1397,22 @@ window.SCENARIO = {
     // find the element in the Layers panel") pops straight into the full-screen
     // lightbox so the learner sees the detail immediately; they close it (X / Esc /
     // click-outside) to continue. It stays inline in the chat afterward too.
-    if(autoOpen) openLightbox(img.src, img.alt || '');
+    // Short label only (text before the dash) so the caption names the view without giving away the answer.
+    if(autoOpen) openLightbox(img.src, img.alt || '', (img.caption || '').split(' — ')[0]);
     return node;
   }
 
   /* ---- Lightbox: click any inline screenshot to view it enlarged ---- */
-  function openLightbox(src, alt){
+  function openLightbox(src, alt, caption){
     const dlg = document.createElement('dialog'); dlg.className='lightbox';
-    dlg.innerHTML = `<button class="lightbox-close" aria-label="Close">&times;</button>`+
-      `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt||'')}">`;
-    document.body.appendChild(dlg); dlg.showModal();
+    // Testing update: action-opened images get a caption so learners know what
+    // they're looking at.
+    dlg.innerHTML = `<button class="lightbox-close" type="button" aria-label="Close">&times;</button>`+
+      `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt||caption||'')}">`+
+      (caption ? `<div class="lightbox-caption">${escapeHtml(caption)}</div>` : '');
+    // Testing update: mount inside the fullscreen element (when there is one) so
+    // closing the image doesn't knock the whole sim out of fullscreen.
+    (document.fullscreenElement || document.body).appendChild(dlg); dlg.showModal();
     const close = ()=>{ try{dlg.close();}catch(e){} dlg.remove(); };
     dlg.addEventListener('click', e=>{ if(e.target===dlg) close(); });
     dlg.querySelector('.lightbox-close').onclick = close;
@@ -1314,6 +1464,16 @@ window.SCENARIO = {
     }
     chatEl.style.paddingBottom = cover + 'px';   // reserve exactly the covered strip
     chatEl.scrollTop = chatEl.scrollHeight;      // pin to newest (sits just above the sheet)
+    // Testing update: if the newest message is taller than the visible strip,
+    // anchor its TOP instead so the start of the caller's reply is never hidden.
+    const msgs = chatEl.querySelectorAll('.msg:not(.typing)');
+    const last = msgs[msgs.length-1];
+    if(last){
+      const visible = chatEl.clientHeight - cover;
+      const top = last.offsetTop - chatEl.offsetTop;
+      if(top < chatEl.scrollTop) chatEl.scrollTop = Math.max(0, top - 8);
+      else if(last.offsetHeight > visible) chatEl.scrollTop = Math.max(0, top - 8);
+    }
   }
   // The sheet's open height is a % of the panel, so re-sync when the panel resizes
   // (window resize or entering/leaving fullscreen).
@@ -1372,6 +1532,7 @@ window.SCENARIO = {
   //  • spoken consequence lines (Samantha OR the Expert) show a 5s typing
   //    indicator before landing.
   const REACT_INLINE_MS = 2000, REACT_TYPING_MS = 5000;
+  const CHOICES_DELAY_MS = 2000;   // pause between the caller's line and the new choices
   function typingBubble(kind){
     const you = kind==='you';
     const side = you ? 'you' : 'caller';
@@ -1395,6 +1556,8 @@ window.SCENARIO = {
       if(!animate){ appendBubble(s.kind, s.text, inlineNote); return next(); }
       if(inlineNote){
         setTimeout(()=>{ appendBubble('system', s.text, true); next(); }, REACT_INLINE_MS);
+      } else if(reaction && s.kind==='you' && window.CallMode && window.CallMode.shouldSpeak && window.CallMode.shouldSpeak()){
+        promptSayLine(s.text, ()=>{ appendBubble('you', s.text); next(); });
       } else if(reaction && (s.kind==='caller' || s.kind==='you')){
         const dots=typingBubble(s.kind);
         setTimeout(()=>{ dots.remove(); appendBubble(s.kind, s.text); next(); }, REACT_TYPING_MS);
@@ -1406,6 +1569,16 @@ window.SCENARIO = {
         setTimeout(()=>{ appendBubble(s.kind, s.text); next(); }, s.kind==='you'?YOU_MS:SYS_MS);
       }
     })();
+  }
+
+  /* CALL MODE: an Expert follow-up line inside a consequence. The learner is the
+     Expert, so on a voice call they say it; it appears in the chat once sent. */
+  function promptSayLine(text, done){
+    setComposer(`<div class="choices-label" id="choicesLabel">Say this aloud to ${escapeHtml(U.name)}</div>`
+              + `<div class="say-line">${escapeHtml(px(text))}</div><div id="voicepanel"></div>`);
+    setSheetQuestion('Say your next line');
+    window.CallMode.sayLine(document.getElementById('voicepanel'), px(text), ()=>{ setComposer(''); done(); });
+    syncChatBottom();
   }
 
   /* ---- Helper buttons (native <dialog>) ---- */
@@ -1554,7 +1727,10 @@ window.SCENARIO = {
     // into its own bubbles. On auto-advance it animates in with typing dots.
     currentSpeakerShown = !!(scr.speaker && !opts.skipSpeaker && speakerGateMet(scr));
     if(currentSpeakerShown){
-      revealSegments(splitDialogue(scr.speaker), !!opts.animateSpeaker, showChoices);
+      // Testing update: a short beat after the caller's line lands, so learners
+      // read it before the choices slide up and shift the view.
+      revealSegments(splitDialogue(scr.speaker), !!opts.animateSpeaker,
+        opts.animateSpeaker ? ()=>setTimeout(showChoices, CHOICES_DELAY_MS) : showChoices);
     } else {
       showChoices();
     }
@@ -1697,6 +1873,11 @@ window.SCENARIO = {
         </div>
       </div>`;
 
+    // CALL MODE: voice summary for the results panel + one telemetry row.
+    const dv = (window.CallMode && window.CallMode.delivery) ? window.CallMode.delivery() : null;
+    if(dv && dv.spoken) logEvent({ type:'helper', helper:'voice', action:dv.rating, seconds:callSeconds,
+      notes: dv.spoken + ' spoken responses, ' + dv.events + ' volume events (' + dv.quiet + ' too quiet, ' + dv.loud + ' too loud)' });
+
     const completeImg = U.completeImage || U.image;
     const portrait = completeImg
       ? `<img src="${escapeHtml(completeImg)}" alt="" onerror="this.style.display='none'">` : '';
@@ -1715,7 +1896,7 @@ window.SCENARIO = {
         ${accItem('scorecard','Scorecard', rows)}
         ${accItem('strengths','Top strengths', `<ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>`)}
         ${accItem('areas','Areas for improvement', `<ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>`)}
-        ${(window.CallMode && window.CallMode.delivery) ? accItem('delivery','Voice and Projection', window.CallMode.delivery().html) : ''}
+        ${dv ? accItem('delivery','Voice and Projection', dv.html) : ''}
       </div>
 
       ${helpNotes.length ? `<div class="card"><h3>Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
@@ -1730,6 +1911,8 @@ window.SCENARIO = {
         <button class="btn btn-dark" onclick="location.reload()">Restart</button>
       </div>
       <div id="tx" class="card" style="display:none"></div>`;
+
+    if(window.CallMode && window.CallMode.mountGraph) window.CallMode.mountGraph();   // draw the volume waveform
 
     // ---- Accordion toggle + completion gate ----------------------------------
     // Each row opens independently (mirrors the Wix FAQ). The Finish button
@@ -1767,7 +1950,7 @@ window.SCENARIO = {
       finishBtn.classList.remove('btn-dark');
       finishBtn.classList.add('done');
       finishBtn.textContent = 'Completed ✓';
-      gateHint.textContent = 'Marked complete.';
+      gateHint.textContent = IS_CALL_TAB ? 'Marked complete. You can close this tab and go back to your course.' : 'Marked complete.';
       gateHint.classList.add('ready');
     };
 
@@ -1803,7 +1986,7 @@ window.SCENARIO = {
   }
 
   /* ---- boot ---- */
-  renderMeet();
+  if(IS_CALL_TAB && window.opener) bootCallTab(); else renderMeet();
 
   /* Signal the Rise 360 code block that the project has loaded and can display. */
   try { window.parent.postMessage({ type: 'complete' }, '*'); } catch(e){}
@@ -1814,8 +1997,21 @@ window.SCENARIO = {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const cm = { audio:null, analyser:null, data:null, meterFill:null, rafId:null,
                peak:0, recognizing:false,
-               volLog:[],     // one entry per SPOKEN response: its peak loudness (0..1)
+               volLog:[],     // one entry per SPOKEN response: level, zone, when, what
+               curFrames:[], t0:0, t1:0,   // loudness frames for the response being spoken now
+               timeline:[],   // [seconds into recording, loudest level in that 0.1s, speaking?]
+               recStart:0, recEnd:0,       // performance.now() when capture started / call ended
+               voiceMode:false,            // true once the learner is taking the call by voice
                stream:null, recorder:null, chunks:[] };  // call-recording capture
+
+  /* ---- The "good volume" zone ----
+     Matches the green band of the live meter (0.40 to 0.88 on the same 0..1
+     scale). Each spoken response is scored by its typical speaking level (the
+     80th percentile of its voiced frames), so a whisper, a normal voice and a
+     shout land in different places instead of averaging out. Tune these two
+     numbers if real headset tests read consistently high or low. */
+  const ZONE_LOW = 0.30, ZONE_HIGH = 0.88;   // LOW matches where the meter/graph turns yellow-green
+  function relNow(){ return cm.recStart ? (performance.now() - cm.recStart) / 1000 : 0; }
 
   // Words too common to help distinguish one choice from another.
   const STOP = new Set(("a an the and or but so to of in on at for with your you "+
@@ -1861,10 +2057,11 @@ window.SCENARIO = {
       const an = ctx.createAnalyser(); an.fftSize = 1024;
       src.connect(an);
       cm.audio = ctx; cm.analyser = an; cm.data = new Uint8Array(an.fftSize);
+      cm.recStart = performance.now();   // time zero for the graph and the recording
       startRecording(stream);   // begin capturing the call from the first mic use
       loopMeter();
       return true;
-    } catch(e){ return false; }
+    } catch(e){ cm.lastError = e; return false; }
   }
 
   /* ---- Call recording (MediaRecorder) — one continuous file per attempt ----
@@ -1890,6 +2087,7 @@ window.SCENARIO = {
     } catch(e){ cm.recorder = null; }
   }
   function stopRecording(){
+    if(cm.recStart && !cm.recEnd) cm.recEnd = performance.now();   // the call is over: freeze the timeline
     return new Promise(resolve => {
       const rec = cm.recorder;
       // Always release the mic when the call ends, recorder or not.
@@ -1950,9 +2148,14 @@ window.SCENARIO = {
     const STEP_PCT = reduce ? 12   : 8;      // quantize width to whole % steps
     const INTERVAL = reduce ? 260  : 150;    // ms between DOM repaints
     let smoothed = 0, lastPaint = 0, lastPct = -1, lastBucket = -1;
+    let lastSample = 0, winMax = 0, winSpk = false;
     const step = (ts)=>{
       const L = level();
-      if(cm.recognizing) cm.peak = Math.max(cm.peak, L);
+      if(cm.recognizing){ cm.peak = Math.max(cm.peak, L); cm.curFrames.push(L); }
+      if(cm.recStart && !cm.recEnd){         // timeline for the results graph
+        winMax = Math.max(winMax, L); if(cm.recognizing) winSpk = true;
+        if(ts - lastSample >= 100){ cm.timeline.push([relNow(), winMax, winSpk ? 1 : 0]); winMax = 0; winSpk = false; lastSample = ts; }
+      }
       smoothed += (L - smoothed) * EMA;      // low-pass filter
       if(cm.meterFill && (ts - lastPaint) >= INTERVAL){
         lastPaint = ts;
@@ -1972,6 +2175,20 @@ window.SCENARIO = {
     const choicesWrap = document.getElementById('choices');
     const label = document.getElementById('choicesLabel');
     if(!panel) return;
+
+    // ACTION-ONLY step (every option is an [Action], i.e. something the Expert
+    // DOES, not says): nothing to say aloud, so the mic is shown switched off.
+    const actionOnly = choiceBtns.length && choiceBtns.every(c => /^\s*\[Action\]/i.test(c.choice.text||'') && !c.choice.say);
+    if(actionOnly){
+      cm.meterFill = null;
+      panel.innerHTML = `
+        <div class="voice voice-off">
+          <div class="voice-row"><button class="mic-btn" type="button" disabled><span class="mic-ico"></span>Hold &amp; say your answer</button></div>
+          <p class="voice-status">This step is an action, not something you say. Tap the action you'd take.</p>
+        </div>`;
+      if(label) label.textContent = "Tap the action you'd take";
+      return;
+    }
 
     // All response options stay VISIBLE — the learner reads one aloud (or taps it).
     if(!SR){
@@ -2004,8 +2221,8 @@ window.SCENARIO = {
     async function start(){
       if(listening) return;
       const ok = await ensureAudio();
-      if(!ok){ say(`<span style="color:#C81C0F">Mic is blocked. Allow microphone access, or tap a response above.</span>`); return; }
-      finalText=''; cm.peak=0; cm.recognizing=true;
+      if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' You can still tap a response above.')); return; }
+      finalText=''; cm.peak=0; cm.curFrames=[]; cm.t0=relNow(); cm.recognizing=true;
       listening=true; finished=false; committed=false;
       vConfirm.style.display='none'; vConfirm.innerHTML='';
       choiceBtns.forEach(c=>c.btn.classList.remove('matched'));
@@ -2029,7 +2246,7 @@ window.SCENARIO = {
       micBtn.innerHTML = `<span class="mic-ico"></span>Listening… release to submit`;
     }
 
-    function stop(){ if(!listening) return; listening=false; cm.recognizing=false;
+    function stop(){ if(!listening) return; listening=false; cm.recognizing=false; cm.t1=relNow();
       resetBtn();
       if(rec){ try{ rec.stop(); }catch(_){} } }
 
@@ -2090,7 +2307,7 @@ window.SCENARIO = {
       // Record THIS spoken response's peak loudness for the end-of-call
       // projection summary (only voice-driven selections land here; tapping a
       // choice directly doesn't, which is correct — no voice to measure).
-      cm.volLog.push(cm.peak);
+      logSpoken('response', scr.prompt, match.btn.textContent.replace(/^\s*Action\s*/, ''));
       match.btn.click(); }  // reuse the engine's real scoring path
 
     // Press-and-hold interaction.
@@ -2101,41 +2318,280 @@ window.SCENARIO = {
     micBtn.addEventListener('touchend',  (e)=>{ e.preventDefault(); stop(); });
   }
 
+  /* ---- Score one spoken response ---- */
+  function speakingLevel(frames){
+    const voiced = frames.filter(v => v >= 0.10).sort((a,b)=>a-b);   // ignore pauses/breaths between words
+    if(!voiced.length) return frames.length ? Math.max(...frames) : 0;
+    return voiced[Math.min(voiced.length - 1, Math.floor(voiced.length * 0.9))];
+  }
+  function zoneOf(L){ return L < ZONE_LOW ? 'quiet' : (L > ZONE_HIGH ? 'loud' : 'good'); }
+  function logSpoken(kind, prompt, text){
+    const lvl = speakingLevel(cm.curFrames);
+    cm.volLog.push({ kind, prompt:String(prompt||''), text:String(text||''), level:lvl, peak:cm.peak,
+                     zone:zoneOf(lvl), t0:cm.t0, t1:cm.t1 || relNow() });
+    cm.voiceMode = true;   // they're taking the call by voice
+  }
+
+  /* ---- Expert follow-up line: the learner says it aloud ----
+     When a pick triggers another Expert line (e.g. "Expert: Love it, I'll keep
+     this efficient then."), the engine pauses and shows that line here. The
+     learner holds the mic and says it; any reasonable attempt is accepted (it
+     isn't graded), and it counts toward Voice and Projection like any response.
+     "Send without saying it" always lets them move on. */
+  function shouldSpeak(){ return !!SR && cm.voiceMode === true && !embeddedBlocked(); }
+  function setVoiceMode(v){ cm.voiceMode = !!v; }
+  function sayLine(panel, line, onDone){
+    if(!panel){ onDone(); return; }
+    panel.innerHTML = `
+      <div class="voice">
+        <div class="voice-row">
+          <button class="mic-btn" id="micBtn" type="button"><span class="mic-ico"></span>Hold &amp; say this line</button>
+          <div class="meter"><div class="meter-fill" id="meterFill"></div><div class="meter-mark" style="left:22%"></div></div>
+        </div>
+        <p class="voice-status" id="vStatus">Hold the button and say the line above, as you would on a real call.</p>
+        <div class="voice-confirm"><button class="vc-no" id="vSkip" type="button">Send without saying it</button></div>
+      </div>`;
+    cm.meterFill = document.getElementById('meterFill');
+    const micBtn = document.getElementById('micBtn'), vStatus = document.getElementById('vStatus');
+    let rec = null, finalText = '', listening = false, finished = false, sent = false;
+    const say = h => { vStatus.innerHTML = h; };
+    const resetBtn = ()=>{ micBtn.classList.remove('listening'); micBtn.innerHTML = `<span class="mic-ico"></span>Hold &amp; say this line`; };
+    const send = (spoken)=>{ if(sent) return; sent = true; if(spoken) logSpoken('line', 'Your follow-up line', line); onDone(); };
+    document.getElementById('vSkip').onclick = ()=>send(false);
+    async function start(){
+      if(listening || sent) return;
+      const ok = await ensureAudio();
+      if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' Use Send without saying it to continue.')); return; }
+      finalText = ''; cm.peak = 0; cm.curFrames = []; cm.t0 = relNow(); cm.recognizing = true;
+      listening = true; finished = false;
+      rec = new SR(); rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = true;
+      rec.onresult = (e)=>{ let interim = '';
+        for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) finalText += r[0].transcript + ' '; else interim += r[0].transcript; }
+        say(`<span class="heard">“${escapeText((finalText+interim).trim())}”</span>`); };
+      rec.onerror = (e)=>{ say(`<span style="color:#C81C0F">Didn't catch that (${e.error}). Try again.</span>`); };
+      rec.onend = ()=>finish();
+      try{ rec.start(); }catch(_){}
+      micBtn.classList.add('listening'); micBtn.innerHTML = `<span class="mic-ico"></span>Listening… release to send`;
+    }
+    function stop(){ if(!listening) return; listening = false; cm.recognizing = false; cm.t1 = relNow(); resetBtn(); if(rec){ try{ rec.stop(); }catch(_){} } }
+    function finish(){
+      if(finished) return; finished = true; listening = false; cm.recognizing = false; resetBtn();
+      const said = finalText.trim();
+      if(!said){ say(`I didn't hear anything. Hold the button and speak up.`); return; }
+      const want = tokens(line), heard = new Set(tokens(said));
+      const cov = want.length ? want.filter(w=>heard.has(w)).length / want.length : 1;
+      if(cov < 0.3){ say(`<span class="heard">“${escapeText(said)}”</span><br>That didn't sound like the line. Try again, reading it as written.`); return; }
+      say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;✓ sending…`);
+      setTimeout(()=>send(true), 500);
+    }
+    micBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); start(); });
+    micBtn.addEventListener('mouseup', stop);
+    micBtn.addEventListener('mouseleave', stop);
+    micBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); start(); }, {passive:false});
+    micBtn.addEventListener('touchend',  (e)=>{ e.preventDefault(); stop(); });
+  }
+
+  function fmtTime(s){ s = Math.max(0, Math.round(s||0)); const m = Math.floor(s/60), r = s%60; return m + ':' + (r<10?'0':'') + r; }
+
+  /* ---- Volume through the call (results graph) ----
+     A waveform: thin rounded bars mirrored around a centre line, evenly spaced
+     at a fixed ~7px pitch (3px bar + gap) however wide the panel is, so the bars
+     never squash together; the bar count adapts to the width and redraws on
+     resize. Each bar = the loudest moment in its slice of the call, colored with
+     the SAME scale as the live meter; grey dots = not speaking. The faint band is
+     the good zone (mirrored) and red/amber tints mark each volume event.
+     bindGraph() adds a playhead that follows playback; clicking jumps there. */
+  const BAR_W = 3, BAR_PITCH = 7;
+  let graphState = null;
+  function graphHTML(log){
+    const tl = cm.timeline;
+    const total = cm.recEnd ? (cm.recEnd - cm.recStart) / 1000 : (tl.length ? tl[tl.length-1][0] : 0);
+    if(tl.length < 2 || total <= 0){ graphState = null; return ''; }
+    graphState = { total, log };
+    return `
+      <div class="dv-section">Your volume through the call</div>
+      <div class="dv-graph static" id="dvGraph" data-total="${total.toFixed(2)}" tabindex="-1" role="img"
+           aria-label="Waveform of your speaking volume across the call">
+        <div class="dv-plot" id="dvPlot">
+          <svg id="dvSvg" aria-hidden="true"></svg>
+          <div class="dv-dim" id="dvDim"></div>
+          <div class="dv-head" id="dvHead"></div>
+        </div>
+      </div>
+      <div class="dv-times"><span>0:00</span><span id="dvTime"><b>0:00</b> / ${fmtTime(total)}</span><span>${fmtTime(total)}</span></div>
+      <div class="dv-legend">
+        <span><i style="background:${meterColor(0.12)}"></i>Too quiet</span>
+        <span><i style="background:${meterColor(0.6)}"></i>Good</span>
+        <span><i style="background:${meterColor(1)}"></i>Too loud</span>
+        <span><i style="background:#D5DBE3"></i>Not speaking</span>
+        <span><i style="background:rgba(79,163,0,.25)"></i>Good zone</span>
+      </div>`;
+  }
+  function drawGraph(){
+    const plot = document.getElementById('dvPlot'), svg = document.getElementById('dvSvg');
+    if(!plot || !svg || !graphState) return;
+    const W = Math.round(plot.clientWidth), H = Math.round(plot.clientHeight);
+    if(!W || !H) return;
+    const { total, log } = graphState;
+    const N = Math.max(20, Math.floor(W / BAR_PITCH)), pitch = W / N;
+    const b = Array.from({ length:N }, ()=>({ max:0, spk:false }));
+    cm.timeline.forEach(([t, L, s])=>{ const i = Math.min(N-1, Math.floor(t / total * N)); if(L > b[i].max) b[i].max = L; if(s) b[i].spk = true; });
+    const mid = H / 2, amp = mid - 2;                 // bar half-height for level 1.0
+    const zoneTop = amp * ZONE_HIGH, zoneBot = amp * ZONE_LOW;
+    let out = `<rect x="0" y="${(mid-zoneTop).toFixed(1)}" width="${W}" height="${(zoneTop-zoneBot).toFixed(1)}" fill="rgba(79,163,0,.09)"/>`
+            + `<rect x="0" y="${(mid+zoneBot).toFixed(1)}" width="${W}" height="${(zoneTop-zoneBot).toFixed(1)}" fill="rgba(79,163,0,.09)"/>`;
+    log.filter(e=>e.zone !== 'good').forEach(e=>{
+      const x0 = e.t0 / total * W, x1 = Math.max(x0 + pitch, e.t1 / total * W);
+      out += `<rect x="${x0.toFixed(1)}" y="0" width="${(x1-x0).toFixed(1)}" height="${H}" rx="4" fill="${e.zone==='quiet' ? 'rgba(208,33,15,.08)' : 'rgba(224,144,10,.11)'}"/>`;
+    });
+    out += `<line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="#E6EAF0" stroke-width="1"/>`;
+    b.forEach((k, i)=>{
+      const h = k.spk ? Math.max(BAR_W, Math.min(1, k.max) * amp * 2) : BAR_W;
+      const x = i * pitch + (pitch - BAR_W) / 2;
+      out += `<rect x="${x.toFixed(1)}" y="${(mid - h/2).toFixed(1)}" width="${BAR_W}" height="${h.toFixed(1)}" rx="${BAR_W/2}" fill="${k.spk ? meterColor(k.max) : '#D5DBE3'}"/>`;
+    });
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    svg.innerHTML = out;
+  }
+  // Called by the engine once the results are on screen; redraws on resize
+  // (window, fullscreen, or the accordion opening).
+  function mountGraph(){
+    const plot = document.getElementById('dvPlot'); if(!plot) return;
+    drawGraph();
+    if('ResizeObserver' in window) new ResizeObserver(()=>drawGraph()).observe(plot);
+    else window.addEventListener('resize', drawGraph);
+  }
+  function bindGraph(audio){
+    const g = document.getElementById('dvGraph'), plot = document.getElementById('dvPlot'); if(!g || !plot || !audio) return;
+    const total = parseFloat(g.dataset.total) || 0; if(!total) return;
+    const head = document.getElementById('dvHead'), dim = document.getElementById('dvDim'), tl = document.getElementById('dvTime');
+    g.classList.remove('static');
+    g.setAttribute('tabindex', '0'); g.setAttribute('role', 'slider');
+    g.setAttribute('aria-label', 'Call recording position. Click, or use the arrow keys, to move through your call.');
+    g.setAttribute('aria-valuemin', '0'); g.setAttribute('aria-valuemax', String(Math.round(total)));
+    const paint = ()=>{
+      const t = Math.min(total, Math.max(0, audio.currentTime || 0)), x = t / total * 100;
+      head.style.left = x.toFixed(2) + '%'; dim.style.left = x.toFixed(2) + '%';
+      if(tl) tl.innerHTML = `<b>${fmtTime(t)}</b> / ${fmtTime(total)}`;
+      g.setAttribute('aria-valuenow', String(Math.round(t))); g.setAttribute('aria-valuetext', fmtTime(t));
+    };
+    let raf = null;
+    const loop = ()=>{ paint(); if(!audio.paused && !audio.ended) raf = requestAnimationFrame(loop); };
+    audio.addEventListener('play', ()=>{ cancelAnimationFrame(raf); loop(); });
+    ['pause','seeked','timeupdate','ended'].forEach(ev => audio.addEventListener(ev, paint));
+    const seekTo = t => { try{ audio.currentTime = Math.max(0, Math.min(total, t)); }catch(_){} paint(); };
+    g.addEventListener('click', e => { const r = plot.getBoundingClientRect(); if(e.clientX >= r.left) seekTo((e.clientX - r.left) / r.width * total); });
+    g.addEventListener('keydown', e => {
+      if(e.key === 'ArrowRight'){ e.preventDefault(); seekTo((audio.currentTime||0) + 5); }
+      else if(e.key === 'ArrowLeft'){ e.preventDefault(); seekTo((audio.currentTime||0) - 5); }
+      else if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); audio.paused ? audio.play().catch(()=>{}) : audio.pause(); }
+    });
+    document.querySelectorAll('.dv-ev[data-t]').forEach(btn => {
+      btn.classList.remove('static'); btn.disabled = false;
+      btn.onclick = ()=>{ seekTo(Math.max(0, parseFloat(btn.dataset.t) - 0.3)); audio.play().catch(()=>{}); };
+    });
+    // Chrome's recorder files report no length until played through; force it so
+    // seeking (clicks on the graph / events) works right away.
+    const fixDuration = ()=>{
+      if(audio.duration !== Infinity) return;
+      const back = ()=>{ audio.removeEventListener('durationchange', back); audio.currentTime = 0; paint(); };
+      audio.addEventListener('durationchange', back);
+      audio.currentTime = 1e101;
+    };
+    if(audio.readyState >= 1) fixDuration(); else audio.addEventListener('loadedmetadata', fixDuration, { once:true });
+    paint();
+  }
+
+  /* ---- Why the mic didn't start, in plain words ----
+     getUserMedia fails the same way (NotAllowedError, no prompt) whether the
+     learner said no, Chrome's site setting blocks it, or the page this activity
+     is EMBEDDED in (e.g. a course iframe) doesn't grant microphone access. That
+     last case can't be fixed from Chrome settings, so we check it first. The
+     small code line lets L&D see exactly what the browser reported. */
+  function embeddedBlocked(){
+    try{
+      const fp = document.permissionsPolicy || document.featurePolicy;
+      return !!(fp && fp.allowsFeature && !fp.allowsFeature('microphone'));
+    }catch(_){ return false; }
+  }
+  async function micErrorMessage(err){
+    const name = (err && err.name) || 'Error';
+    const red = t => `<span style="color:#C81C0F;font-weight:700">${t}</span>`;
+    const embedded = embeddedBlocked();
+    let msg;
+    if(!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      msg = red("This page can't use a microphone.") + " Browsers only allow microphones on secure (https) pages.";
+    } else if(embedded){
+      msg = red("The course page this activity is in doesn't allow microphone use.") + " Your browser blocks it without asking, so your Chrome settings aren't the cause.";
+    } else if(name==='NotFoundError' || name==='OverconstrainedError'){
+      msg = red("No microphone found.") + " Plug in your headset, then try again.";
+    } else if(name==='NotReadableError' || name==='AbortError' || name==='TrackStartError'){
+      msg = red("Your microphone is busy.") + " Another app may be using it (for example Zoom or Teams). Close it, then try again.";
+    } else if(name==='NotAllowedError' || name==='SecurityError' || name==='PermissionDeniedError'){
+      let state = '';
+      try{ state = (await navigator.permissions.query({ name:'microphone' })).state; }catch(_){}
+      msg = state==='denied'
+        ? red("Chrome is blocking the microphone for this page.") + " In Chrome, go to <b>Settings › Privacy and security › Site settings › Microphone</b>, remove this page from the blocked list, then reload."
+        : red("Microphone permission wasn't given.") + " Try again and choose <b>Allow</b> when your browser asks.";
+    } else {
+      msg = red("The microphone couldn't start.");
+    }
+    return msg + `<span class="mc-code">Browser reported: ${escapeText(name)}${embedded ? ' (embedded page blocks microphone)' : ''}</span>`;
+  }
+
   function shortLabel(ch){
     const t = String(ch.text||'').replace(/\[action\]/gi,'').trim();
     return t.length>48 ? t.slice(0,46)+'…' : t;
   }
   function escapeText(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  /* ---- End-of-call projection summary (feeds the results "Delivery" panel) ----
-     One OVERALL rating from the average peak loudness across every spoken
-     response. Quiet is treated as the problem; a strong average reads as good. */
+  /* ---- End-of-call projection summary (feeds the results "Voice and Projection" panel) ----
+     Every spoken response (and every Expert line said aloud) is placed in a
+     zone: too quiet, good, or too loud. Each one outside the good zone is a
+     VOLUME EVENT, listed with the screen it happened on, so a learner who
+     whispered half the time and shouted the other half sees exactly where, and
+     isn't told "well projected" because the two averaged out. The overall
+     rating comes from those events, not from one call-wide average. */
   function delivery(){
     const log = cm.volLog.slice();
     const spoken = log.length;
     if(!spoken){
-      return { spoken:0, html:
+      return { spoken:0, events:0, quiet:0, loud:0, rating:'', html:
         `<p class="dv-none">No spoken responses were captured this time. `+
         `Try it again with your headset microphone on to get projection feedback.</p>` };
     }
-    const avg = log.reduce((a,b)=>a+b,0) / spoken;
-    // Bands mirror the live meter: 0.22 = minimum projection, ~0.45 = solidly good.
+    const quiet = log.filter(e=>e.zone==='quiet').length, loud = log.filter(e=>e.zone==='loud').length;
+    const events = quiet + loud;
     let rating, cls, note;
-    if(avg >= 0.45){ rating='Well projected'; cls='good';
-      note='Your voice carried clearly across the call. Great job!'; }
-    else if(avg >= 0.28){ rating='A bit quiet in places'; cls='mid';
-      note='You were audible, but on parts of the call your voice dropped low. Aim to keep your volume up throughout.'; }
-    else { rating='Too quiet overall'; cls='low';
-      note='Across the call your voice stayed low. Speak a little louder so the user hears you clearly.'; }
-    const pct = Math.round(Math.min(1, avg) * 100);
-    const barColor = meterColor(avg);
-    return { spoken, avg, rating, html:
+    if(!events){ rating='Well projected'; cls='good';
+      note='Every spoken response stayed in the good volume zone. Your voice carried clearly across the call. Great job!'; }
+    else if(quiet && loud){ rating='Inconsistent volume'; cls='low';
+      note='Your volume swung between too quiet and too loud. Aim for the same steady, clear volume on every response.'; }
+    else if(quiet){ const most = quiet/spoken >= 0.5; rating = most ? 'Too quiet overall' : 'A bit quiet in places'; cls = most ? 'low' : 'mid';
+      note = most ? 'Most of your responses were too quiet. Speak up so the user hears you clearly.'
+                  : 'Some of your responses dropped below the good volume zone. Keep your volume up on every response.'; }
+    else { const most = loud/spoken >= 0.5; rating = most ? 'Too loud overall' : 'A bit loud in places'; cls = most ? 'low' : 'mid';
+      note = most ? 'Most of your responses were louder than they needed to be. Ease off a little so you sound calm and in control.'
+                  : 'Some of your responses went above the good volume zone. Ease off a little on those.'; }
+    const clip = (s, n) => { s = String(s||'').replace(/\s+/g,' ').trim(); return s.length > n ? s.slice(0, n-1) + '…' : s; };
+    const evItems = log.map((e, i)=>({ e, n:i+1 })).filter(x=>x.e.zone !== 'good').map(({ e, n })=>`
+        <li><button class="dv-ev static" type="button" data-t="${e.t0.toFixed(2)}" disabled
+              aria-label="Response ${n}, ${e.zone==='quiet'?'too quiet':'too loud'}, at ${fmtTime(e.t0)}. Play this moment.">
+          <span class="dv-ev-tag ${e.zone}">${e.zone==='quiet' ? 'Too quiet' : 'Too loud'}</span>
+          <span class="dv-ev-where">Response ${n} · ${escapeText(clip(e.prompt, 60))}</span>
+          <span class="dv-ev-time">${fmtTime(e.t0)}</span>
+          <span class="dv-ev-said">“${escapeText(clip(e.text, 110))}”</span>
+        </button></li>`).join('');
+    return { spoken, events, quiet, loud, rating, html:
       `<div class="dv-wrap">
          <div class="dv-top"><span class="dv-pill ${cls}">${rating}</span>
-           <span class="dv-meta">${spoken} spoken response${spoken>1?'s':''} · Average Volume</span></div>
-         <div class="dv-bar"><div class="dv-fill" style="width:${pct}%;background:${barColor}"></div>
-           <div class="dv-mark" style="left:22%"></div></div>
+           <span class="dv-meta">${spoken} spoken response${spoken>1?'s':''} · ${events} volume event${events===1?'':'s'}</span></div>
          <p class="dv-note">${note}</p>
+         <div class="dv-section">Volume events<span class="dv-ev-count">${events}</span></div>
+         ${events
+           ? `<p class="dv-ev-sub">Each time you spoke outside the good volume zone (${quiet} too quiet, ${loud} too loud). Click one to hear that moment.</p><ol class="dv-ev-list">${evItems}</ol>`
+           : `<p class="dv-ev-sub">None. Every response stayed in the good volume zone.</p>`}
+         ${graphHTML(log)}
          <div class="dv-playback" id="callPlayback">
            <div class="dv-pb-label">Listen back to your call</div>
            <div class="dv-pb-slot" id="callPlaybackSlot">
@@ -2181,7 +2637,8 @@ window.SCENARIO = {
     return { ready, stop };
   }
 
-  window.CallMode = { attach, delivery, stopRecording, micCheck, supported: !!SR };
+  window.CallMode = { attach, delivery, stopRecording, micCheck, micErrorMessage, embeddedBlocked,
+                      sayLine, shouldSpeak, setVoiceMode, bindGraph, mountGraph, supported: !!SR };
 })();
 </script>
 </body>
