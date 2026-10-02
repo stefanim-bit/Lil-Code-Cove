@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volume Zone Tester</title>
+<style>
+  :root{ --bg:#F4F5F7; --card:#fff; --ink:#000624; --muted:#5b6175; --line:#E2E4EA; --accent:#116DFF; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+  main{ max-width:980px; margin:0 auto; padding:28px 16px 60px; }
+  h1{ font-size:22px; margin:0 0 4px; }
+  .sub{ color:var(--muted); margin:0 0 20px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:700px){ .grid{ grid-template-columns:1fr; } }
+  h2{ font-size:16px; margin:0 0 2px; }
+  .cfg{ color:var(--muted); font-size:13px; margin-bottom:12px; }
+  .meter{ position:relative; height:26px; border-radius:6px; background:#EDEEF2; overflow:hidden; }
+  .fill{ height:100%; width:0; transition:width .15s linear, background .15s linear; }
+  .mark{ position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--ink); opacity:.55; }
+  .mark span{ position:absolute; top:30px; left:-14px; font-size:11px; color:var(--muted); white-space:nowrap; }
+  .scale{ position:relative; height:22px; }
+  .gradient{ height:8px; border-radius:4px; margin-top:10px; }
+  .verdict{ margin-top:14px; font-weight:600; min-height:22px; }
+  .good{ color:#2E7D00; } .quiet{ color:#C81C0F; } .loud{ color:#B07A00; }
+  .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  button{ font:inherit; border:0; border-radius:20px; padding:10px 18px; cursor:pointer; background:var(--accent); color:#fff; }
+  button.sec{ background:#fff; color:var(--ink); border:1px solid var(--line); }
+  button:disabled{ opacity:.5; cursor:default; }
+  #talk.active{ background:#C81C0F; }
+  .status{ color:var(--muted); font-size:14px; }
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  th,td{ text-align:left; padding:7px 6px; border-bottom:1px solid var(--line); }
+  th{ color:var(--muted); font-weight:500; }
+  .tally{ display:flex; gap:24px; flex-wrap:wrap; margin-top:12px; font-size:14px; }
+  .now{ font-variant-numeric:tabular-nums; color:var(--muted); font-size:13px; margin-top:6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Volume Zone Tester</h1>
+  <p class="sub">PS1 Layers (good zone starts at 0.25) vs PS4 Transfer Away (starts at 0.30). Both use the same mic level, smoothing and scoring as the live call code, so the only difference is the threshold and meter colors.</p>
+
+  <div class="card">
+    <div class="controls">
+      <button id="start">Turn on mic</button>
+      <button id="talk" disabled>Hold to speak (or hold Space)</button>
+      <button id="clear" class="sec">Clear log</button>
+      <span class="status" id="status">Put your headset on, then turn on the mic.</span>
+    </div>
+    <div class="now" id="now"></div>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="cardA">
+      <h2>A · PS1 (0.25)</h2>
+      <div class="cfg">Good zone 0.25–0.88 · meter turns green at 0.30</div>
+      <div class="meter"><div class="fill"></div></div>
+      <div class="scale"></div>
+      <div class="gradient"></div>
+      <div class="verdict"></div>
+    </div>
+    <div class="card" id="cardB">
+      <h2>B · PS4 (0.30)</h2>
+      <div class="cfg">Good zone 0.30–0.88 · meter turns green at 0.40</div>
+      <div class="meter"><div class="fill"></div></div>
+      <div class="scale"></div>
+      <div class="gradient"></div>
+      <div class="verdict"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Response log</h2>
+    <div class="cfg">Try a whisper, a soft voice, your normal call voice and a loud voice. Note where the two disagree.</div>
+    <table>
+      <thead><tr><th>#</th><th>Your note</th><th>Level</th><th>A · PS1 (0.25)</th><th>B · PS4 (0.30)</th></tr></thead>
+      <tbody id="log"></tbody>
+    </table>
+    <div class="tally" id="tally"></div>
+  </div>
+</main>
+
+<script>
+/* Copied from the live call code (PS1 Layers 2026-10-01 vs PS4 Transfer Away 2026-09-28). */
+const CONFIGS = {
+  A: { low:0.25, high:0.88, stops:[
+    [0.00,[179,18,0]],[0.12,[230,34,20]],[0.20,[245,166,35]],[0.25,[232,195,0]],
+    [0.30,[143,203,0]],[0.42,[95,178,0]],[0.88,[79,163,0]],[1.00,[224,160,32]] ] },
+  B: { low:0.30, high:0.88, stops:[
+    [0.00,[179,18,0]],[0.12,[230,34,20]],[0.22,[245,166,35]],[0.30,[232,195,0]],
+    [0.40,[143,203,0]],[0.55,[95,178,0]],[0.88,[79,163,0]],[1.00,[224,160,32]] ] }
+};
+function meterColor(L, stops){
+  L = Math.max(0, Math.min(1, L));
+  for(let i=1;i<stops.length;i++){
+    const [p1,c1]=stops[i-1], [p2,c2]=stops[i];
+    if(L<=p2){ const t=(L-p1)/(p2-p1||1);
+      return `rgb(${[0,1,2].map(k=>Math.round(c1[k]+(c2[k]-c1[k])*t)).join(',')})`; }
+  }
+  return 'rgb(79,163,0)';
+}
+const zoneOf = (L,c) => L < c.low ? 'quiet' : (L > c.high ? 'loud' : 'good');
+const LABEL = { good:'Good', quiet:'Too quiet', loud:'Too loud' };
+
+// Static scale marks + color strip per card
+for(const k of ['A','B']){
+  const c = CONFIGS[k], card = document.getElementById('card'+k);
+  const meter = card.querySelector('.meter'), scale = card.querySelector('.scale');
+  [[c.low,'low '+c.low.toFixed(2)],[c.high,'high '+c.high]].forEach(([v,t])=>{
+    const m = document.createElement('div'); m.className='mark'; m.style.left=(v*100)+'%';
+    m.innerHTML = `<span>${t}</span>`; meter.appendChild(m);
+  });
+  const g = []; for(let i=0;i<=20;i++){ const v=i/20; g.push(`${meterColor(v,c.stops)} ${v*100}%`); }
+  card.querySelector('.gradient').style.background = `linear-gradient(90deg, ${g.join(',')})`;
+}
+
+let ctx, analyser, data, recognizing=false, frames=[], peak=0, rows=[];
+function level(){
+  analyser.getByteTimeDomainData(data);
+  let sum=0; for(let i=0;i<data.length;i++){ const v=(data[i]-128)/128; sum+=v*v; }
+  return Math.min(1, Math.sqrt(sum/data.length) * 3.2);
+}
+function responseLevel(fr){   // same as live code: 90th percentile of voiced frames
+  const voiced = fr.filter(v => v >= 0.10).sort((a,b)=>a-b);
+  if(!voiced.length) return fr.length ? Math.max(...fr) : 0;
+  return voiced[Math.min(voiced.length-1, Math.floor(voiced.length*0.9))];
+}
+
+document.getElementById('start').onclick = async ()=>{
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
+    ctx.createMediaStreamSource(stream).connect(analyser);
+    data = new Uint8Array(analyser.fftSize);
+    document.getElementById('start').disabled = true;
+    document.getElementById('talk').disabled = false;
+    setStatus('Mic on. Hold the button (or Space) while you say a sentence.');
+    loop();
+  }catch(e){ setStatus('Could not open the mic: ' + (e.message||e.name)); }
+};
+function setStatus(t){ document.getElementById('status').textContent = t; }
+
+function loop(){
+  const fills = ['A','B'].map(k=>document.querySelector('#card'+k+' .fill'));
+  let smoothed=0, last=0;
+  const step = ts=>{
+    const L = level();
+    if(recognizing) frames.push(L);
+    smoothed += (L - smoothed) * 0.12;
+    if(ts - last >= 150){
+      last = ts;
+      const pct = Math.round(smoothed*100/8)*8;
+      ['A','B'].forEach((k,i)=>{ fills[i].style.width = pct+'%'; fills[i].style.background = meterColor(smoothed, CONFIGS[k].stops); });
+      document.getElementById('now').textContent = 'Live level: ' + smoothed.toFixed(2);
+    }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+const talk = document.getElementById('talk');
+function begin(){ if(talk.disabled || recognizing) return; recognizing=true; frames=[]; talk.classList.add('active'); talk.textContent='Listening… release to score'; }
+function end(){
+  if(!recognizing) return; recognizing=false; talk.classList.remove('active'); talk.textContent='Hold to speak (or hold Space)';
+  if(frames.length < 10){ setStatus('Too short. Hold while you speak a full sentence.'); return; }
+  const L = responseLevel(frames);
+  const zA = zoneOf(L, CONFIGS.A), zB = zoneOf(L, CONFIGS.B);
+  rows.push({ n:rows.length+1, L, zA, zB });
+  ['A','B'].forEach(k=>{
+    const z = k==='A'?zA:zB, el = document.querySelector('#card'+k+' .verdict');
+    el.className = 'verdict '+z; el.textContent = `Last response: ${LABEL[z]} (${L.toFixed(2)})`;
+  });
+  setStatus(zA===zB ? 'Both agree.' : 'They disagree on this one: ' + L.toFixed(2) + ' falls between 0.25 and 0.30.');
+  render();
+}
+talk.addEventListener('pointerdown', begin);
+window.addEventListener('pointerup', end);
+window.addEventListener('keydown', e=>{ if(e.code==='Space' && !e.repeat && !(e.target instanceof HTMLInputElement)){ e.preventDefault(); begin(); } });
+window.addEventListener('keyup', e=>{ if(e.code==='Space' && !(e.target instanceof HTMLInputElement)){ e.preventDefault(); end(); } });
+document.getElementById('clear').onclick = ()=>{ rows=[]; render(); };
+
+function render(){
+  document.getElementById('log').innerHTML = rows.map(r=>`<tr${r.zA!==r.zB?' style="background:#FFF8E1"':''}>
+    <td>${r.n}</td><td><input data-n="${r.n}" placeholder="e.g. normal voice" style="width:100%;border:1px solid #E2E4EA;border-radius:6px;padding:4px 6px;font:inherit"></td>
+    <td>${r.L.toFixed(2)}</td><td class="${r.zA}">${LABEL[r.zA]}</td><td class="${r.zB}">${LABEL[r.zB]}</td></tr>`).join('');
+  document.querySelectorAll('#log input').forEach(inp=>{ const r=rows[inp.dataset.n-1]; inp.value=r.note||''; inp.oninput=()=>{ r.note=inp.value; }; });
+  const cnt = k => ['good','quiet','loud'].map(z=>`${LABEL[z]}: ${rows.filter(r=>r['z'+k]===z).length}`).join(' · ');
+  document.getElementById('tally').innerHTML = rows.length ? `<div><b>A · PS1</b> — ${cnt('A')}</div><div><b>B · PS4</b> — ${cnt('B')}</div><div><b>Disagreements:</b> ${rows.filter(r=>r.zA!==r.zB).length}</div>` : '';
+}
+</script>
+</body>
+</html>

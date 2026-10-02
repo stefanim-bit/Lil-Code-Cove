@@ -385,11 +385,11 @@ window.SCENARIO = {
       },
       {
         "label": "Account Settings: Troubleshooting Common Issues",
-        "url": "https://csinternal.wixanswers.com/kb/en/article/account-settings-troubleshooting-common-issues#common-issues-account-info"
+        "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=797965ce-3080-f111-ab0e-7ced8d8ef488"
       },
       {
         "label": "Error Message: Mailbox Not Found / Unable to load business email user info",
-        "url": "https://csinternal.wixanswers.com/kb/en/article/error-message-mailbox-not-found-unable-to-load-business-email-user-info-9002605"
+        "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=c7736a8c-3080-f111-ab0e-7ced8d8ef488"
       }
     ]
   },
@@ -880,7 +880,7 @@ window.SCENARIO = {
      the Form's learner_email field (entry.1276253364). All other values are
      derived dynamically from the scenario/screen, so every scenario self-labels
      with no per-scenario editing here. */
-  const TELEMETRY_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSegiZwFV7DN-wwWsqnBbrqzJ5yEK-3lk8Zl182M0fMNFYH5hg/formResponse';
+  const TELEMETRY_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSfaz9fhquxHvziwgOmLsycG5P-LaYkB11sRzTC_48I003VT_Q/formResponse';
   const FIELD_IDS = {
     learner_email:    'entry.1276253364',
     learner_name:     'entry.2005409239',
@@ -895,7 +895,7 @@ window.SCENARIO = {
     time_on_step_sec: 'entry.1327709145',
     notes:            'entry.1963386753'
   };
-  const TELEMETRY_COURSE = S.title;           // written to the `course` field
+  const TELEMETRY_COURSE = S.title + ' (BPO)';           // written to the `course` field
 
   // One id per play-through, so a learner's rows can be grouped in the Sheet.
   const attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
