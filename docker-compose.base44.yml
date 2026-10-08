@@ -1,0 +1,18 @@
+# Base44 sandbox preview: serves the repo's static HTML scenarios live from the bind-mounted source.
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+      - ./.base44/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    # The sandbox checkout root is mode 700, so nginx workers must run as root to read it.
+    command: ["sh", "-ec", "sed -i 's/^user .*/user root;/' /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"]
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
