@@ -53,6 +53,7 @@
     STAGE  : id, name, max, strength (shown at end if done), improvement (if missed).
     SCREEN : stage, gate, speaker (caller line), prompt, choices[].
     CHOICE : text, verdict, points, goTo, credits[], retry/capIfRetried,
+             retryOnly (hidden until the screen re-opens for a retry),
              consequence, stageOverride.
 ==================================================================================
 -->
@@ -173,6 +174,9 @@
   /* Inline screenshot figure (Layers panel, Accessibility Wizard, etc.) */
   .msg.system .screenshot{margin:0.25rem 0;max-width:100%;display:flex;flex-direction:column;align-items:center}
   .msg.system .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
+  /* Expert-sent screenshot ([image] line in a consequence): right-side, like an Expert message */
+  .msg.you .screenshot{margin:0.25rem 0;max-width:100%}
+  .msg.you .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
 
   /* Lightbox: click-to-enlarge overlay for inline screenshots */
   .lightbox{border:0;padding:0;background:transparent;max-width:95vw;max-height:95vh}
@@ -514,10 +518,10 @@ window.SCENARIO = {
 
     s_dynamics: {
       stage:"dynamics", gate:true,
-      speaker:"The site is Love Like Lena.",
+      speaker:"My site's name is Love Like Lena.",
       prompt:"What do you do next?",
       choices:[
-        { id:"A", text:"Samantha, I just checked and to fix this, you can just drag the element back to where it was and hit save again, that should sort it.",
+        { id:"A", text:"I believe to fix this, you can just drag the element back to where it was and hit save again. That should sort it.",
           verdict:"incorrect", points:0, goTo:"s_familiarize",
           consequence:"Samantha: How can I do that if I can't even see it? That's the thing.\n\nExpert: Ok, I understand." },
         { id:"B", text:"[Action] Look Samantha up in User Manager to verify the account.",
@@ -537,7 +541,7 @@ window.SCENARIO = {
         { id:"A", text:"Thank you. We definitely want to make sure this looks right for your visitors. What's this particular page for?",
           verdict:"correct", points:10, goTo:"s_clarify",
           consequence:"Samantha: It's my services page, where people book one on one coaching sessions with me.\n\nExpert: Yes, definitely an important page to ensure is sorted perfectly! What kind of coaching do you do?\n\nSamantha: Relationship coaching practice for romantic and non-romantic relationships." },
-        { id:"B", text:"Samantha, just so I understand the bigger picture, can you tell me a bit about what your website is about overall?",
+        { id:"B", text:"Just so I understand the bigger picture, can you tell me a bit about what your website is about overall?",
           verdict:"partial", points:4, goTo:"s_clarify",
           consequence:"Samantha: It's for my relationship coaching practice. I mostly do one on one sessions with clients where we talk about areas for improvement in both their romantic and non-romantic relationships.\n\nExpert: Wow, that sounds like really meaningful work. It must be hard for people to open up about something so sensitive, but it's so important to talk about. That's really neat.\n\nSamantha: Thank you, [name]. I thank my clients every day for their vulnerability. It's beautiful!" },
         { id:"C", text:"That's helpful. I'm going to jump straight into looking at the layers for you now.",
@@ -570,7 +574,7 @@ window.SCENARIO = {
       speaker:"Expert: Got it, thank you for clarifying!\n\nSamantha: Okay, so what now?",
       prompt:"What's next?",
       choices:[
-        { id:"A", text:"Here's my plan. I'll recreate this problem on my end, then check my resources to see what can be done. It should take 2 to 3 minutes. Do you mind if I place you on a brief hold while I look into it?",
+        { id:"A", text:"I'll take 2 to 3 minutes to recreate this problem on my end and I'll check back in to let you know what I found. Then I'll check in with my resources to see what can be done. I'll be back shortly.",
           verdict:"correct", points:10, goTo:"s_recreate",
           consequence:"Samantha: Sure, go ahead. Take your time." },
         { id:"B", text:"Can you email me a screenshot of the page?",
@@ -588,11 +592,13 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Layers%20Panel.png", caption:"Samant
       choices:[
         { id:"A", text:"[Action] Search the Help Center for a matching article to read to Samantha.",
           verdict:"incorrect", points:0, goTo:"s_recreate2", retry:true, capIfRetried:5, silent:true },
-        { id:"B", text:"[Action] Open Samantha's live site to find the overlapping elements.", showsImageAfter:true,
+        { id:"B", text:"[Action] Open Samantha's live site to find the overlapping elements.", showsImage:true,
           image:{ src:"Scenario%20Screenshots/Live%20Site%20(Recreate%20B).png", caption:"Samantha's live site — the overlapping elements as seen on the published page." },
-          verdict:"partial", points:5, goTo:"s_recreate2" },
+          verdict:"partial", points:5, goTo:"s_recreate2", retry:true, capIfRetried:10 },
         { id:"C", text:"[Action] Impersonate Samantha's account and find the element in the Layers panel.", showsImageAfter:true,
-          verdict:"correct", points:10, goTo:"s_recreate2" }
+          verdict:"correct", points:10, goTo:"s_recreate2" },
+        { id:"D", text:"[Action] Move on to checking resources.", retryOnly:true,
+          verdict:"partial", points:5, goTo:"s_recreate2" }
       ]
     },
 
@@ -613,13 +619,13 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Layers%20Panel.png", caption:"Samant
       speaker:"Ok cool.",
       prompt:"What do you check next?",
       choices:[
-        { id:"A", text:"[Action] Reply using the “Products Crossover Guide”.",
+        { id:"A", text:"[Action] Reply using the “Products Crossover Guide.”",
           verdict:"partial", points:10, goTo:"s_solve", retry:true, capIfRetried:20 },
         { id:"B", text:"[Action] You've already seen Samantha's problem yourself, so now it's time to talk her through the fix.",
           verdict:"incorrect", points:0, goTo:"s_solve" },
-        { id:"C", text:"[Action] Reply using “Identifying Editor Elements” and “Elements, Text & Repeater Issues”.",
+        { id:"C", text:"[Action] Reply using “Identifying Editor Elements” and “Elements, Text & Repeater Issues.”",
           verdict:"correct", points:20, goTo:"s_solve" },
-        { id:"E", text:"[Action] Reply using “Wix Editor: Menus, Anchors, Backgrounds”.",
+        { id:"E", text:"[Action] Reply using “Wix Editor: Menus, Anchors, Backgrounds.”",
           verdict:"incorrect", points:10, goTo:"s_solve" },
         { id:"F", text:"[Action] Reply using “Mobile Editor: Live Site Issues.”",
           verdict:"incorrect", points:10, goTo:"s_solve" }
@@ -638,11 +644,14 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
           verdict:"partial", points:10, goTo:"s_solve2",
           consequence:"Samantha: Thanks! I'll just refresh on my end and see then." },
         { id:"C", text:"Open your Layers panel and check the stacking order there. If the heart icon looks out of place, select it, choose Arrange, then Send to Back, and save again.",
-          verdict:"incorrect", points:0, goTo:"s_solve2",
-          consequence:"Samantha: Okay, done, it seems right but then it does the same thing again.\n\nExpert: Let's try going back to the Layers panel and selecting the element. Once you've done that, click \"Organize DOM Order\", select \"Manually\" and then \"Apply.\" Let me know if that works.\n\nSamantha: Okay, done! But I organized DOM via the Accessibility Wizard." },
-        { id:"D", text:"Since I confirmed that everything is stacked in the correct order, I believe this issue is being caused by your site's DOM Settings. Let's try adjusting these and see if that helps.",
-          showsImageAfter:true, verdict:"correct", points:15, goTo:"s_solve2",
-          consequence:"Samantha: Ok yes! What do I do to fix it?\n\nExpert:\n1. First, select Settings in the top left bar of the Editor and select Accessibility Wizard.\n2. Click Scan my site. It may take a few minutes here!\n3. Click the first panel called \"Site level.\" We're looking for \"Organize DOM order\"\n4. Select \"Edit\", then switch from Automatically to \"Manually\"\n5. Click Apply, save once more and you should be ready to go!\n\nLet me know once you've done that.\n\nSamantha: Okay, done." }
+          verdict:"incorrect", points:0, goTo:"s_solve2", retry:true, capIfRetried:10,
+          consequence:"Samantha: Okay, done, it seems right but then does the same thing again." },
+        { id:"D", text:"Everything is stacked in the correct order, so I believe this issue is being caused by your site's DOM Settings. Let's try adjusting these and see if that helps.",
+          verdict:"correct", points:15, goTo:"s_solve2",
+          consequence:"Samantha: Ok yes! What do I do to fix it?\n\nExpert:\n1. First, select Settings in the top left bar of the Editor and select Accessibility Wizard.\n2. Click Scan my site. It may take a few minutes here!\n3. Click the first panel called \"Site level.\" We're looking for \"Organize DOM order\"\n4. Select \"Edit\", then switch from Automatically to \"Manually\"\n5. Click Apply, save once more and you should be ready to go!\n\nLet me know once you've done that.\n[image]\nSamantha: Okay, done." },
+        { id:"E", text:"Let's try going back to the Layers panel and selecting the element. Once you've done that, click \"Organize DOM Order\", select \"Manually\" and then \"Apply.\" Let me know if that works.",
+          verdict:"partial", points:10, goTo:"s_solve2",
+          consequence:"Samantha: Okay, done! But I organized DOM via the Accessibility Wizard." }
       ]
     },
 
@@ -1307,8 +1316,20 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
      (e.g. the Layers panel or the Accessibility Wizard). `img` is {src, alt,
      caption}. Rendered as a full-width figure so learners see the same thing
      the Expert would be looking at. Broken/absent sources hide gracefully. */
-  function appendImage(img, autoOpen){
+  function appendImage(img, autoOpen, fromExpert){
     if(!img || !img.src) return null;
+    // Expert-sent screenshot: shown on the Expert's side of the chat, in the
+    // flow of the conversation (no auto-opened lightbox; click still zooms).
+    if(fromExpert){
+      const meta = lastBubbleKind==='you' ? '' : `<div class="meta">${escapeHtml(firstName()||'You')} · ${mmss(callSeconds)}</div>`;
+      lastBubbleKind = 'you';
+      return appendNode(
+        `<div class="msg you">${meta}<figure class="screenshot">`+
+        `<img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt||'')}" tabindex="0" role="button" `+
+        `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
+        `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}">`+
+        `</figure></div>`);
+    }
     lastBubbleKind = 'system';   // an image breaks a same-speaker run
     const alt = escapeHtml(img.alt || '');
     // No caption — learners read the screenshot and locate the info themselves.
@@ -1432,6 +1453,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     if(!text) return [];
     const clr = callerLabelRe(); const segs=[]; let cur=null;
     String(text).split('\n').forEach(line=>{
+      // A line of just [image] = the Expert sends the choice/screen screenshot here.
+      if(/^\s*\[image\]\s*$/i.test(line)){ cur={kind:'image', text:''}; segs.push(cur); return; }
       if(YOU_LABEL.test(line)){ cur={kind:'you',    text:line.replace(YOU_LABEL,'')}; segs.push(cur); }
       else if(clr.test(line)){  cur={kind:'caller', text:line.replace(clr,'')};        segs.push(cur); }
       else if(!cur && /^\s*\(/.test(line)){ cur={kind:'system', text:line};            segs.push(cur); }
@@ -1441,7 +1464,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     return segs.map(s=>{
       let t = s.kind==='system' ? s.text.replace(/^\s*\(/,'').replace(/\)\s*$/,'') : s.text;
       return { kind:s.kind, text:stripQuotes(t) };
-    }).filter(s=>s.text.length);
+    }).filter(s=>s.kind==='image' || s.text.length);
   }
   /* transcript bubbles: same markup, name label only (no live timer) */
   function segMarkup(kind, text){
@@ -1475,6 +1498,10 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     (function next(){
       if(i>=segs.length){ if(done) done(); return; }
       const s=segs[i++];
+      if(s.kind==='image'){
+        const go=()=>{ appendImage(opts.image, false, true); next(); };
+        return animate ? setTimeout(go, YOU_MS) : go();
+      }
       // In a consequence (reaction) reveal:
       //  • centered inline notes (system) turn green and reveal 2s apart;
       //  • spoken lines — Samantha (caller) OR the Expert (you) — show a 5s
@@ -1632,6 +1659,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       const cWrap = document.getElementById('choices');
       const choiceBtns = [];
       scr.choices.forEach(ch=>{
+        if(ch.retryOnly && !retriedIds.length) return;   // shown only after a retry re-opens the screen
         const b=document.createElement('button');
         // A choice with `say` is the Expert SPEAKING (rendered as a bubble), so
         // it isn't a tool action — no badge, even if its label reads "[Action]".
@@ -1714,7 +1742,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       setComposer('');
       // Auto-advance: once the pushback lands, re-open the same screen (no button).
       revealSegments(segs, true, ()=>renderScreen(scr.id,
-        { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true }), { reaction:true });
+        { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true }), { reaction:true, image:ch.image||scr.image });
       return;
     }
 
@@ -1734,7 +1762,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       showImageAfter();
       if(ch.goTo==='__end__') renderFinal();
       else renderScreen(ch.goTo, { animateSpeaker:true });
-    }, { reaction:true });
+    }, { reaction:true, image:ch.image||scr.image });
   }
 
   /* =================== PHASE 3 — COMPLETE =================== */
@@ -1890,6 +1918,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         // first bubble of a same-speaker run (txSeg tracks the previous kind).
         let txLast = null;
         const txSeg = (kind, text, actionNote) => {
+          if(kind==='image') return '';   // screenshots aren't repeated in the transcript
           const same = (kind !== 'system' && kind === txLast);
           txLast = kind;
           if(actionNote) return bubbleMarkup('system', text, '');

@@ -277,6 +277,7 @@ older idea — see Part 10).
 | `credits` | OPTIONAL. Extra credit to another stage — see §3.2. |
 | `stageOverride` | OPTIONAL. Score a different stage than the screen's. |
 | `retry` + `capIfRetried` | OPTIONAL. Re-open the screen once because the caller pushed back; cap the second-try score. Use only where pushback is believable. |
+| `retryOnly` | OPTIONAL. Hide this choice until the screen re-opens for a retry (e.g. a "move on" option that only makes sense after a partial first pick). Needs the 1-line `renderScreen` check in the engine (added 2026-10-02 to the PS1 Layers builds). |
 | `image` | OPTIONAL. A screenshot tied to this choice (see §3.7). |
 | `showsImage` | OPTIONAL. Reveal the image **immediately on selection**, before the reply. |
 | `showsImageAfter` | OPTIONAL. Reveal the image **after** the reply finishes. Action-revealed images auto-open the zoom view. |
