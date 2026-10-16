@@ -390,6 +390,32 @@ window.SCENARIO = {
       {
         "label": "Contacts: Troubleshooting Common Issues",
         "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=25146fc2-3080-f111-ab0e-7ced8d8ef488"
+      },
+      {
+        "label": "Updating Contact Information for .com.br Domains",
+        "url": "https://support.wix.com/en/article/updating-contact-information-for-combr-domains",
+        "correct": true
+      },
+      {
+        "label": "ICANN: Confirming Your Domain Contact Information",
+        "url": "https://support.wix.com/en/article/icann-confirming-your-domain-contact-information",
+        "correct": true
+      },
+      {
+        "label": "ICANN's 60 Day Lock Policy",
+        "url": "https://support.wix.com/en/article/icanns-60-day-lock-policy"
+      },
+      {
+        "label": "Transferring Your Wix Domain Away from Wix",
+        "url": "https://support.wix.com/en/article/transferring-your-wix-domain-away-from-wix-2477749"
+      },
+      {
+        "label": "Checking Your Domain Subscription Renewal Date",
+        "url": "https://support.wix.com/en/article/checking-your-domain-subscription-renewal-date"
+      },
+      {
+        "label": "Domain Privacy, Semi-Privacy and GDPR",
+        "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=cde80290-3180-f111-ab0e-7ced8d986008&appid=5dc7a5c3-7785-f011-b4cc-7c1e5261b0bc"
       }
     ]
   },
@@ -433,6 +459,7 @@ window.SCENARIO = {
       "id": "recreate",
       "name": "Recreate the issue",
       "max": 10,
+      "additive": true,
       "strength": "You impersonated Kit's account in User Manager, navigated to her Domains tab, and verified her current registrant contact details.",
       "improvement": "Impersonate the user in User Manager and inspect the Domains page to confirm current registrant info."
     },
@@ -440,7 +467,7 @@ window.SCENARIO = {
       "id": "article",
       "name": "Use resources",
       "max": 20,
-      "strength": "You checked 'Viewing and Updating Your Wix Domain Contact Information' in CSI rather than account settings or mailbox troubleshooting guides.",
+      "strength": "You checked a domain contact resource in CSI, such as ‘Viewing and Updating Your Wix Domain Contact Information’, rather than account settings or mailbox troubleshooting guides.",
       "improvement": "Open 'Viewing and Updating Your Wix Domain Contact Information' in CSI to confirm the exact steps for domain contact updates."
     },
     {
@@ -448,8 +475,8 @@ window.SCENARIO = {
       "name": "Solve the issue",
       "max": 20,
       "additive": true,
-      "strength": "You guided Kit through Domains > Manage Domain > Contact Info, and explained the ICANN verification email process.",
-      "improvement": "Walk Kit through Domains > Manage > Contact Info, and explain that updating registrant email requires ICANN email confirmation."
+      "strength": "You guided Kit through Domains > Domain Actions (⋯) > Edit contact info, and explained the ICANN verification email process.",
+      "improvement": "Walk Kit through Domains > Domain Actions (⋯) > Edit contact info, and explain that updating registrant email requires ICANN email confirmation."
     }
   ],
   "start": "s_open",
@@ -474,7 +501,7 @@ window.SCENARIO = {
           "verdict": "correct",
           "points": 5,
           "goTo": "s_dynamics",
-          "consequence": "Kit: Sure."
+          "consequence": "Kit: Great thanks."
         },
         {
           "id": "C",
@@ -524,15 +551,15 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "Thanks! I see your site is for Bennett Artisan Bakery! What kind of baked goods do you feature on your website?",
+          "text": "I see your site is for Bennett Artisan Bakery! What kind of baked goods do you feature on your website?",
           "verdict": "correct",
           "points": 10,
           "goTo": "s_clarify",
-          "consequence": "Kit: We specialize in organic sourdough breads and custom wedding cakes! We're updating our brand contacts before peak wedding season.\n\nExpert: That sounds delicious! Keeping your domain contact information updated ensures you never miss important domain renewal alerts or transfer notices."
+          "consequence": "Kit: We specialize in organic sourdough breads and custom wedding cakes! We're updating our brand contacts before peak wedding season.\n\nExpert: That sounds delicious! Keeping your domain contact information updated ensures you never miss transfer notices or contact verification emails."
         },
         {
           "id": "B",
-          "text": "Thanks! It looks like you've had Bennett Bakery with Wix for a while. How long have you owned this domain?",
+          "text": "It looks like you've had Bennett Bakery with Wix for a while. How long have you owned this domain?",
           "verdict": "partial",
           "points": 4,
           "goTo": "s_clarify",
@@ -540,7 +567,7 @@ window.SCENARIO = {
         },
         {
           "id": "C",
-          "text": "Thanks! Let me pull up your account settings right now so we can inspect your active configuration.",
+          "text": "Let me pull up your account settings right now so we can inspect your active configuration.",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_clarify"
@@ -550,7 +577,7 @@ window.SCENARIO = {
     "s_clarify": {
       "stage": "clarify",
       "gate": true,
-      "speaker": "I want to update my domain contact details (both the Registrant and Admin email addresses) for bennettbakery.com because my old email address is shutting down next week.",
+      "speaker": "My old email is shutting down next week, and I need my domain to use my new one. I’m just not sure which settings that is.",
       "prompt": "What do you ask next?",
       "choices": [
         {
@@ -584,16 +611,16 @@ window.SCENARIO = {
     "s_roadmap": {
       "stage": "roadmap",
       "gate": false,
-      "speaker": "Expert: Got it, thank you for clarifying!\n\nKit: Okay, so what now?",
+      "speaker": "Expert: Got it, thanks for clarifying! Since your old email shuts down next week, let’s get this updated today so you don’t miss the confirmation email sent to it.\n\nKit: Okay, so what now?",
       "prompt": "What's next?",
       "choices": [
         {
           "id": "A",
-          "text": "Here's what we'll do. I'll impersonate your account in User Manager to navigate to your Domains page. Then I'll give you exact step-by-step instructions to update your registrant details and explain the ICANN email verification process. I'll place you on a brief 2-3 minute hold.",
+          "text": "Here's what we'll do. I'll pull up your account and Domains page. Then I'll give you the instructions you need to update your registrant details and explain the ICANN email verification process. I'll place you on a brief 2-3 minute hold.",
           "verdict": "correct",
           "points": 10,
           "goTo": "s_recreate",
-          "consequence": "Kit: That sounds like a clear plan. Take your time!"
+          "consequence": "Kit: Sounds like a plan. Take your time!"
         },
         {
           "id": "B",
@@ -609,7 +636,7 @@ window.SCENARIO = {
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_recreate",
-          "consequence": "Kit: Account settings? Is that where domain contact info is kept?"
+          "consequence": "Kit: Account settings? Is that where domain contact info is kept?\n\nExpert: Good question! Your domain contact info is actually managed on your Domains page, not in Account Settings. Let me take a quick look at your account. I’ll place you on a brief 2-3 minute hold.\n\nKit: Oh, okay. Thanks!"
         }
       ]
     },
@@ -622,15 +649,15 @@ window.SCENARIO = {
           "id": "A",
           "text": "[Action] Impersonate Kit's account in User Manager, open the Domains dashboard, and locate 'bennettbakery.com'.",
           "verdict": "correct",
-          "points": 10,
+          "points": 5,
           "goTo": "s_recreate2",
-          "consequence": "(Impersonation active. Domains tab opened. Domain 'bennettbakery.com' located.)"
+          "consequence": "(You locate the 'bennettbakery.com' domain.)"
         },
         {
           "id": "B",
           "text": "[Action] Open Kit's live site 'bennettbakery.com' in a separate browser tab to check domain routing and storefront status.",
           "verdict": "partial",
-          "points": 5,
+          "points": 3,
           "goTo": "s_recreate2",
           "consequence": "(Live site loaded in browser.)"
         },
@@ -640,9 +667,9 @@ window.SCENARIO = {
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_recreate2",
-          "consequence": "(Incorrect section opened. Account Settings controls account login email, not domain registrant contact details.)",
+          "consequence": "(Account Settings controls account login email, not domain registrant contact details.)",
           "retry": true,
-          "capIfRetried": 5
+          "capIfRetried": 3
         }
       ]
     },
@@ -653,9 +680,9 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "[Action] Click Domain Actions (⋯) next to bennettbakery.com, then select 'Edit contact info' to confirm Registrant and Admin details.",
+          "text": "[Action] Open the Domains dashboard in Kit’s account, click Domain Actions (⋯) next to bennettbakery.com, then select ‘Edit contact info’ to confirm Registrant and Admin details.",
           "verdict": "correct",
-          "points": 10,
+          "points": 5,
           "goTo": "s_article",
           "consequence": "(Registrant and Admin contact info inspected. Contact email fields are editable under Domain Actions (⋯) > Edit contact info.)"
         },
@@ -676,21 +703,21 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "[Action] Reply using “Viewing and Updating Your Wix Domain Contact Information”",
+          "text": "[Action] Reply using “Viewing and Updating Your Wix Domain Contact Information.”",
           "verdict": "correct",
           "points": 20,
           "goTo": "s_solve"
         },
         {
           "id": "B",
-          "text": "[Action] Reply using “Account Settings: Troubleshooting Common Issues”",
+          "text": "[Action] Reply using “Account Settings: Troubleshooting Common Issues.”",
           "verdict": "incorrect",
           "points": 10,
           "goTo": "s_solve"
         },
         {
           "id": "C",
-          "text": "[Action] Reply using “Error Message: Mailbox Not Found / Unable to load business email user info”",
+          "text": "[Action] Reply using “Error Message: Mailbox Not Found / Unable to load business email user info.”",
           "verdict": "incorrect",
           "points": 10,
           "goTo": "s_solve"
@@ -701,18 +728,32 @@ window.SCENARIO = {
           "verdict": "incorrect",
           "points": 10,
           "goTo": "s_solve"
+        },
+        {
+          "id": "E",
+          "text": "[Action] Reply using \"ICANN: Confirming Your Domain Contact Information.\"",
+          "verdict": "correct",
+          "points": 20,
+          "goTo": "s_solve"
+        },
+        {
+          "id": "F",
+          "text": "[Action] Reply using \"ICANN's 60 Day Lock Policy.\"",
+          "verdict": "partial",
+          "points": 10,
+          "goTo": "s_solve"
         }
       ]
     },
     "s_solve": {
       "stage": "solve",
       "gate": true,
-      "speaker": "So where exactly do I go in my account to update my domain email?",
+      "speaker": "Expert: Thanks so much for holding, Kit!\n\nKit: So where exactly do I go in my account to update my domain email?",
       "prompt": "How do you guide Kit through updating her domain contact information?",
       "choices": [
         {
           "id": "A",
-          "text": "Go to Domains in your Wix account, click Domain Actions (⋯) next to bennettbakery.com, and select Edit contact info. Update the email under both Registrant and Admin Contact sections, then save. When you change your contact email address, a confirmation email will be sent to both the old and new address. You'll need to confirm the change from both emails.",
+          "text": "Go to Domains in your Wix account, click Domain Actions (⋯) next to bennettbakery.com, and select Edit contact info. Update the email under Registrant (and Admin, if it’s listed separately), then save. When you change your contact email address, a confirmation email will be sent to both the old and new address. You'll need to confirm the change from both emails.",
           "verdict": "correct",
           "points": 15,
           "goTo": "s_solve2",
@@ -743,20 +784,20 @@ window.SCENARIO = {
     "s_solve2": {
       "stage": "solve",
       "gate": true,
-      "speaker": "I saved the new email address! Does this change my Wix login email too or affect my site ownership?",
+      "speaker": "Quick question, does this change my Wix login email or affect my site ownership?",
       "prompt": "How do you respond?",
       "choices": [
         {
           "id": "A",
-          "text": "Updating your domain contact info only modifies public WHOIS records and ICANN notifications. It doesn't change your Wix login credentials or site ownership. Because the Registrant email was changed, ICANN rules place a standard 60-day transfer lock on the domain. This only stops it being moved to another registrar, and your website stays fully live.",
+          "text": "Updating your domain contact information doesn’t change your Wix login or site ownership.\n\nChanging the Registrant details applies a 60-day transfer lock, so the domain can’t move to another registrar during that time. Your site remains available unless the updated details aren’t confirmed within 14 days; then the domain may be deactivated, affecting the site and email.",
           "verdict": "correct",
           "points": 5,
           "goTo": "s_close",
-          "consequence": "Kit: That's a huge relief to know! Thanks for explaining the 60-day transfer lock and confirming my site and login stay completely safe.\n\nExpert: Of course, I'm happy to help."
+          "consequence": "Kit: That’s a relief! I’ll confirm both emails today. Thanks for explaining the transfer lock too.\n\nExpert: Of course, I'm happy to help."
         },
         {
           "id": "B",
-          "text": "Yes, changing your domain registration contact details automatically updates your primary Wix account login email and transfers full administrative site ownership to that new address. This security safeguard initiates a mandatory 60-day system-wide access restriction across all linked website permissions and connected billing profiles.",
+          "text": "Yes, changing your domain registration contact details automatically updates your primary Wix account login email and transfers full administrative site ownership to that new address.\n\nThis security safeguard initiates a mandatory 60-day system-wide access restriction across all linked website permissions and connected billing profiles.",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_close",
@@ -770,7 +811,7 @@ window.SCENARIO = {
           "verdict": "partial",
           "points": 2,
           "goTo": "s_close",
-          "consequence": "Kit: That’s a relief, thank you! Is there anything else I should know about the change?"
+          "consequence": "Kit: That’s a relief, thank you! Is there anything else I should know about the change?\n\nExpert: Yes, one more thing. Updating your Registrant details places a 60-day transfer lock on the domain, so it can’t move to another registrar during that time. Your site stays live, as long as you confirm the change from both emails within 14 days.\n\nKit: Good to know, thank you!"
         }
       ]
     },
@@ -781,11 +822,11 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "You're all set Kit! To recap, we navigated to Domains > Domain Actions (⋯) > Edit contact info to update both your Registrant and Admin email addresses. Remember that confirmation emails were sent to both your old and new email addresses, and you must confirm the change from both emails. Your domain will also have a standard 60-day transfer lock in place. Is there anything else I can help with?",
+          "text": "You're all set Kit! To recap, we navigated to Domains > Domain Actions (⋯) > Edit contact info to update both your Registrant and Admin email addresses. Remember that confirmation emails were sent to both your old and new email addresses, and you must confirm the change from both emails within 14 days, or the domain may be deactivated. Your domain will also have a standard 60-day transfer lock in place. Is there anything else I can help with?",
           "verdict": "correct",
           "points": 5,
           "goTo": "__end__",
-          "consequence": "Kit: Nope, you answered everything clearly and covered every single detail. Thank you so much for the fantastic help!"
+          "consequence": "Kit: Nope, that’s everything. Thanks so much for your help!"
         },
         {
           "id": "B",
