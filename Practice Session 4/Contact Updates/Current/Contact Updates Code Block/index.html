@@ -380,16 +380,16 @@ window.SCENARIO = {
         "correct": true
       },
       {
-        "label": "Product Support - Contact Information",
-        "url": "https://csinternal.wixanswers.com/kb/en/article/product-support-contact-information"
-      },
-      {
         "label": "Account Settings: Troubleshooting Common Issues",
         "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=797965ce-3080-f111-ab0e-7ced8d8ef488"
       },
       {
         "label": "Error Message: Mailbox Not Found / Unable to load business email user info",
         "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=c7736a8c-3080-f111-ab0e-7ced8d8ef488"
+      },
+      {
+        "label": "Contacts: Troubleshooting Common Issues",
+        "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=25146fc2-3080-f111-ab0e-7ced8d8ef488"
       }
     ]
   },
@@ -398,8 +398,8 @@ window.SCENARIO = {
       "id": "open",
       "name": "Opening & closing",
       "max": 5,
-      "strength": "You greeted Kit warmly, verified her account details, and closed with a clear recap and next steps.",
-      "improvement": "Greet Kit warmly, verify her account details, and close with a full recap and offer of further help."
+      "strength": "You greeted Kit warmly and closed with a clear recap and next steps.",
+      "improvement": "Greet Kit warmly and close with a full recap and offer of further help."
     },
     {
       "id": "dynamics",
@@ -478,7 +478,7 @@ window.SCENARIO = {
         },
         {
           "id": "C",
-          "text": "Hi Kit, I can help you change your domain email!",
+          "text": "Hi Kit! Thanks for contacting Wix support today. I would be more than happy to assist you with changing your domain's email address.",
           "verdict": "partial",
           "points": 3,
           "goTo": "s_dynamics",
@@ -493,7 +493,7 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "[Action] Look Kit up in User Manager, verify account details, and check domain registration status.",
+          "text": "[Action] Look Kit up in User Manager to check domain registration status.",
           "verdict": "correct",
           "points": 10,
           "goTo": "s_familiarize",
@@ -501,11 +501,11 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "[Action] Look Kit up in the Overview Tab.",
+          "text": "[Action] Look Kit up in the Overview Tab to check general account subscriptions and plan status.",
           "verdict": "partial",
           "points": 5,
           "goTo": "s_familiarize",
-          "consequence": "(You confirm Kit's account in the Overview tab, but this view doesn't show her domain registration status.)"
+          "consequence": "(Kit has a Premium Plan.)"
         },
         {
           "id": "C",
@@ -519,12 +519,12 @@ window.SCENARIO = {
     },
     "s_familiarize": {
       "stage": "familiarize",
-      "gate": true,
+      "gate": false,
       "prompt": "What do you say?",
       "choices": [
         {
           "id": "A",
-          "text": "Thank you Kit. I see your site is for Bennett Artisan Bakery! What kind of baked goods do you feature on your website?",
+          "text": "Thanks! I see your site is for Bennett Artisan Bakery! What kind of baked goods do you feature on your website?",
           "verdict": "correct",
           "points": 10,
           "goTo": "s_clarify",
@@ -532,7 +532,7 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "Thanks Kit. How long have you owned this domain?",
+          "text": "Thanks! It looks like you've had Bennett Bakery with Wix for a while. How long have you owned this domain?",
           "verdict": "partial",
           "points": 4,
           "goTo": "s_clarify",
@@ -540,7 +540,7 @@ window.SCENARIO = {
         },
         {
           "id": "C",
-          "text": "Got it. Let me look at your settings now.",
+          "text": "Thanks! Let me pull up your account settings right now so we can inspect your active configuration.",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_clarify"
@@ -555,7 +555,7 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "To make sure we update the right information: Are you looking to update your domain contact records (Registrant and Admin contact info), your Wix account login email, or a business email mailbox?",
+          "text": "To make sure we update the right information, are you looking to update your domain contact records (Registrant and Admin contact info), your Wix account login email, or a business email mailbox?",
           "verdict": "correct",
           "points": 15,
           "goTo": "s_roadmap",
@@ -563,7 +563,7 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "Do you mean your domain contact email or your Wix login email?",
+          "text": "Just to clarify what you need, are you looking to change the contact email listed on your domain registration, or are you trying to update your Wix account login email?",
           "verdict": "partial",
           "points": 8,
           "goTo": "s_roadmap",
@@ -571,7 +571,7 @@ window.SCENARIO = {
         },
         {
           "id": "C",
-          "text": "Got it! Let me walk you through changing your Wix account login email address right now in Account Settings.",
+          "text": "Got it! Let me walk you through changing your account credentials right now in Account Settings so your login email and domain contact stay completely synchronized.",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_roadmap",
@@ -589,7 +589,7 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "Here is our plan: I will impersonate your account in User Manager to navigate to your Domains page. Then I'll give you exact step-by-step instructions to update your registrant details and explain the ICANN email verification process. I'll place you on a brief 2-3 minute hold.",
+          "text": "Here's what we'll do. I'll impersonate your account in User Manager to navigate to your Domains page. Then I'll give you exact step-by-step instructions to update your registrant details and explain the ICANN email verification process. I'll place you on a brief 2-3 minute hold.",
           "verdict": "correct",
           "points": 10,
           "goTo": "s_recreate",
@@ -597,7 +597,7 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "Please give me 2-3 minutes while I check your account settings.",
+          "text": "Here's what we'll do. Give me about 2-3 minutes on hold while I review your account settings and check where your email addresses are configured and then I'll be right back with next steps.",
           "verdict": "partial",
           "points": 5,
           "goTo": "s_recreate",
@@ -605,7 +605,7 @@ window.SCENARIO = {
         },
         {
           "id": "C",
-          "text": "Go to your Account Settings tab right now and click Account Overview.",
+          "text": "Here's what we'll do. Go ahead and open your Account Settings tab right now in your Wix dashboard header and click Account Overview. While you do that, I'll review your login credentials on my end.",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_recreate",
@@ -628,7 +628,7 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "[Action] Open Kit's live site bennettbakery.com in a web browser tab.",
+          "text": "[Action] Open Kit's live site 'bennettbakery.com' in a separate browser tab to check domain routing and storefront status.",
           "verdict": "partial",
           "points": 5,
           "goTo": "s_recreate2",
@@ -636,7 +636,7 @@ window.SCENARIO = {
         },
         {
           "id": "C",
-          "text": "[Action] Open Account Settings > Account Overview in User Manager.",
+          "text": "[Action] Open Account Settings > Account Overview in User Manager to inspect primary account contact details.",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_recreate2",
@@ -661,7 +661,7 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "[Action] Check the Business Email / Mailboxes tab in the user's dashboard.",
+          "text": "[Action] Check the Business Email / Mailboxes dashboard tab to verify connected Google Workspace user accounts.",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_article",
@@ -672,32 +672,32 @@ window.SCENARIO = {
     "s_article": {
       "stage": "article",
       "gate": true,
-      "prompt": "What resource do you check in CSI?",
+      "prompt": "What resource do you use to reply?",
       "choices": [
         {
           "id": "A",
-          "text": "[Action] Open 'Viewing and Updating Your Wix Domain Contact Information' in CSI.",
+          "text": "[Action] Reply using “Viewing and Updating Your Wix Domain Contact Information”",
           "verdict": "correct",
           "points": 20,
           "goTo": "s_solve"
         },
         {
           "id": "B",
-          "text": "[Action] Open 'Product Support - Contact Information' in CSI.",
+          "text": "[Action] Reply using “Account Settings: Troubleshooting Common Issues”",
           "verdict": "incorrect",
           "points": 10,
           "goTo": "s_solve"
         },
         {
           "id": "C",
-          "text": "[Action] Open 'Account Settings: Troubleshooting Common Issues' in CSI.",
+          "text": "[Action] Reply using “Error Message: Mailbox Not Found / Unable to load business email user info”",
           "verdict": "incorrect",
           "points": 10,
           "goTo": "s_solve"
         },
         {
           "id": "D",
-          "text": "[Action] Open 'Error Message: Mailbox Not Found / Unable to load business email user info' in CSI.",
+          "text": "[Action] Reply using \"Contacts: Troubleshooting Common Issues.\"",
           "verdict": "incorrect",
           "points": 10,
           "goTo": "s_solve"
@@ -714,7 +714,7 @@ window.SCENARIO = {
           "id": "A",
           "text": "Go to Domains in your Wix account, click Domain Actions (⋯) next to bennettbakery.com, and select Edit contact info. Update the email under both Registrant and Admin Contact sections, then save. When you change your contact email address, a confirmation email will be sent to both the old and new address. You'll need to confirm the change from both emails.",
           "verdict": "correct",
-          "points": 20,
+          "points": 15,
           "goTo": "s_solve2",
           "consequence": "Kit: I followed those steps and updated both contact sections. I'll make sure to approve the confirmation links sent to both my old and new email addresses! Thank you!"
         },
@@ -724,7 +724,9 @@ window.SCENARIO = {
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_solve2",
-          "consequence": "Kit: I checked Account Overview, but that only changes my Wix account login credentials, not my domain registration details. Are you sure?"
+          "consequence": "Kit: I checked Account Overview, but that only changes my Wix account login, not my domain details. Are you sure?",
+          "retry": true,
+          "capIfRetried": 8
         },
         {
           "id": "C",
@@ -732,7 +734,9 @@ window.SCENARIO = {
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_solve2",
-          "consequence": "Kit: I went to Business Emails, but it says 'You don't have any business emails set up.' Does domain contact info require a mailbox?"
+          "consequence": "Kit: I went to Business Emails, but it says I don’t have any business emails set up. Does this need a mailbox?",
+          "retry": true,
+          "capIfRetried": 8
         }
       ]
     },
@@ -744,11 +748,11 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "Updating your domain contact info only modifies public WHOIS records and ICANN notifications. It doesn't change your Wix login credentials or site ownership. Note that per ICANN regulations, modifying registrant contact details places a standard 60-day transfer lock on the domain to prevent unauthorized transfers, while your website remains fully live.",
+          "text": "Updating your domain contact info only modifies public WHOIS records and ICANN notifications. It doesn't change your Wix login credentials or site ownership. Because the Registrant email was changed, ICANN rules place a standard 60-day transfer lock on the domain. This only stops it being moved to another registrar, and your website stays fully live.",
           "verdict": "correct",
           "points": 5,
           "goTo": "s_close",
-          "consequence": "Kit: That's a huge relief to know! Thanks for explaining the 60-day transfer lock and confirming my site and login stay completely safe."
+          "consequence": "Kit: That's a huge relief to know! Thanks for explaining the 60-day transfer lock and confirming my site and login stay completely safe.\n\nExpert: Of course, I'm happy to help."
         },
         {
           "id": "B",
@@ -756,15 +760,17 @@ window.SCENARIO = {
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_close",
-          "consequence": "Kit: Wait, really? But I didn't want my Wix account login or site ownership to change at all!"
+          "consequence": "Kit: Wait, really? But I didn’t want my Wix login or site ownership to change at all!",
+          "retry": true,
+          "capIfRetried": 2
         },
         {
           "id": "C",
-          "text": "Updating your domain contact details won't alter your login email right away, but to avoid synchronization errors between your registry profile and Wix dashboard, you must manually change your login email as well. Additionally, you will be locked out of updating site content during the initial 60-day domain administrative review window.",
+          "text": "No, updating your domain contact info doesn’t change your Wix login email or your site ownership. Those are completely separate, so your account and website aren’t affected.",
           "verdict": "partial",
           "points": 2,
           "goTo": "s_close",
-          "consequence": "Kit: I don't think that sounds right... why would updating a domain contact email lock me out of editing my own website?"
+          "consequence": "Kit: That’s a relief, thank you! Is there anything else I should know about the change?"
         }
       ]
     },
@@ -775,7 +781,7 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "You're all set, Kit! To recap: we navigated to Domains > Domain Actions (⋯) > Edit contact info to update both your Registrant and Admin email addresses. Remember that confirmation emails were sent to both your old and new email addresses, and you must confirm the change from both emails. Your domain will also have a standard 60-day transfer lock in place. Is there anything else I can help with?",
+          "text": "You're all set Kit! To recap, we navigated to Domains > Domain Actions (⋯) > Edit contact info to update both your Registrant and Admin email addresses. Remember that confirmation emails were sent to both your old and new email addresses, and you must confirm the change from both emails. Your domain will also have a standard 60-day transfer lock in place. Is there anything else I can help with?",
           "verdict": "correct",
           "points": 5,
           "goTo": "__end__",
@@ -783,7 +789,7 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "I'm glad we could get your domain contact email updated today, Kit! You should see all changes reflected across your Wix account dashboard shortly. Feel free to reach back out if you run into any technical issues or need help managing your website subscriptions, domains, or business tools in the future. Have a wonderful rest of your day and best of luck with the bakery!",
+          "text": "I'm glad we could get your domain contact email updated today Kit! You should see all changes reflected across your Wix account dashboard shortly. Feel free to reach back out if you run into any technical issues or need help managing your website subscriptions, domains, or business tools in the future. Have a wonderful rest of your day and best of luck with the bakery!",
           "verdict": "partial",
           "points": 3,
           "goTo": "__end__",

@@ -361,90 +361,84 @@
 <!-- ============================ THE SCENARIO (edit this) ============================ -->
 <script id="scenario">
 window.SCENARIO = {
-  title: "Practice Call - Domains: Transfer a Domain (Away from Wix)",
-
+  title: "Domains: Transfer a Domain",
   user: {
     name: "Katy",
     image: "Katy/Katy_Meet.png",
     completeImage: "Katy/Katy_Close.png",
-    bio: "Katy is a Wix Partner who wants to transfer a client's domain away from Wix. In this activity, you'll simulate a chat with them. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!"
+    bio: "Katy wants to transfer a client's domain. In this activity, you\u2019ll simulate a chat with her. Click *\u201cCheck Resources\u201d* to view internal and external help documents at any point during the interaction. Let\u2019s begin!"
   },
-
   resources: {
     title: "Check Resources",
     stage: "article", capIfUnchecked: 10,
     note: "Open the resources below. Checking the right one before you answer is the skill, not remembering it.",
     items: [
       { label:"Domains DNS Tools: Whois", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=63a465c8-3080-f111-ab0e-7ced8d8ef488" },
-      { label:"Staffing Group and Topics: Global Markets", url:"https://csinternal.wixanswers.com/apps/helpcenter/en/article/staffing-group-and-topics-global-markets" },
       { label:"Domains (Billing Scope)", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=f8f18128-3180-f111-ab0e-7ced8d8ef488" },
       { label:"Known Issues connecting externally registered domains", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=d8575b9e-3080-f111-ab0e-7ced8d8ef488" },
       { label:"Domain Transfers", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=a16b6ad4-3080-f111-ab0e-7ced8d8ef488" },
       { label:"Domain Registration", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=cde80290-3180-f111-ab0e-7ced8d986008" },
       { label:"Domains Brazil: Market Specific Topics", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=25746a8c-3080-f111-ab0e-7ced8d8ef488", correct:true },
       { label:"Transferring Your Wix Domain Away from Wix", url:"https://support.wix.com/en/article/transferring-your-wix-domain-away-from-wix-2477749", correct:true },
-      { label:"Domains – How to recognize a healthy domain connection: Domain connection to an external site", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=53146fc2-3080-f111-ab0e-7ced8d8ef488" }
+      { label:"Domains \u2013 How to recognize a healthy domain connection: Domain connection to an external site", url:"https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=53146fc2-3080-f111-ab0e-7ced8d8ef488" }
     ]
   },
-
   stages: [
     { id:"open", name:"Opening & closing", max:5,
-      strength:"You greeted Katy professionally and closed with a clear recap of the .com.br transfer steps and an offer of further help.",
-      improvement:"Greet Katy warmly and close with a recap of the correct next steps." },
+      strength:"You greeted Katy warmly, verified her details, and closed with a clear recap and next steps.",
+      improvement:"Greet Katy warmly, verify account details, and close with a recap and next steps." },
     { id:"dynamics", name:"Use Dynamics", max:10,
-      strength:"You used User Manager/SBS to confirm Katy is the verified owner-of-record and that the domain is a Wix-registered .com.br before proceeding.",
-      improvement:"Use User Manager/SBS to confirm the domain's registrar, type (.com.br), and owner before advising on the transfer." },
+      strength:"You looked up Katy's account in User Manager to verify her ownership, plan status, and domain type.",
+      improvement:"Look up the account in User Manager to confirm domain registration, plan status, and domain type." },
     { id:"familiarize", name:"Familiarize", max:10,
-      strength:"You asked a meaningful question about Katy's agency work, building rapport with a fellow Wix Partner.",
-      improvement:"Ask a familiarization question that connects to the user's role or business." },
+      strength:"You asked a meaningful question about Katy's agency, One Creative, acknowledging her Wix Partner status.",
+      improvement:"Ask a familiarization question that connects to Katy's agency and acknowledges her Wix Partner status." },
     { id:"clarify", name:"Clarify the issue", max:15, additive:true,
-      strength:"You clarified that Katy wants a full registration transfer (not just a DNS repoint), confirmed the registrant email and GoDaddy access, and distinguished connecting from transferring.",
-      improvement:"Clarify whether the user wants to transfer registration or only repoint DNS, confirm the registrant contact email, and confirm they can accept the transfer at the gaining registrar (GoDaddy)." },
+      strength:"You clarified that Katy needed a full registration transfer rather than DNS pointing, and verified destination access.",
+      improvement:"Clarify whether the user needs a full transfer or DNS pointing, and confirm registrant email and destination access." },
     { id:"roadmap", name:"Roadmapping", max:10,
-      strength:"You outlined a clear plan — confirm eligibility via Whois, pull the correct steps, then walk through initiating the transfer — before acting.",
-      improvement:"Give a clear roadmap of the diagnostic checks and transfer steps before taking action." },
+      strength:"You clearly outlined your plan to verify transfer eligibility via Whois before walking through the transfer steps.",
+      improvement:"Provide a clear step-by-step roadmap so the user knows you will verify domain transfer eligibility first." },
     { id:"recreate", name:"Recreate the issue", max:10,
-      strength:"You ran a Whois lookup to confirm the domain was active, unlocked, and not in redemption before advising on the transfer.",
-      improvement:"Use Whois to confirm domain status (ok / not locked / not in redemption / no 60-day lock) before providing transfer steps." },
-    { id:"article", name:"Use resources", max:20,
-      strength:"You consulted 'Transferring Your Wix Domain Away from Wix' together with 'Domains Brazil: Market Specific Topics' rather than relying on the generic flow alone.",
-      improvement:"Open 'Transferring Your Wix Domain Away from Wix' and 'Domains Brazil: Market Specific Topics' to confirm the exact steps for a .com.br." },
+      strength:"You ran a Whois lookup to verify domain status, expiration, and transfer lock eligibility before proceeding.",
+      improvement:"Use Whois to verify domain status codes, expiration date, and transfer locks before starting the transfer." },
+    { id:"article", name:"Use Resources", max:20,
+      strength:"You consulted the correct articles for transferring domains away and Brazil-specific domain requirements.",
+      improvement:"Open 'Transferring Your Wix Domain Away from Wix' and 'Domains Brazil: Market Specific Topics' to confirm the exact steps." },
     { id:"solve", name:"Solve the issue", max:20, additive:true,
-      strength:"You correctly identified that .com.br transfers are initiated from Registro.br (not Wix), advised cancelling Wix auto-renewal first, and set accurate expectations on timing and cancellation.",
-      improvement:"Explain that .com.br transfers start at Registro.br, that auto-renewal must be cancelled in Wix first, and give accurate timing/cancellation guidance." }
+      strength:"You explained that .com.br domains transfer via Registro.br, guided cancelling auto-renewal in Wix, and set seven-day transfer expectations.",
+      improvement:"Explain that .com.br domains transfer through Registro.br, advise cancelling auto-renewal in Wix, and set transfer timeline expectations." }
   ],
-
   start: "s_open",
   screens: {
-
     s_open: {
-      stage:"open", gate:true,
-      speaker:"Hi, I want to move my domain from Wix to GoDaddy. I manage a lot of sites so I'm comfortable in the dashboard — I just need to get this one moved over for a client.",
+      stage:"open", gate:false,
+      speaker:"Katy: Hi! I need to transfer one of my client's domains away from Wix to GoDaddy, but I want to make sure it's eligible first.",
       prompt:"How do you open the conversation?",
       choices:[
-        { id:"A", text:"Sure — just open Domains, click the Domain Actions icon, choose Transfer Away, and you'll get the EPP code by email in a few minutes.",
+        { id:"A", text:"Sure, just open Domains, click the Domain Actions icon, choose Transfer Away, and you'll get the EPP code by email in a few minutes.",
           verdict:"incorrect", points:0, goTo:"s_dynamics",
-          consequence:"Katy: I figured it'd be something like that, but I'd rather confirm the domain's actually eligible before I kick anything off — I've been burned by this before." },
-        { id:"B", text:"Hi Katy, thanks for reaching out to Wix Customer Care — my name is [name], and I'd be glad to help you move this one over. Let me pull up the account first so we're working from the same details.",
+          consequence:"Katy: I figured it'd be something like that, but I'd rather confirm the domain's actually eligible before I kick anything off. I've been burned by this before." },
+        { id:"B", text:"Hi Katy, thanks for reaching out to Wix Customer Care. My name is [name], and I'd be glad to help you move this one over. Let me pull up the account first so we're working from the same details.",
           verdict:"correct", points:5, goTo:"s_dynamics",
           consequence:"Katy: Perfect, thanks." },
         { id:"C", text:"Hi Katy! Happy to help with a transfer. Which site is this for?",
           verdict:"partial", points:3, goTo:"s_dynamics",
-          consequence:"Katy: It's for one of my clients — my agency builds and manages their site." }
+          consequence:"Katy: It's for one of my clients. My agency builds and manages their site." }
       ]
     },
 
     s_dynamics: {
-      stage:"dynamics", gate:true,
+      stage:"dynamics", gate:false,
       prompt:"What do you do next?",
       choices:[
         { id:"A", text:"Can you confirm the domain name, that it's registered with Wix (not just connected), and which account it sits under?",
           verdict:"partial", points:5, goTo:"s_dynamics2",
-          consequence:"Katy: It's registered through Wix — I bought it inside the client's Wix account. It's under their account, and I'm the owner-of-record." },
+          consequence:"Katy: It's registered through Wix. I bought it inside the client's Wix account. It's under their account, and I'm the owner-of-record." },
         { id:"B", text:"Since you're a Partner and know your way around, go ahead and start the transfer on your end and tell me if it errors out.",
           verdict:"incorrect", points:0, goTo:"s_dynamics2",
-          consequence:"Katy: I'd really rather confirm it's eligible first — that's kind of why I reached out instead of just doing it myself." },
-        { id:"C", text:"Sure — which site is the domain connected to?",
+          consequence:"Katy: I'd really rather confirm it's eligible first. That's kind of why I reached out instead of just doing it myself." },
+        { id:"C", text:"Sure, which site is the domain connected to?",
           verdict:"partial", points:3, goTo:"s_dynamics2",
           consequence:"Katy: My client's site, but the domain's the part I care about here." }
       ]
@@ -452,32 +446,31 @@ window.SCENARIO = {
 
     s_dynamics2: {
       stage:"dynamics", gate:true,
-      speaker:"Katy: Here's the account. What do you see on your end?",
-      prompt:"What do you do?",
+      prompt:"What do you check next?",
       choices:[
         { id:"A", text:"[Action] Look the account up in User Manager / SBS to confirm the domain's registrar, type, and status.",
           verdict:"correct", points:10, goTo:"s_familiarize",
-          consequence:"(User Manager confirms Katy is the verified owner-of-record. The site is on a Premium plan, the domain is registered through Wix — and it's a .com.br, a Brazilian ccTLD.)" },
-        { id:"B", text:"[Action] Check the Overview tab to confirm Katy's identity.",
+          consequence:"(User Manager confirms Katy is the verified owner-of-record. The site is on a Premium plan, the domain is registered through Wix, and it's a .com.br, a Brazilian ccTLD.)" },
+        { id:"B", text:"[Action] Check the Overview tab to confirm the domain's registrar, type, and status.",
           verdict:"partial", points:5, goTo:"s_familiarize",
           consequence:"(The Overview tab confirms Katy's identity, but not the domain's registrar or type.)" },
         { id:"C", text:"[Action] Ask Katy to send a screenshot of the GoDaddy dashboard.",
           verdict:"incorrect", points:0, goTo:"s_familiarize",
-          consequence:"Katy: There's nothing to screenshot yet — GoDaddy's the destination, not where the domain lives right now." }
+          consequence:"Katy: There's nothing to screenshot yet. GoDaddy's the destination, not where the domain lives right now." }
       ]
     },
 
     s_familiarize: {
-      stage:"familiarize", gate:true,
+      stage:"familiarize", gate:false,
       prompt:"What do you say?",
       choices:[
-        { id:"A", text:"I see you co-own One Creative — how many client sites are you managing on Wix these days? Always great to work with a Partner.",
+        { id:"A", text:"I see you co-own One Creative. How many client sites are you managing on Wix these days? Always great to work with a Partner.",
           verdict:"correct", points:10, goTo:"s_clarify",
-          consequence:"Katy: Quite a few! We build and manage sites across a bunch of clients — this one's a Brazilian nonprofit we launched last year. Nice to talk to someone who gets the Partner side of things.\n\nExpert: Love it — I'll keep this efficient then." },
+          consequence:"Katy: Quite a few! We build and manage sites across a bunch of clients. This one's a Brazilian nonprofit we launched last year. Nice to talk to someone who gets the Partner side of things.\n\nExpert: Love it. I'll keep this efficient then." },
         { id:"B", text:"How long have you managed this particular domain?",
           verdict:"partial", points:4, goTo:"s_clarify",
           consequence:"Katy: About a year now." },
-        { id:"C", text:"Okay, let's just get into it.",
+        { id:"C", text:"Thanks Katy. Let\u2019s go ahead and get into the transfer.",
           verdict:"incorrect", points:0, goTo:"s_clarify",
           consequence:"Katy: Sure." }
       ]
@@ -485,46 +478,44 @@ window.SCENARIO = {
 
     s_clarify: {
       stage:"clarify", gate:true,
-      speaker:"Katy: So the client's consolidating everything under their own GoDaddy account. I want this domain fully moved over.",
-      prompt:"What do you clarify first?",
+      prompt:"What do you ask next?",
       choices:[
-        { id:"A", text:"To scope this correctly: are you looking to transfer the domain's registration/ownership to GoDaddy, or just point its name servers/DNS to GoDaddy while it stays registered with Wix?",
+        { id:"A", text:"Just so I\u2019m on the same page: do you want the domain fully moved to GoDaddy, or just pointed there while Wix stays the registrar?",
           verdict:"correct", points:8, goTo:"s_clarify2",
-          consequence:"Katy: Full registration transfer — they want it off Wix entirely, not just pointed." },
-        { id:"B", text:"Got it — you want to transfer it, not just update DNS, correct?",
+          consequence:"Katy: Full registration transfer. They want it off Wix entirely, not just pointed." },
+        { id:"B", text:"Got it. You want to transfer it, not just update DNS, is that right?",
           verdict:"partial", points:4, goTo:"s_clarify2",
           consequence:"Katy: Right, a full registration transfer." },
-        { id:"C", text:"No problem — head to GoDaddy and add an A record plus a CNAME pointing to Wix and you'll be set.",
+        { id:"C", text:"No problem, head to GoDaddy and add an A record plus a CNAME pointing to Wix and you'll be set.",
           verdict:"incorrect", points:0, goTo:"s_clarify2", retry:true, capIfRetried:4,
-          consequence:"Katy: That's connecting a domain, not transferring it — I want the registration moved off Wix completely." }
+          consequence:"Katy: Hmm, that sounds like connecting a domain, not transferring it." }
       ]
     },
 
     s_clarify2: {
-      stage:"clarify", gate:true,
-      prompt:"What else do you confirm before planning the steps?",
+      stage:"clarify", gate:false,
+      prompt:"What do you ask next?",
       choices:[
-        { id:"A", text:"A couple of things: can you confirm the client's registrant contact email on the domain is current — that's where the transfer authorization goes — and that you have access to the GoDaddy account to accept the incoming transfer?",
+        { id:"A", text:"Is the client\u2019s registrant email current? That\u2019s where approval goes. And do you have the GoDaddy login to accept it?",
           verdict:"correct", points:7, goTo:"s_roadmap",
-          consequence:"Katy: Registrant email is current, and yes, we have the client's GoDaddy login ready to accept it." },
-        { id:"B", text:"Do you have the GoDaddy login handy to accept the transfer?",
+          consequence:"Katy: Registrant email is current, and yes, we have the client's GoDaddy login ready to accept it.\n\nExpert: Got it, thank you for clarifying!" },
+        { id:"B", text:"Do you have the GoDaddy login handy so you can accept the transfer once it comes through?",
           verdict:"partial", points:4, goTo:"s_roadmap",
-          consequence:"Katy: Yep, ready to go." },
+          consequence:"Katy: Yep, ready to go.\n\nExpert: Got it, thank you for clarifying!" },
         { id:"C", text:"Can you grab the EPP/authorization code from GoDaddy so we can start?",
           verdict:"incorrect", points:0, goTo:"s_roadmap",
-          consequence:"Katy: GoDaddy's the gaining registrar — the auth code comes from the losing side, right? That's part of what I'm trying to sort out." }
+          consequence:"Katy: GoDaddy's the gaining registrar. The auth code comes from the losing side, right? That's part of what I'm trying to sort out.\n\nExpert: Got it, thank you for clarifying!" }
       ]
     },
 
     s_roadmap: {
       stage:"roadmap", gate:false,
-      speaker:"Katy: Okay, so what's the plan?",
       prompt:"What's next?",
       choices:[
-        { id:"A", text:"Here's my plan: first I'll confirm the domain's status with a Whois lookup to make sure it's unlocked and eligible, then I'll pull up the correct transfer steps for this specific domain and walk you through initiating it. Give me a brief moment to check the status.",
+        { id:"A", text:"I\u2019ll check the domain\u2019s status first to make sure it\u2019s eligible, then I'll go over the steps with you. Give me two minutes.",
           verdict:"correct", points:10, goTo:"s_recreate",
-          consequence:"Katy: Sounds good — appreciate you actually checking first." },
-        { id:"B", text:"Let me put you on a quick hold while I look into it.",
+          consequence:"Katy: Sounds good, appreciate you actually checking first." },
+        { id:"B", text:"Let me put you on a quick hold while I look into a few things on my end.",
           verdict:"partial", points:5, goTo:"s_recreate", retry:true, capIfRetried:5,
           consequence:"Katy: Sure, though if you tell me what you're checking I can follow along on my end." },
         { id:"C", text:"Go ahead and start the transfer in Wix now and we'll troubleshoot whatever comes up.",
@@ -539,45 +530,44 @@ window.SCENARIO = {
       choices:[
         { id:"A", text:"[Action] Run a Whois lookup on the domain to confirm its status codes, expiry, and any transfer locks.",
           verdict:"correct", points:10, goTo:"s_article",
-          consequence:"(Whois shows Status: ok — no clientTransferProhibited, not pendingTransfer, not in redemptionPeriod. The domain is Active, expires next year, and is not within an ICANN 60-day lock. It's eligible to transfer.)" },
+          consequence:"(Whois shows Status: ok, no clientTransferProhibited, not pendingTransfer, not in redemptionPeriod. The domain is Active, expires next year, and is not within an ICANN 60-day lock. It's eligible to transfer.)" },
         { id:"B", text:"[Action] Open the domain in a browser to see if the live site loads.",
           verdict:"partial", points:5, goTo:"s_article",
-          consequence:"(The site loads fine — but that only tells you the site is live, not whether the domain is eligible to transfer.)" },
+          consequence:"(The site loads fine, but that only tells you the site is live, not whether the domain is eligible to transfer.)" },
         { id:"C", text:"[Action] Tell Katy to unlock the domain and disable DNSSEC in GoDaddy right now.",
           verdict:"incorrect", points:0, goTo:"s_article", retry:true, capIfRetried:5,
-          consequence:"Katy: The domain isn't at GoDaddy yet — that's where it's going. And shouldn't we check the current status before I change anything?" }
+          consequence:"Katy: The domain isn't at GoDaddy yet, that's where it's going. And shouldn't we check the current status before I change anything?" }
       ]
     },
 
     s_article: {
       stage:"article", gate:true,
-      speaker:"(You open the resources.)", speakerIf:"resourceOpened",
-      prompt:"What do you reference for the exact steps?",
+      prompt:"What do you check next?",
       choices:[
-        { id:"A", text:"[Action] Reply using “Transferring Your Wix Domain Away from Wix” and “Domains Brazil: Market Specific Topics”.",
+        { id:"A", text:"[Action] Reply using \u201cTransferring Your Wix Domain Away from Wix\u201d and \u201cDomains Brazil: Market Specific Topics.\u201d",
           verdict:"correct", points:20, goTo:"s_connect_q" },
-        { id:"B", text:"[Action] Reply using “Domain Transfers”.",
+        { id:"B", text:"[Action] Reply using \u201cDomain Transfers.\u201d",
           verdict:"partial", points:10, goTo:"s_connect_q" },
-        { id:"C", text:"[Action] Reply using “Domain Registration”.",
+        { id:"C", text:"[Action] Reply using \u201cDomain Registration.\u201d",
           verdict:"incorrect", points:0, goTo:"s_connect_q" },
-        { id:"D", text:"Walk Katy through the standard Transfer-Away steps from memory.",
+        { id:"D", text:"Katy is a Partner, so you offer to walk her through a high-level overview Transfer-Away steps from what you last remember.",
           verdict:"partial", points:8, goTo:"s_connect_q",
-          consequence:"Katy: I appreciate it, but for a .br I'd want to be sure — those have their quirks." }
+          consequence:"Katy: I appreciate it, but for a .br I\u2019d want to be sure about the steps. I'm sure you understand..." }
       ]
     },
 
     s_connect_q: {
-      stage:"clarify", gate:true,
-      speaker:"Katy: Actually — quick thought. Instead of a full transfer, could I just repoint the domain to GoDaddy's name servers and manage it there? Would that be faster?",
+      stage:"solve", gate:true,
+      speaker:"Katy: Can't we just point the name servers to GoDaddy instead of doing a full transfer?",
       prompt:"How do you respond?",
       choices:[
-        { id:"A", text:"Those are two different things: pointing the name servers just changes where DNS is managed — the domain stays registered with Wix. Since the client wants it off Wix entirely, you'll want a full registration transfer, which is what we'll set up.",
-          verdict:"correct", points:4, goTo:"s_solve",
-          consequence:"Katy: Right, that's what I thought — full transfer it is." },
-        { id:"B", text:"You could, but a transfer is cleaner. Let's do the transfer.",
-          verdict:"partial", points:2, goTo:"s_solve",
+        { id:"A", text:"Those are different, actually. Pointing name servers only moves DNS, and Wix stays the registrar. Since they want it fully off Wix, a transfer\u2019s the way to go.",
+          verdict:"correct", points:3, goTo:"s_solve",
+          consequence:"Katy: Right, that's what I thought. Full transfer it is!\n\nExpert: Great, let's set that up." },
+        { id:"B", text:"You could, but since they want it off Wix, a full transfer is cleaner. Let\u2019s go that route.",
+          verdict:"partial", points:1, goTo:"s_solve",
           consequence:"Katy: Okay, let's do the transfer." },
-        { id:"C", text:"Sure, that works — just repoint the name servers to GoDaddy and you're done.",
+        { id:"C", text:"Sure, that works. Just repoint the name servers to GoDaddy and you're done.",
           verdict:"incorrect", points:0, goTo:"s_solve",
           consequence:"Katy: But then it'd still be registered with Wix, wouldn't it? The client wants it fully moved." }
       ]
@@ -585,61 +575,77 @@ window.SCENARIO = {
 
     s_solve: {
       stage:"solve", gate:true,
-      speaker:"Katy: Okay — so what's the actual process for this one?",
-      prompt:"How do you guide Katy?",
+      prompt:"How do you guide Katy through the process?",
       choices:[
-        { id:"A", text:"Important detail for this domain: because it's a .com.br, the transfer isn't initiated from Wix like a standard gTLD. .br domains are managed through Registro.br, so the transfer has to be started there — not from the Wix Domains page.",
-          verdict:"correct", points:6, goTo:"s_solve2",
-          consequence:"Katy: Ah — that's exactly the kind of thing I wanted to confirm. So Wix isn't where I start it." },
+        { id:"A", text:"Quick heads-up: .com.br domains are managed by Registro.br, so the transfer starts there rather than from Wix.",
+          verdict:"correct", points:3, goTo:"s_solve2",
+          consequence:"Katy: Ah, that's exactly the kind of thing I wanted to confirm. So Wix isn't where I start it." },
         { id:"B", text:"Go to the Wix Domains page, click Transfer Away, and you'll get the EPP/authorization code by email to hand to GoDaddy.",
           verdict:"incorrect", points:0, goTo:"s_solve2",
-          consequence:"Katy: Wait — does that actually work for a .com.br? I didn't think Wix issued auth codes for .br domains." },
-        { id:"C", text:"This one's a .br, so it works a little differently — let me pull up the exact steps.",
-          verdict:"partial", points:3, goTo:"s_solve2",
+          consequence:"Katy: Wait, does that actually work for a .com.br? I didn't think Wix issued auth codes for .br domains." },
+        { id:"C", text:"This one\u2019s a .br, so it works a bit differently than usual. Give me one minute to pull up the exact steps.",
+          verdict:"partial", points:2, goTo:"s_solve2",
           consequence:"Katy: Okay, go ahead." }
       ]
     },
 
     s_solve2: {
       stage:"solve", gate:true,
-      prompt:"What are the steps you give Katy?",
+      prompt:"What steps do you provide?",
       choices:[
-        { id:"A", text:"Here's the flow for a .com.br: 1) Update the registrant information at Registro.br. 2) Cancel the domain's auto-renewal in the Wix account first. 3) Then initiate the transfer from your Registro.br account (not from Wix). 4) Accept and complete it on the GoDaddy side.",
-          verdict:"correct", points:6, goTo:"s_pushback",
-          consequence:"Katy: Got it — Registro.br to start it, cancel auto-renewal in Wix first. That's clear." },
-        { id:"B", text:"You'll do it from Registro.br — update the registrant info there and start the transfer from that portal.",
-          verdict:"partial", points:3, goTo:"s_pushback",
-          consequence:"Katy: Okay. Anything I need to do on the Wix side first?\n\nExpert: Yes — cancel the domain's auto-renewal in Wix before you start.\n\nKaty: Good to know." },
+        { id:"A", text:"Alright here are the steps for a .com.br:\n1) Cancel the domain's auto-renewal in the Wix account.\n2) Update the registrant information at Registro.br.\n3) Then initiate the transfer from your Registro.br account (not from Wix).\n4) Accept and complete it on the GoDaddy side.\n\nLet me know if you have any questions about this process.",
+          verdict:"correct", points:5, goTo:"s_solve3",
+          consequence:"Katy: Got it. That's clear." },
+        { id:"B", text:"You'll actually do it from Registro.br! Go ahead and update the registrant info there and start the transfer from that portal. Let me know if you have any questions about this.",
+          verdict:"partial", points:3, goTo:"s_solve3",
+          consequence:"Katy: Okay. Sounds good." },
         { id:"C", text:"Just cancel the domain in Wix and re-register it at GoDaddy.",
-          verdict:"incorrect", points:0, goTo:"s_pushback",
-          consequence:"Katy: I don't want to drop it and risk losing the name — I want to transfer it, not delete it." }
+          verdict:"incorrect", points:0, goTo:"s_solve3",
+          consequence:"Katy: I don't want to drop it and risk losing the name. I want to transfer it, not delete it." }
       ]
     },
 
     s_pushback: {
       stage:"solve", gate:true,
-      speaker:"Katy: One thing though — the Wix help article I skimmed said you get an EPP code from Wix and it takes about 7 days. Doesn't that apply here?",
-      prompt:"How do you respond?",
+      speaker:"Katy: Wait, the Wix article mentions getting an EPP code and waiting for an authorization email. Do I need that code?",
+      prompt:"How do you clarify the process?",
       choices:[
-        { id:"A", text:"The timeline part holds, but the EPP part is the standard flow for most domains. A .com.br is handled through Registro.br, so you won't get an EPP code from Wix. That's why we're starting it at Registro.br instead.",
-          verdict:"correct", points:4, goTo:"s_solve3",
-          consequence:"Katy: Makes sense — good thing I asked before following the generic steps." },
-        { id:"B", text:"That article is more of a general guide — for a .br, go with the Registro.br steps I gave you.",
-          verdict:"partial", points:2, goTo:"s_solve3",
+        { id:"A", text:"Good catch. The EPP flow is for most domains, but a .com.br goes through Registro.br, so Wix won\u2019t send a code.",
+          verdict:"correct", points:3, goTo:"s_solve4",
+          consequence:"Katy: Makes sense. Good thing I asked before following the generic steps." },
+        { id:"B", text:"That article is more of a general guide. For a .br, go with the Registro.br steps I gave you.",
+          verdict:"partial", points:2, goTo:"s_solve4",
           consequence:"Katy: Okay, I'll trust the .br-specific steps." },
-        { id:"C", text:"Yes — grab the EPP code from Wix and hand it to GoDaddy, and you're all set.",
-          verdict:"incorrect", points:0, goTo:"s_solve3",
-          consequence:"Katy: But you just said this one starts at Registro.br — now I'm confused about which it is." }
+        { id:"C", text:"Yes, grab the EPP code from Wix and hand it to GoDaddy, and you're all set.",
+          verdict:"incorrect", points:0, goTo:"s_solve4",
+          consequence:"Katy: But you just said this one starts at Registro.br. Now I'm confused about which it is." }
       ]
     },
 
     s_solve3: {
       stage:"solve", gate:true,
-      speaker:"Katy: And how long once it's actually underway? Can I cancel if the client changes their mind?",
-      prompt:"How do you set expectations?",
+      speaker:"Katy: Just to double-check, there\u2019s nothing else I need to handle on the Wix side before I go to Registro.br?",
+      prompt:"How do you advise Katy regarding Wix account settings?",
       choices:[
-        { id:"A", text:"A transfer usually takes up to 7 days to complete, and it may show as pending in the meantime, which is normal. Once it's started, Wix can't track its status, so check progress with GoDaddy. If the client changes their mind, contact GoDaddy to reject the incoming transfer.",
-          verdict:"correct", points:4, goTo:"s_close",
+        { id:"A", text:"Cancel the domain\u2019s auto-renewal in Wix before you start, so the client isn\u2019t charged mid-transfer.",
+          verdict:"correct", points:3, goTo:"s_pushback",
+          consequence:"Katy: Good to know. Glad I asked." },
+        { id:"B", text:"Nope, once you update the necessary info on Registro.br and initiate the transfer, everything will be sorted on the Wix side.",
+          verdict:"incorrect", points:0, goTo:"s_pushback",
+          consequence:"Katy: Really? I\u2019d hate for the client to get billed for a renewal mid-transfer. I\u2019ll check auto-renewal anyway." },
+        { id:"C", text:"Just turn off auto-renewal in Wix whenever you get a chance. It won\u2019t affect the transfer either way.",
+          verdict:"partial", points:1, goTo:"s_pushback",
+          consequence:"Katy: Whenever? Wouldn\u2019t it matter if it renews while the transfer\u2019s pending? I\u2019ll do it first to be safe." }
+      ]
+    },
+
+    s_solve4: {
+      stage:"solve", gate:true,
+      speaker:"Katy: How long does the transfer usually take, and what happens if my client changes their mind?",
+      prompt:"How do you explain the timeline and tracking?",
+      choices:[
+        { id:"A", text:"It usually takes up to 7 days and may show as pending. GoDaddy can track it from there, and they can also reject it if the client changes their mind.",
+          verdict:"correct", points:3, goTo:"s_close",
           consequence:"Katy: Perfect, that's what I needed. Thanks for being precise about it." },
         { id:"B", text:"It usually takes up to 7 days, so keep an eye out for the confirmation.",
           verdict:"partial", points:2, goTo:"s_close",
@@ -651,16 +657,16 @@ window.SCENARIO = {
     },
 
     s_close: {
-      stage:"open", gate:true,
-      prompt:"How do you close?",
+      stage:"open", gate:false,
+      prompt:"How do you close the conversation?",
       choices:[
-        { id:"A", text:"To recap: this is a .com.br, so you'll update the registrant info and start the transfer at Registro.br — not Wix — after cancelling auto-renewal in the Wix account, then finish it on GoDaddy's side. It usually takes up to 7 days, and GoDaddy is where you'll track it. Anything else I can help with?",
+        { id:"A", text:"To recap: cancel auto-renewal in Wix, start the transfer at Registro.br, then accept it in GoDaddy. Allow up to 7 days. Anything else I can help with?",
           verdict:"correct", points:5, goTo:"__end__",
-          consequence:"Katy: That's everything — really clear, thank you!" },
-        { id:"B", text:"You're all set — start it from Registro.br and reach out if you hit a snag. Have a great one!",
+          consequence:"Katy: That's everything: really clear, thank you!" },
+        { id:"B", text:"You're all set. Start it from Registro.br and reach out if you come accross any roadblocks. Have a great one!",
           verdict:"partial", points:3, goTo:"__end__",
           consequence:"Katy: Thanks!" },
-        { id:"C", text:"Great, you should be good — keep this chat open in case the transfer fails.",
+        { id:"C", text:"Great, you should be all set! Keep this chat open in case anything fails along the way.",
           verdict:"incorrect", points:0, goTo:"__end__",
           consequence:"Katy: Um, okay?" }
       ]

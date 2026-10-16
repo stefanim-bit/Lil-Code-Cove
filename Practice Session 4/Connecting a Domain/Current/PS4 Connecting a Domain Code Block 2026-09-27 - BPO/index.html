@@ -364,10 +364,10 @@ window.SCENARIO = {
   title: "Practice Call - Domains: Connecting a Domain",
 
   user: {
-    name: "Marcus",
-    image: "Marcus/Marcus_Meet.png",
-    completeImage: "Marcus/Marcus_Close.png",
-    bio: "Marcus wants to connect his domain. In this activity, you'll simulate a chat with him. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!"
+    name: "Jordan",
+    image: "Jordan/Jordan_Meet.png",
+    completeImage: "Jordan/Jordan_Close.png",
+    bio: "Jordan wants to connect his domain. In this activity, you'll simulate a chat with him. Click *“Check Resources”* to view internal and external help documents at any point during the interaction. Let's begin!"
   },
 
   resources: {
@@ -386,20 +386,20 @@ window.SCENARIO = {
 
   stages: [
     { id:"open", name:"Opening & closing", max:5,
-      strength:"You greeted Marcus professionally, verified his details, and closed with a clear recap and offer of further help.",
-      improvement:"Greet Marcus warmly, verify account details, and close with a recap and next steps." },
+      strength:"You greeted Jordan professionally and closed with a clear recap and offer of further help.",
+      improvement:"Greet Jordan warmly and close with a recap and next steps." },
     { id:"dynamics", name:"Use Dynamics", max:10,
-      strength:"You looked up Marcus in User Manager to verify his account and proactively checked his site's plan status.",
-      improvement:"Look Marcus up in User Manager to confirm his account and check whether his target site has an active Premium plan." },
+      strength:"You looked up Jordan in User Manager to verify his account and proactively checked his site's plan status.",
+      improvement:"Look Jordan up in User Manager to confirm his account and check whether his target site has an active Premium plan." },
     { id:"familiarize", name:"Familiarize", max:10,
-      strength:"You asked a meaningful question connecting to Marcus's non-profit, Housing Our Parents, establishing great rapport.",
-      improvement:"Ask a familiarization question that connects directly to the user's site purpose or business goals." },
+      strength:"You asked a question that helped you get to know Jordan, whether that was his experience with domains or his non-profit, Housing Our Parents. This built rapport and helped you adjust your guidance to fit him.",
+      improvement:"Ask a question that helps you get to know the user, such as their experience with the task or the purpose of their site, and use their answer to shape how you guide them." },
     { id:"clarify", name:"Clarify the issue", max:15,
-      strength:"You clarified the domain host (GoDaddy), connection method (Name Servers vs. Pointing), and checked for existing email/DNS records.",
+      strength:"You clarified the domain host (GoDaddy), if the user has access to that domain, their preferred connection method (NS vs. Pointing), and checked for existing email/DNS records.",
       improvement:"Clarify whether the user wants to connect or transfer, identify their domain host, and check for existing DNS/email records before choosing a connection method." },
     { id:"roadmap", name:"Roadmapping", max:10,
-      strength:"You clearly outlined your step by step plan (checking Whois/DNSSEC, account plan, and GoDaddy setup) before taking action.",
-      improvement:"Provide a clear step by step roadmap so the user knows what diagnostic checks and actions you are performing." },
+      strength:"You clearly outlined your step-by-step plan (checking Whois/DNSSEC, account plan, and GoDaddy setup) before taking action.",
+      improvement:"Provide a clear step-by-step roadmap so the user knows what diagnostic checks and actions you are performing." },
     { id:"recreate", name:"Recreate the issue", max:10,
       strength:"You ran a Whois lookup to verify the domain was active and confirmed DNSSEC was unsigned before guiding the connection.",
       improvement:"Use Whois or diagnostic tools to confirm domain status, expiration, and DNSSEC status before providing setup steps." },
@@ -407,7 +407,7 @@ window.SCENARIO = {
       strength:"You consulted the correct CSI articles for Name Server connections rather than relying on memory or transfer guides.",
       improvement:"Open 'Connecting a Domain to the Wix Name Servers' and 'Domains: How to recognize a healthy domain connection: Name Servers' to confirm the exact steps." },
     { id:"solve", name:"Solve the issue", max:20, additive:true,
-      strength:"You informed Marcus of the Premium plan requirement, guided him through adding the domain in Wix and updating GoDaddy Name Servers, and set 48-hour propagation expectations.",
+      strength:"You guided Jordan through adding the domain in Wix and updating GoDaddy Name Servers, and set 48-hour propagation expectations.",
       improvement:"Ensure the site is Premium first, walk through adding the domain in Wix, guide Name Server replacement on GoDaddy, and explain the 48-hour propagation period." }
   ],
 
@@ -415,63 +415,63 @@ window.SCENARIO = {
   screens: {
 
     s_open: {
-      stage:"open", gate:true,
-      speaker:"Hi! I’m having trouble connecting my domain to my Wix site.",
+      stage:"open", gate:false,
+      speaker:"Hi! I'm having trouble connecting my domain to my Wix site.",
       prompt:"How do you open the conversation?",
       choices:[
-        { id:"A", text:"Hi Marcus! Login to GoDaddy now, change your A record to 185.230.63.107, and point your CNAME to Wix.",
+        { id:"A", text:"Hi Jordan! Log in to GoDaddy now, change your A record to 185.230.63.107, and point your CNAME to Wix.",
           verdict:"incorrect", points:0, goTo:"s_familiarize",
-          consequence:"Marcus: I have no idea what any of that means.\n\nExpert: Actually, let me slow down a bit and take it one step at a time. Please allow me one moment." },
-        { id:"B", text:"Hey Marcus! Connecting custom domains can often be tricky, but I can see what is happening on your site.",
+          consequence:"Jordan: I have no idea what any of that means.\n\nExpert: Actually, let me slow down a bit and take it one step at a time. Please allow me one moment." },
+        { id:"B", text:"Hey Jordan, thanks for reaching out! Connecting custom domains can often be tricky, but I can take a look at what is happening on your site.",
           verdict:"partial", points:3, goTo:"s_familiarize",
-          consequence:"Marcus: Yea... hopefully it's one of those things you set and forget." },
-        { id:"C", text:"Hi Marcus, thanks for reaching out to Wix Customer Care. My name is [Name], and I'd be glad to help you today. Domains can be tricky but I'll help you get it sorted!",
+          consequence:"Jordan: Yea... hopefully it's one of those things you set and forget." },
+        { id:"C", text:"Hi Jordan, thanks for reaching out to Wix Customer Care. My name is [Name], and I'd be glad to help you today. Domains can be tricky but I'll help you get it sorted!",
           verdict:"correct", points:5, goTo:"s_familiarize",
-          consequence:"Marcus: Thank you!" }
+          consequence:"Jordan: Thank you!" }
       ]
     },
 
     s_familiarize: {
-      stage:"familiarize", gate:true,
+      stage:"familiarize", gate:false,
       prompt:"What do you say?",
       choices:[
-        { id:"A", text:"How long have you owned this domain name?",
+        { id:"A", text:"I can certainly help with that! How long have you owned this domain name with your current registrar?",
           verdict:"partial", points:5, goTo:"s_clarify",
-          consequence:"Marcus: About two weeks. I bought it during a sale.\n\nExpert: Nice!",
+          consequence:"Jordan: About two weeks. I bought it during a sale.\n\nExpert: Nice!",
           credits:[{ stage:"clarify", points:5, verdict:"partial" }] },
-        { id:"B", text:"We can definitely get this linked! Is your site currently published?",
+        { id:"B", text:"We can definitely get this connected for you today! Is your Wix site currently published and ready?",
           verdict:"partial", points:5, goTo:"s_clarify",
-          consequence:"Marcus: Yes it's published.\n\nExpert: Amazing! Already a step in the right direction to making sure this reaches your audience!",
+          consequence:"Jordan: Yes it's published.\n\nExpert: Amazing! Already a step in the right direction to making sure this reaches your audience!",
           credits:[{ stage:"clarify", points:5, verdict:"partial" }] },
-        { id:"C", text:"Have you ever connected a domain before?",
+        { id:"C", text:"We'll get this sorted out step-by-step! Have you ever connected a domain to a website before?",
           verdict:"correct", points:10, goTo:"s_clarify",
-          consequence:"Marcus: No, never.\n\nExpert: Rest assured we'll do it step by step together and then you'll be a pro! Let me know if you have any questions along the way." },
-        { id:"D", text:"I see you're setting up housingourparents.org. Could you tell me a bit more about your organization and what services you provide?",
+          consequence:"Jordan: No, never.\n\nExpert: Rest assured we'll do it step-by-step together and then you'll be a pro! You let me know if you have any questions along the way." },
+        { id:"D", text:"I see your domain says something about housing parents. Could you tell me a bit more about your organization's mission?",
           verdict:"correct", points:10, goTo:"s_clarify",
-          consequence:"Marcus: We're a non-profit helping senior citizens find affordable housing and community resources in our state. We're launching our official site this week!\n\nExpert: That sounds like an amazing cause! We'll make sure to get your domain set up smoothly so people can find your site easily." },
-        { id:"E", text:"Please allow me 2 to 3 minutes on hold while I look into your account and review what can be done to resolve this.",
+          consequence:"Jordan: We're a non-profit helping senior citizens find affordable housing and community resources in our state. We're launching our official site this week!\n\nExpert: That sounds like an amazing cause! We'll make sure to get your domain set up smoothly so people can find your site easily." },
+        { id:"E", text:"Please allow me 2 to 3 minutes on hold while I check your account details and see what needs to be done.",
           verdict:"incorrect", points:0, goTo:"s_clarify",
-          consequence:"Marcus: Sure." }
+          consequence:"Jordan: Sure." }
       ]
     },
 
     s_clarify: {
-      stage:"clarify", gate:true,
-      speaker:"Google says I have to update my domain records but I don’t know where to do that.",
+      stage:"clarify", gate:false,
+      speaker:"Google says I have to update my domain records but I don't know where to do that.",
       prompt:"What do you ask?",
       choices:[
-        { id:"A", text:"Can you please clarify if you mean connecting a domain or transferring a domain?",
+        { id:"A", text:"Gotcha. Can you please clarify if you mean connecting a domain or transferring a domain?",
           verdict:"correct", points:15, goTo:"s_dynamics",
-          consequence:"Marcus: Connect a domain." },
-        { id:"B", text:"Can you please clarify if you mean to connect a domain or to update settings?",
-          verdict:"partial", points:8, goTo:"s_dynamics",
-          consequence:"Marcus: Connect a domain." },
-        { id:"C", text:"Ok! Did you try going to Domains in your Wix account, selecting the domain, then choosing Manage DNS Records?",
+          consequence:"Jordan: Connect a domain." },
+        { id:"B", text:"Ok, got it. Can you please clarify if you mean to connect a domain or to update settings?",
           verdict:"partial", points:8, goTo:"s_dynamics", retry:true, capIfRetried:10,
-          consequence:"Marcus: Yes but it's not there." },
-        { id:"D", text:"Can you please send a screenshot or exact text of any error you see? Also let me know when you last updated its DNS settings.",
+          consequence:"Jordan: Connect a domain." },
+        { id:"C", text:"Did you try going to Domains in your Wix account, selecting the domain, then choosing Manage DNS Records?",
+          verdict:"partial", points:8, goTo:"s_dynamics", retry:true, capIfRetried:10,
+          consequence:"Jordan: Yes but it's not there." },
+        { id:"D", text:"When did you last update your DNS settings?",
           verdict:"partial", points:10, goTo:"s_dynamics",
-          consequence:"Marcus: No, there's no error. And I've never updated DNS settings, I think that's what I need your help with." }
+          consequence:"Jordan: I've never updated DNS settings, I think that's what I need your help with." }
       ]
     },
 
@@ -479,86 +479,83 @@ window.SCENARIO = {
       stage:"dynamics", gate:true,
       prompt:"What do you say next?",
       choices:[
-        { id:"A", text:"I can help with that. Can you please share the domain name and where you purchased it from?",
-          verdict:"partial", points:5, goTo:"s_dynamics2",
-          consequence:"Marcus: The domain is housingourparents.org. I bought it from GoDaddy.",
+        { id:"A", text:"I can help with that. Can you please confirm your domain name and where you purchased it from?",
+          verdict:"correct", points:10, goTo:"s_dynamics2",
+          consequence:"Jordan: The domain is housingourparents.org. I bought it from GoDaddy.",
           credits:[{ stage:"clarify", points:8, verdict:"partial" }] },
         { id:"B", text:"To help you with this, I'll need to send you to a specialized team that deals with these kinds of cases.",
-          verdict:"incorrect", points:0, goTo:"s_roadmap",
-          consequence:"Marcus: Aw man ok." }
+          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:8,
+          consequence:"Jordan: Aw man ok." }
       ]
     },
 
     s_dynamics2: {
       stage:"dynamics", gate:true,
-      speaker:"Expert: Ok, and which site are you trying to connect it to?\n\nMarcus: My Site 1",
+      speaker:"Expert: Ok, and which site are you trying to connect it to?\n\nJordan: My Site 1",
       prompt:"What do you say?",
       choices:[
-        { id:"A", text:"[Action] Look Marcus up in the Overview tab.",
-          verdict:"partial", points:5, goTo:"s_roadmap",
+        { id:"A", text:"[Action] Look up Jordan in Overview Tab.",
+          verdict:"partial", points:5, goTo:"s_roadmap", retry:true, capIfRetried:8,
           consequence:"(You open the Overview tab.)" },
-        { id:"B", text:"[Action] Look Marcus up in User Manager.",
+        { id:"B", text:"[Action] Find Jordan's active sites in User Manager.",
           verdict:"correct", points:10, goTo:"s_roadmap",
-          consequence:"(You open User Manager. My Site 1 is published on a Free plan, no Premium plan attached, and the domain isn't added in Wix yet.)",
-          image:{ src:"Scenario Screenshots/User Manager.png" }, showsImageAfter:true },
+          consequence:"(You open User Manager. My Site 1 is published on a Free plan, no Premium plan attached, and the domain isn't added in Wix yet.)" },
         { id:"C", text:"[Action] Open housingourparents.org in a browser tab to see if it loads.",
-          verdict:"incorrect", points:0, goTo:"s_roadmap",
-          consequence:"(The site opens without issues.)" }
+          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:5,
+          consequence:"(The site cannot be reached: DNS_PROBE_FINISHED_NXDOMAIN.)" }
       ]
     },
 
     s_roadmap: {
-      stage:"roadmap", gate:false,
-      speaker:"Expert: Ok, understood.\n\nMarcus: Okay, so what now?",
+      stage:"roadmap", gate:true,
+      speaker:"Expert: Ok, understood.\n\nJordan: Okay, so what now?",
       prompt:"What's next?",
       choices:[
-        { id:"A", text:"Ok let's have you log into GoDaddy right now and look for the DNS records tab. We'll get you set up there first and then make sure everything is mirroring correctly on the Wix side.",
-          verdict:"partial", points:5, goTo:"s_recreate",
-          consequence:"Marcus: Okay, I'm logged in. What do I click?" },
-        { id:"B", text:"Please place yourself on a brief hold for 3 to 5 minutes while I look up your domain settings and figure out our best plan of action.",
-          verdict:"incorrect", points:0, goTo:"s_recreate" },
-        { id:"C", text:"Before we begin, please note that your site My Site 1 must be upgraded with a plan to connect a domain. I see that it currently does not have an active plan. You can upgrade your site here. Then we can pick back up with connecting your domain.",
+        { id:"A", text:"Let's start by having you log into GoDaddy to check your DNS settings tab, and then we'll review what records need to be updated together.",
+          verdict:"partial", points:5, goTo:"s_recreate", retry:true, capIfRetried:8 },
+        { id:"B", text:"I'm going to place you on a brief hold for 3 to 5 minutes while I look up your domain records and figure out our best plan of action.",
+          verdict:"incorrect", points:0, goTo:"s_recreate", retry:true, capIfRetried:8 },
+        { id:"C", text:"Before we jump into to connecting your domain, you must be upgraded with a Premium plan. I see that My Site 1 currently doesn't have an active plan. Let's start by updating that, then we can pick back up and I'll do one check on my end before we update GoDaddy together.",
           verdict:"correct", points:10, goTo:"s_recreate",
-          consequence:"Marcus: Ok no problem. Yes please wait here, let me do that really quick.\n\nExpert: Ok let me know when you're done please." }
+          consequence:"Jordan: Ok no problem. Yes please wait here, let me do that really quick.\n\nExpert: Ok let me know when you're done please." }
       ]
     },
 
     s_recreate: {
-      stage:"recreate", gate:true,
-      prompt:"While Marcus is upgrading his site, what can you do or say?",
+      stage:"recreate", gate:false,
+      prompt:"While Jordan is upgrading his site, what can you do or say?",
       choices:[
         { id:"A", text:"[Action] Open housingourparents.org in a browser tab to see if it loads.",
           verdict:"partial", points:5, goTo:"s_clarify2",
           consequence:"(The site cannot be reached: DNS_PROBE_FINISHED_NXDOMAIN.)" },
-        { id:"B", text:"[Action] Direct Marcus to also disable DNSSEC in GoDaddy as soon as possible.",
+        { id:"B", text:"[Action] Direct Jordan to also disable DNSSEC in GoDaddy as soon as possible.",
           verdict:"incorrect", points:0, goTo:"s_clarify2", retry:true, capIfRetried:5,
-          consequence:"Marcus: I checked my GoDaddy DNS settings and DNSSEC isn't even turned on. Do I still need to change it?" },
-        { id:"C", text:"[Action] Perform a Whois lookup on housingourparents.org to check domain status, expiration, and DNSSEC status.",
+          consequence:"Jordan: I checked my GoDaddy DNS settings and DNSSEC isn't even turned on. Do I still need to change it?" },
+        { id:"C", text:"[Action] Perform Whois lookup on housingourparents.org to check domain status, expiration, and DNSSEC status.",
           verdict:"correct", points:10, goTo:"s_clarify2",
-          consequence:"(Whois shows the domain is Active, expires next year, and DNSSEC is Unsigned (disabled). The domain is healthy for a Name Server connection.)",
-          image:{ src:"Scenario Screenshots/Whois Lookup.png" }, showsImageAfter:true }
+          consequence:"(Whois shows the domain is Active, expires next year, and DNSSEC is Unsigned (disabled). The domain is healthy for a Name Server connection.)" }
       ]
     },
 
     s_clarify2: {
-      stage:"clarify", gate:true,
+      stage:"clarify", gate:false,
       speaker:"Ok done!",
       prompt:"What do you ask next?",
       choices:[
         { id:"A", text:"Great! What connection method did you choose?",
           verdict:"partial", points:10, goTo:"s_article",
-          consequence:"Marcus: I haven't chosen one yet. I don't really know the difference! Which one do you recommend?" },
+          consequence:"Jordan: I haven't chosen one yet. I don't really know the difference! Which one do you recommend?" },
         { id:"B", text:"Great! Can you please provide your GoDaddy EPP/Authorization code for us to start moving the domain over?",
           verdict:"incorrect", points:0, goTo:"s_article", retry:true, capIfRetried:8,
-          consequence:"Marcus: Wait, though. Google said I could just connect it without transferring registration. Do I have to provide EPP for just connecting it?\n\nExpert: You're right, you don't need an EPP or authorization code for this." },
+          consequence:"Jordan: Wait, though. Google said I could just connect it without transferring registration. Do I have to provide EPP for just connecting it?\n\nExpert: You're right, you don't need an EPP or authorization code for this." },
         { id:"C", text:"Great! Are you trying to connect via Name Servers or Pointing?",
           verdict:"correct", points:15, goTo:"s_article",
-          consequence:"Marcus: Well, I don't really know the difference! Which one do you recommend?" }
+          consequence:"Jordan: Well, I don't really know the difference! Which one do you recommend?" }
       ]
     },
 
     s_article: {
-      stage:"article", gate:true,
+      stage:"article", gate:false,
       speaker:"(You open CSI.)", speakerIf:"resourceOpened",
       prompt:"What do you check next?",
       choices:[
@@ -566,81 +563,81 @@ window.SCENARIO = {
           verdict:"correct", points:20, goTo:"s_solve" },
         { id:"B", text:"[Action] Reply using “Domain Transfers” and “Domain Registration” articles.",
           verdict:"incorrect", points:0, goTo:"s_solve" },
-        { id:"C", text:"[Action] Reply using “Domains: How to recognize a healthy domain connection: Name Servers.”",
-          verdict:"correct", points:20, goTo:"s_solve" },
-        { id:"D", text:"Recommend the Name Servers method since that's usually the way to go.",
-          verdict:"partial", points:10, goTo:"s_solve" }
+        { id:"C", text:"[Action] Reply using “Known Issues connecting externally registered domains.”",
+          verdict:"partial", points:10, goTo:"s_solve" },
+        { id:"D", text:"[Action] Reply using “Domains: How to recognize a healthy domain connection: Name Servers.”",
+          verdict:"correct", points:20, goTo:"s_solve" }
       ]
     },
 
     s_solve: {
-      stage:"solve", gate:true,
-      prompt:"How do you guide Marcus through resolving the issue?",
+      stage:"solve", gate:false,
+      prompt:"How do you guide Jordan through resolving the issue?",
       choices:[
-        { id:"A", text:"It depends! Do you have any active business emails (like Office 365) attached to this domain?",
+        { id:"A", text:"It depends on your current setup. Do you have active business email accounts (like Google Workspace or Office 365) hosted on it?",
           verdict:"correct", points:4, goTo:"s_solve2",
-          consequence:"Marcus: No, we don't have any custom business email set up on it yet.\n\nExpert: Ok, then I recommend the Name Servers method because it lets you manage your DNS records directly in your Wix account with easier access to Wix features.",
+          consequence:"Jordan: No, we don't have any custom business email setup on it yet.\n\nExpert: Ok, then I recommend the Name Servers method because it allows you to manage your DNS records directly in your Wix account and easier access to Wix features.",
           credits:[{ stage:"clarify", points:8, verdict:"partial" }] },
-        { id:"B", text:"I recommend the Name Servers method because it lets you manage your DNS records directly in your Wix account, though Pointing is also an option if you have complex records you'd prefer not to move.",
+        { id:"B", text:"I recommend the Name Servers method so you can easily manage all your DNS records and Wix features directly inside your account.",
           verdict:"correct", points:4, goTo:"s_solve2",
-          consequence:"Marcus: Ok let's do that! We don't have any complex records that I know of.\n\nExpert: Alrighty, let's walk through the necessary steps for this together." },
+          consequence:"Jordan: Ok let's do that! We don't have any complex records that I know of.\n\nExpert: Alrighty, let's walk through the necessary steps for this together." },
         { id:"C", text:"It's totally up to you! I can walk you through either option.",
           verdict:"partial", points:2, goTo:"s_solve2",
-          consequence:"Marcus: Ok, let's just do Name Servers.\n\nExpert: Alrighty, let's walk through the necessary steps for this together." },
+          consequence:"Jordan: Ok, let's just do Name Servers.\n\nExpert: Alrighty, let's walk through the necessary steps for this together." },
         { id:"D", text:"I recommend Pointing due to the nature of your business. It's best not to make many large changes to your records.",
           verdict:"incorrect", points:0, goTo:"s_solve2",
-          consequence:"Marcus: Sounds good to me! Thanks for the help.\n\nExpert: No problem! Let's walk through this together." }
+          consequence:"Jordan: I mean, I really don't have any records that are too complex or anything like that. If there's an option where I can manage everything in my Wix account that would be great.\n\nExpert: Yes actually, then I recommend the Name Servers method because it allows you to manage your DNS records directly in your Wix account." }
       ]
     },
 
     s_solve2: {
       stage:"solve", gate:true,
-      speaker:"So what exact steps do I need to take to get this connected?",
       prompt:"How do you respond?",
       choices:[
         { id:"A", text:"Now that you've logged into GoDaddy 1. Go ahead and unlock the domain 2. Grab the EPP code 3. Paste it into the Wix Domains tab to complete the connection.",
           verdict:"incorrect", points:0, goTo:"s_solve3",
-          consequence:"Marcus: Wait, isn't that for transferring registration? I thought we were just connecting via Name Servers." },
-        { id:"B", text:"Now that you've upgraded, follow these steps: 1. Go to Domains in Wix, then Connect a domain you already own. 2. Enter housingourparents.org and select Name Servers. Then open a new tab and log into GoDaddy to complete the next set of steps.",
-          verdict:"correct", points:8, goTo:"s_solve3",
-          consequence:"Marcus: Alrighty, followed those steps on Wix. Going back to GoDaddy now.\n\nExpert: Great. Click My Products, then DNS, then Nameservers, then Enter my own name servers. Finally, replace the GoDaddy nameservers with the two Wix name servers shown on the Wix tab.\n\nMarcus: Done. It now shows the Wix nameservers saved on GoDaddy! All good then?",
+          consequence:"Jordan: Wait, isn't that for transferring registration? I thought we were just connecting via Name Servers.\n\nExpert: You're right, my apologies! No EPP code is needed to connect. In Wix, go to Domains > Connect a domain you already own, enter housingourparents.org and select Name Servers. Then in GoDaddy, go to My Products > DNS > Nameservers > Enter my own name servers, and replace them with the 2 Wix Name Servers shown on the Wix tab.\n\nJordan: Ok, done. It now shows the Wix name servers saved on GoDaddy! All good then?",
           image:{ src:"Scenario Screenshots/Replace Nameservers.png" }, showsImageAfter:true },
-        { id:"C", text:"Great job! 1. On your GoDaddy DNS page, add an 'A Record' pointing to 185.230.63.107 2. Next, add a CNAME record for 'www' pointing to pointing.wixdns.net, 3. Then, save and let me know when that's done!",
+        { id:"B", text:"Now that your site is upgraded, follow these steps: 1. Go to Domains in Wix > Connect a domain you already own. 2. Enter housingourparents.org and select Name Servers. Then, open a new tab and log into GoDaddy to complete the next set of steps.",
+          verdict:"correct", points:8, goTo:"s_solve3",
+          consequence:"Jordan: Alrighty, followed those steps on Wix. Going back to GoDaddy now.\n\nExpert: Great. Click My Products > DNS > Nameservers > Enter my own name servers. Finally, replace the GoDaddy nameserver with the 2 Wix Name Servers shown on the Wix tab.\n\nJordan: Done. It now shows the Wix name servers saved on GoDaddy! All good then?",
+          image:{ src:"Scenario Screenshots/Replace Nameservers.png" }, showsImageAfter:true },
+        { id:"C", text:"1. On your GoDaddy DNS page, add an 'A Record' pointing to 185.230.63.107 2. Next, add a CNAME record for 'www' pointing to pointing.wixdns.net, 3. Then, save and let me know when that's done!",
           verdict:"incorrect", points:0, goTo:"s_solve3",
-          consequence:"Marcus: I tried adding those, but it says my Name Servers are still pointing somewhere else. Did I miss something?" }
+          consequence:"Jordan: I tried adding those, but it says my Name Servers are still pointing somewhere else. Did I miss something?\n\nExpert: Sorry about that, those steps were for the Pointing method. Since we're going with Name Servers, let's switch: in Wix, go to Domains > Connect a domain you already own, enter housingourparents.org and select Name Servers. Then in GoDaddy, go to My Products > DNS > Nameservers > Enter my own name servers, and replace them with the 2 Wix Name Servers shown on the Wix tab.\n\nJordan: Ok, that worked. The Wix name servers are saved on GoDaddy now! All good then?",
+          image:{ src:"Scenario Screenshots/Replace Nameservers.png" }, showsImageAfter:true }
       ]
     },
 
     s_solve3: {
-      stage:"solve", gate:true,
-      speaker:"I updated the Name Servers in GoDaddy! How long until my live site shows up?",
+      stage:"solve", gate:false,
       prompt:"What do you say next?",
       choices:[
-        { id:"A", text:"It should start working as we speak! Try refreshing your browser a few times, and let me know how it looks on your end.",
+        { id:"A", text:"Great job! The changes save instantly and should work right away. Try refreshing your browser a few times and let me know if your live site loads on your end!",
           verdict:"incorrect", points:0, goTo:"s_close",
-          consequence:"Marcus: I refreshed and it still says site not found. Is it broken?" },
-        { id:"B", text:"Great job! Click 'I've replaced my nameservers' and you're all set. DNS changes can take up to 48 hours to fully propagate worldwide, though it's often faster. You can track progress anytime on whatsmydns.net.",
+          consequence:"Jordan: I refreshed and it still says site not found. Is it broken?\n\nExpert: Not broken at all, my apologies for the confusion! Name server changes aren't instant. In Wix, click “I've replaced my name servers.” DNS changes can take up to 48 hours to propagate worldwide, and you can track progress on whatsmydns.net.\n\nJordan: Oh okay, that's a relief. Thanks for clarifying!" },
+        { id:"B", text:"Great job! Click \"I've replaced my name servers\" in Wix. DNS changes can take up to 48 hours to propagate worldwide, and you can track progress on whatsmydns.net.",
           verdict:"correct", points:8, goTo:"s_close",
-          consequence:"Marcus: Awesome, that makes total sense! Thanks for walking me through that." },
-        { id:"C", text:"It takes about 48 hours max to process this request. If you haven't seen any movement by then, just reach back out and we'll take another look together.",
+          consequence:"Jordan: Awesome, that makes total sense! Thanks for walking me through that." },
+        { id:"C", text:"Great job! It usually takes up to 48 hours to complete propagation. If your site still doesn't appear after that window, feel free to reach back out to us.",
           verdict:"partial", points:3, goTo:"s_close",
-          consequence:"Marcus: Okay, I'll wait a bit and check back." }
+          consequence:"Jordan: Okay, I'll wait a bit and check back." }
       ]
     },
 
     s_close: {
-      stage:"open", gate:true,
+      stage:"open", gate:false,
       prompt:"How do you close?",
       choices:[
-        { id:"A", text:"You're all set! We upgraded to Premium, added the domain in Wix, and replaced your GoDaddy nameservers. Allow up to 48 hours for propagation. Anything else I can help with?",
+        { id:"A", text:"You're all set! You upgraded to a Premium plan, added the domain in Wix, and replaced your GoDaddy nameservers. Allow up to 48 hours for propagation. Anything else I can help with?",
           verdict:"correct", points:5, goTo:"__end__",
-          consequence:"Marcus: Nope, you covered everything clearly! Thanks a ton for your help!" },
-        { id:"B", text:"Glad we could get your domain connected today, Marcus! Allow a little time for the changes to update, and reach back out if you need more help.",
+          consequence:"Jordan: Nope, you covered everything clearly! Thanks a ton for your help!" },
+        { id:"B", text:"Glad we could get your domain connected today, Jordan! Allow a little time for the changes to update, and reach back out if you need more help.",
           verdict:"partial", points:3, goTo:"__end__",
-          consequence:"Marcus: Thanks, bye." },
+          consequence:"Jordan: Thanks, bye." },
         { id:"C", text:"Everything should be saved on both ends now! Feel free to keep this chat window open in case the connection fails or runs into any errors.",
           verdict:"incorrect", points:0, goTo:"__end__",
-          consequence:"Marcus: Um, okay?" }
+          consequence:"Jordan: Um, okay?" }
       ]
     }
 
