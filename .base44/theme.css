@@ -1,17 +1,17 @@
 /* Preview-only purple theme for the home page and folder listings. Injected by nginx; scenario files are not touched. */
-html { min-height: 100%; background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 45%, #c084fc 100%) fixed; }
+html { min-height: 100%; background: linear-gradient(135deg, #ddd6fe 0%, #e9d5ff 50%, #f5e8ff 100%) fixed; }
 body {
   font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   max-width: 800px; margin: 32px auto; padding: 28px 32px 32px;
   background: #fff; color: #1c1f26; border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(46, 16, 101, .45);
+  box-shadow: 0 12px 40px rgba(109, 40, 217, .18);
 }
 h1 {
   font-size: 28px; margin: 0 0 8px;
   background: linear-gradient(90deg, #6d28d9, #c026d3); -webkit-background-clip: text; background-clip: text;
   color: transparent; -webkit-text-fill-color: transparent;
 }
-hr { border: 0; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #7c3aed, #ec4899, #f59e0b); margin: 14px 0; }
+hr { border: 0; height: 2px; background: #000; margin: 14px 0; }
 pre { font-family: inherit; font-size: 15px; line-height: 2; }
 pre a {
   display: inline-block; padding: 1px 12px; border-radius: 8px; color: #5b21b6; text-decoration: none; font-weight: 600;
