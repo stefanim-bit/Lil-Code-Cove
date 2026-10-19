@@ -1,0 +1,24 @@
+/* Preview-only purple theme for the home page and folder listings. Injected by nginx; scenario files are not touched. */
+html { min-height: 100%; background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 45%, #c084fc 100%) fixed; }
+body {
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  max-width: 800px; margin: 32px auto; padding: 28px 32px 32px;
+  background: #fff; color: #1c1f26; border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(46, 16, 101, .45);
+}
+h1 {
+  font-size: 28px; margin: 0 0 8px;
+  background: linear-gradient(90deg, #6d28d9, #c026d3); -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+}
+hr { border: 0; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #7c3aed, #ec4899, #f59e0b); margin: 14px 0; }
+pre { font-family: inherit; font-size: 15px; line-height: 2; }
+pre a {
+  display: inline-block; padding: 1px 12px; border-radius: 8px; color: #5b21b6; text-decoration: none; font-weight: 600;
+  background: linear-gradient(90deg, #f3e8ff, #fae8ff);
+}
+pre a:hover { background: linear-gradient(90deg, #7c3aed, #c026d3); color: #fff; }
+.start .ex { background: #f3e8ff !important; border-left-color: #7c3aed !important; }
+.start .no { background: #fdf2f8 !important; border-left-color: #db2777 !important; }
+.start code { background: #f3e8ff; padding: 1px 5px; border-radius: 4px; }
+.start li::marker { color: #7c3aed; font-weight: 700; }
