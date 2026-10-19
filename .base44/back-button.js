@@ -3,7 +3,18 @@
 (function () {
   if (window.__b44back) return;
   window.__b44back = true;
-  if (location.pathname === '/') return; // already home
+  if (location.pathname === '/') {
+    // Front page: show only Assets and Practice Session entries. Everything else (code, docs, config)
+    // is hidden here; the code/reference folder stays reachable at /Code%20and%20Reference/.
+    document.querySelectorAll('pre a').forEach(function (a) {
+      var h = a.getAttribute('href') || '';
+      if (h === 'Assets/' || h.indexOf('Practice%20Session') === 0) return;
+      var n = a.nextSibling;
+      if (n && n.nodeType === 3) n.remove();
+      a.remove();
+    });
+    return;
+  }
 
   var btn = document.createElement('a');
   btn.href = '/';
