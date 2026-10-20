@@ -1,0 +1,623 @@
+{
+ "sheet_title": "PS5 Mailboxes: Gmail Log-In Issues",
+ "meta": {
+  "title": "Mailboxes: Gmail Log-In Issues",
+  "userBio": "Lisa wants to log in to her Gmail account. In this activity, you'll simulate a chat with her. Click *\"Check Resources\"* to view internal and external help documents at any point during the interaction. Let's begin!",
+  "start": "s_open",
+  "assets": [
+   {
+    "key": "asset.user_manager",
+    "value": "placeholder_user_manager",
+    "notes": "Placeholder asset key for Lisa's User Manager view showing the active Google Workspace subscription for momentumslab.com (2 mailboxes)."
+   },
+   {
+    "key": "asset.business_email_admin",
+    "value": "placeholder_business_email_admin",
+    "notes": "Placeholder asset key for the Business Email page with Show User info open: info@momentumslab.com listed next to Admin."
+   }
+  ],
+  "resources": {
+   "title": "Check Resources",
+   "sheet": "Articles",
+   "enabled": true
+  }
+ },
+ "stages": [
+  {
+   "id": "open",
+   "name": "Opening & closing",
+   "max": 5,
+   "strength": "You greeted Lisa warmly, acknowledged how frustrating it is to be locked out, and closed with a clear recap of who her admin is and how to sign in.",
+   "improvement": "Greet Lisa by name with personalized empathy, and close by recapping that info@momentumslab.com is her admin and that she can reset user passwords from Business Email > Manage at Google."
+  },
+  {
+   "id": "dynamics",
+   "name": "Use Dynamics",
+   "max": 10,
+   "strength": "You looked Lisa up in User Manager and confirmed she has an active Google Workspace subscription for momentumslab.com before troubleshooting.",
+   "improvement": "Look the user up in User Manager and check their Business Email subscriptions to confirm the mailbox is Wix-managed and active. Never ask for their password."
+  },
+  {
+   "id": "familiarize",
+   "name": "Familiarize",
+   "max": 10,
+   "strength": "You noticed Momentum's Lab isn't published yet and asked about Lisa's plans, which showed you why she needs her email working.",
+   "improvement": "Ask about the user's business or site goals. Lisa's site isn't published yet, so asking what she's planning for Momentum's Lab builds rapport."
+  },
+  {
+   "id": "clarify",
+   "name": "Clarify the issue",
+   "max": 15,
+   "additive": true,
+   "strength": "You confirmed Lisa meant her Wix business email, not a personal Gmail, then asked for the exact error and whether lisa@momentumslab.com is the Workspace admin.",
+   "improvement": "Don't assume. First ask whether it's a Wix business email or a personal @gmail.com account, then ask for the exact error message and whether the affected mailbox is the Workspace admin."
+  },
+  {
+   "id": "roadmap",
+   "name": "Roadmapping",
+   "max": 10,
+   "strength": "You explained that you'd find the Workspace admin first, since only the admin can reset a user's password, and then walk Lisa through the reset.",
+   "improvement": "Tell the user the plan: confirm which mailbox is the Workspace admin, then use the right reset path for their mailbox. Don't promise timelines or escalate before checking."
+  },
+  {
+   "id": "recreate",
+   "name": "Recreate the issue",
+   "max": 10,
+   "strength": "You checked Business Email > Show User info in Lisa's account and found that info@momentumslab.com is the admin.",
+   "improvement": "Impersonate the user and open Business Email > Show User info to see which mailbox is the admin. Never try to sign in to the user's Google mailbox yourself."
+  },
+  {
+   "id": "article",
+   "name": "Use resources",
+   "max": 20,
+   "strength": "You used 'Google Workspace: Login Issues' to confirm the right path for a non-admin user who forgot their password.",
+   "improvement": "Open 'Google Workspace: Login Issues' to confirm the steps for log-in issues. Admin password articles don't apply when the affected mailbox isn't the admin."
+  },
+  {
+   "id": "solve",
+   "name": "Solve the issue",
+   "max": 20,
+   "additive": true,
+   "strength": "You walked Lisa through Business Email > Manage at Google > Users > Reset password as info@, then had her sign in at mail.google.com in a private window.",
+   "improvement": "Since lisa@ isn't the admin, guide the user to sign in as the admin (Business Email > More Actions > Manage at Google), reset the user's password under Users, then sign in at mail.google.com in a private window."
+  }
+ ],
+ "screens": [
+  {
+   "screen_id": "s_open",
+   "stage": "open",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "Hi, I'm trying to log in to my Gmail account but it can't log me in. I've already tried the obvious stuff, so I'm hoping you can help me sort this out quickly.",
+   "prompt": "How do you open the conversation?"
+  },
+  {
+   "screen_id": "s_dynamics",
+   "stage": "dynamics",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "",
+   "prompt": "What do you do next?"
+  },
+  {
+   "screen_id": "s_familiarize",
+   "stage": "familiarize",
+   "gate": "N",
+   "learner": "",
+   "speaker": "",
+   "prompt": "What do you say?"
+  },
+  {
+   "screen_id": "s_clarify",
+   "stage": "clarify",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "",
+   "prompt": "What do you say next?"
+  },
+  {
+   "screen_id": "s_clarify2",
+   "stage": "clarify",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "",
+   "prompt": "How do you continue?"
+  },
+  {
+   "screen_id": "s_roadmap",
+   "stage": "roadmap",
+   "gate": "N",
+   "learner": "",
+   "speaker": "",
+   "prompt": "What do you say next?"
+  },
+  {
+   "screen_id": "s_recreate",
+   "stage": "recreate",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "",
+   "prompt": "What do you do next?"
+  },
+  {
+   "screen_id": "s_article",
+   "stage": "article",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "",
+   "prompt": "How do you reply?"
+  },
+  {
+   "screen_id": "s_solve",
+   "stage": "solve",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "",
+   "prompt": "What do you tell Lisa?"
+  },
+  {
+   "screen_id": "s_solve2",
+   "stage": "solve",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "Okay, I reset it. Do I just sign in now?",
+   "prompt": "How do you respond?"
+  },
+  {
+   "screen_id": "s_close",
+   "stage": "open",
+   "gate": "Y",
+   "learner": "",
+   "speaker": "",
+   "prompt": "How do you end the chat?"
+  }
+ ],
+ "choices": [
+  {
+   "screen_id": "s_open",
+   "choice_id": "A",
+   "text": "Hi Lisa! Thanks for reaching out to Wix. Let's take a look at your Gmail login.",
+   "verdict": "partial",
+   "points": 3,
+   "goTo": "s_dynamics",
+   "retry": "N",
+   "caller1": "Lisa: Thanks."
+  },
+  {
+   "screen_id": "s_open",
+   "choice_id": "B",
+   "text": "Hi Lisa, Gmail is a Google product, so you'll need to contact Google support for log-in issues.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_dynamics",
+   "retry": "N",
+   "caller1": "Lisa: Really? I'm pretty sure I set this email up through Wix.",
+   "expert": "Expert: Let me take a closer look before we go any further. I'm [Name], and I'll help you figure out where this account is managed.",
+   "caller2": "Lisa: Okay, thanks."
+  },
+  {
+   "screen_id": "s_open",
+   "choice_id": "C",
+   "text": "Hi Lisa, thanks for reaching out to Wix Customer Care! My name is [Name]. I'm sorry you're locked out. That's frustrating when you need your email. Let's get you signed back in.",
+   "verdict": "correct",
+   "points": 5,
+   "goTo": "s_dynamics",
+   "retry": "N",
+   "caller1": "Lisa: Thanks, I appreciate it."
+  },
+  {
+   "screen_id": "s_dynamics",
+   "choice_id": "A",
+   "text": "[Action] Ask Lisa for her Gmail password so you can test the sign-in yourself.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_familiarize",
+   "retry": "N",
+   "caller1": "Lisa: Um, I'd rather not share my password in a chat.",
+   "expert": "Expert: You're right, and you shouldn't. I'll never need your password. Let me check your account on my end instead.",
+   "caller2": "Lisa: Okay, good."
+  },
+  {
+   "screen_id": "s_dynamics",
+   "choice_id": "B",
+   "text": "[Action] Look Lisa up in User Manager and check her Business Email subscriptions.",
+   "verdict": "correct",
+   "points": 10,
+   "goTo": "s_familiarize",
+   "retry": "N",
+   "caller1": "(Lisa's account verified. Google Workspace business email for momentumslab.com: Active, 2 mailboxes. Site \"Momentum's Lab\" isn't published yet.)",
+   "asset": "asset.user_manager"
+  },
+  {
+   "screen_id": "s_dynamics",
+   "choice_id": "C",
+   "text": "[Action] Search for Lisa's site in User Manager and check whether it's published.",
+   "verdict": "partial",
+   "points": 3,
+   "goTo": "s_familiarize",
+   "retry": "N",
+   "caller1": "(Site \"Momentum's Lab\" found. It isn't published yet.)"
+  },
+  {
+   "screen_id": "s_familiarize",
+   "choice_id": "A",
+   "text": "I see you're with Momentum's Lab. How long have you been using Wix?",
+   "verdict": "partial",
+   "points": 4,
+   "goTo": "s_clarify",
+   "retry": "N",
+   "caller1": "Lisa: A few months. I'm still working on the site."
+  },
+  {
+   "screen_id": "s_familiarize",
+   "choice_id": "B",
+   "text": "Before we look at your email, did you know you can upgrade to a Premium plan and publish your site today?",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_clarify",
+   "retry": "N",
+   "caller1": "Lisa: Not right now. I just need my email working."
+  },
+  {
+   "screen_id": "s_familiarize",
+   "choice_id": "C",
+   "text": "I see Momentum's Lab is still a work in progress. What are you planning for it?",
+   "verdict": "correct",
+   "points": 10,
+   "goTo": "s_clarify",
+   "retry": "N",
+   "caller1": "Lisa: It's for my fitness business in Danville. I want an app where members can manage their accounts, sign up for classes, chat with each other and track their progress with real analytics. I need my email to keep planning all of it.",
+   "expert": "Expert: That sounds like a great community to build! Let's get your email sorted so you can keep things moving."
+  },
+  {
+   "screen_id": "s_clarify",
+   "choice_id": "A",
+   "text": "Which email address are you trying to sign in to? Is it a business email you set up through Wix, like name@momentumslab.com, or a personal @gmail.com account?",
+   "verdict": "correct",
+   "points": 8,
+   "goTo": "s_clarify2",
+   "retry": "N",
+   "caller1": "Lisa: My business email, lisa@momentumslab.com. I set it up through Wix when I bought the domain."
+  },
+  {
+   "screen_id": "s_clarify",
+   "choice_id": "B",
+   "text": "Since this is a Gmail account, it's managed by Google, so unfortunately we can't help with it here. You can recover it through Google's account recovery page, and they'll walk you through the steps.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_clarify2",
+   "retry": "Y",
+   "capIfRetried": 4,
+   "caller1": "Lisa: Wait, it's my business email. I'm pretty sure I set it up through Wix."
+  },
+  {
+   "screen_id": "s_clarify",
+   "choice_id": "C",
+   "text": "Is this your business email?",
+   "verdict": "partial",
+   "points": 4,
+   "goTo": "s_clarify2",
+   "retry": "N",
+   "caller1": "Lisa: Yes, it's lisa@momentumslab.com."
+  },
+  {
+   "screen_id": "s_clarify",
+   "choice_id": "D",
+   "text": "I can see a business email on your account, so let's go ahead and reset your password now.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_clarify2",
+   "retry": "N",
+   "caller1": "Lisa: Hold on, which one? I have a couple of email addresses.",
+   "expert": "Expert: Good point. Which address are you trying to sign in to?",
+   "caller2": "Lisa: lisa@momentumslab.com, my business email."
+  },
+  {
+   "screen_id": "s_clarify2",
+   "choice_id": "A",
+   "text": "Can you send me your current password so I can check if it's correct?",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_roadmap",
+   "retry": "N",
+   "caller1": "Lisa: I'm not comfortable sharing that.",
+   "expert": "Expert: That's completely fair, and I'll never need it. What does the error message say when you try to sign in?",
+   "caller2": "Lisa: It says my password is wrong. I tried \"Forgot password,\" but it told me to contact my administrator."
+  },
+  {
+   "screen_id": "s_clarify2",
+   "choice_id": "B",
+   "text": "Have you tried clearing your browser's cache and cookies?",
+   "verdict": "partial",
+   "points": 3,
+   "goTo": "s_roadmap",
+   "retry": "N",
+   "caller1": "Lisa: Yes. It still says my password is wrong, and \"Forgot password\" just tells me to contact my administrator."
+  },
+  {
+   "screen_id": "s_clarify2",
+   "choice_id": "C",
+   "text": "Thanks, Lisa. What does the error message say when you try to sign in? And do you know if lisa@momentumslab.com is the admin for your Google Workspace account?",
+   "verdict": "correct",
+   "points": 7,
+   "goTo": "s_roadmap",
+   "retry": "N",
+   "caller1": "Lisa: It says my password is wrong. I tried \"Forgot password,\" but it told me to contact my administrator. I have no idea who that is. I set up a couple of addresses when I bought this."
+  },
+  {
+   "screen_id": "s_clarify2",
+   "choice_id": "D",
+   "text": "No problem! Go to Business Email, click the three dots next to your email and select Reset admin password.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_roadmap",
+   "retry": "N",
+   "caller1": "Lisa: I don't see that option next to lisa@. Only next to info@.",
+   "expert": "Expert: Thanks for checking. What does the error say when you try to sign in?",
+   "caller2": "Lisa: That my password is wrong. \"Forgot password\" tells me to contact my administrator."
+  },
+  {
+   "screen_id": "s_roadmap",
+   "choice_id": "A",
+   "text": "I'll send this over to our Google Workspace team now. They'll look into your account, reset your password on their side and email you the new details. You should hear back within 24 hours, and then you'll be all set.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_recreate",
+   "retry": "N",
+   "caller1": "Lisa: 24 hours? I need this today.",
+   "expert": "Expert: Understood. Let me check a few things first. There may be a faster way."
+  },
+  {
+   "screen_id": "s_roadmap",
+   "choice_id": "B",
+   "text": "Here's the plan: since \"Forgot password\" sent you to your administrator, I'll find out which of your addresses is the Google Workspace admin. The admin can reset lisa@, so then I'll walk you through it.",
+   "verdict": "correct",
+   "points": 10,
+   "goTo": "s_recreate",
+   "retry": "N",
+   "caller1": "Lisa: Sounds good."
+  },
+  {
+   "screen_id": "s_roadmap",
+   "choice_id": "C",
+   "text": "Let me look into this and I'll get back to you shortly.",
+   "verdict": "partial",
+   "points": 5,
+   "goTo": "s_recreate",
+   "retry": "N",
+   "caller1": "Lisa: Okay. What are you checking?"
+  },
+  {
+   "screen_id": "s_recreate",
+   "choice_id": "A",
+   "text": "[Action] Ask Lisa to try signing in at mail.google.com in a private or Incognito window.",
+   "verdict": "partial",
+   "points": 4,
+   "goTo": "s_article",
+   "retry": "N",
+   "caller1": "Lisa: Same thing. It says my password is wrong.",
+   "expert": "Expert: Thanks. Let me check who your admin is.",
+   "caller2": "(Business Email: info@momentumslab.com is listed as Admin.)"
+  },
+  {
+   "screen_id": "s_recreate",
+   "choice_id": "B",
+   "text": "[Action] Go to mail.google.com and sign in to lisa@momentumslab.com yourself so you can see exactly what error Lisa is getting.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_article",
+   "retry": "Y",
+   "capIfRetried": 5,
+   "caller1": "(You can't sign in without Lisa's password, and Experts never sign in to a user's Google mailbox.)"
+  },
+  {
+   "screen_id": "s_recreate",
+   "choice_id": "C",
+   "text": "[Action] Impersonate Lisa's account, go to Business Email and click Show User info to see which mailbox is the admin.",
+   "verdict": "correct",
+   "points": 10,
+   "goTo": "s_article",
+   "retry": "N",
+   "caller1": "(Business Email: info@momentumslab.com is listed as Admin. lisa@momentumslab.com is a user.)",
+   "expert": "Expert: Found it. Your Google Workspace admin is info@momentumslab.com.",
+   "caller2": "Lisa: Oh, info@ is the first one I set up. I still use it for invoices, and I know that password.",
+   "asset": "asset.business_email_admin"
+  },
+  {
+   "screen_id": "s_article",
+   "choice_id": "A",
+   "text": "[Action] Reply using \"Mailbox Awareness (Log-In Issues for Google Workspace)\"",
+   "verdict": "partial",
+   "points": 10,
+   "goTo": "s_solve",
+   "retry": "N"
+  },
+  {
+   "screen_id": "s_article",
+   "choice_id": "B",
+   "text": "[Action] Reply using \"Google Workspace: Resetting Your Admin Password and Updating Recovery Info\"",
+   "verdict": "partial",
+   "points": 10,
+   "goTo": "s_solve",
+   "retry": "N",
+   "caller1": "(This article mainly covers resetting the admin's own password. Its FAQ points non-admins like lisa@ to their admin.)"
+  },
+  {
+   "screen_id": "s_article",
+   "choice_id": "C",
+   "text": "[Action] Reply using \"Google Workspace: Login Issues\"",
+   "verdict": "correct",
+   "points": 20,
+   "goTo": "s_solve",
+   "retry": "N"
+  },
+  {
+   "screen_id": "s_article",
+   "choice_id": "D",
+   "text": "[Action] Reply using \"Google Workspace: Accessing your Business Email Through Your Wix Account\"",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_solve",
+   "retry": "N",
+   "caller1": "(This article explains how to open your mailbox, not how to fix a forgotten password.)"
+  },
+  {
+   "screen_id": "s_solve",
+   "choice_id": "A",
+   "text": "Go to Business Email, click the three dots next to lisa@momentumslab.com and select Reset admin password.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_solve2",
+   "retry": "Y",
+   "capIfRetried": 7,
+   "caller1": "Lisa: That option isn't there for lisa@. I only see it next to info@."
+  },
+  {
+   "screen_id": "s_solve",
+   "choice_id": "B",
+   "text": "Sign in to the Google Admin console as info@momentumslab.com and reset the password for lisa@ from there.",
+   "verdict": "partial",
+   "points": 7,
+   "goTo": "s_solve2",
+   "retry": "N",
+   "caller1": "Lisa: Where in the Admin console? I've never really used it.",
+   "expert": "Expert: Click Users, hover over Lisa, click Reset password, then choose Create password and click Reset."
+  },
+  {
+   "screen_id": "s_solve",
+   "choice_id": "C",
+   "text": "I'll reset it from our side. Just let me know the new password you'd like to use.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_solve2",
+   "retry": "N",
+   "caller1": "Lisa: I'd rather not send a password in a chat.",
+   "expert": "Expert: You're right, I shouldn't ask for that. Since info@ is your admin, you can reset it yourself. Go to Business Email, click the three dots next to lisa@momentumslab.com, select Manage at Google and sign in as info@. Then click Users, hover over Lisa and click Reset password."
+  },
+  {
+   "screen_id": "s_solve",
+   "choice_id": "D",
+   "text": "Since info@momentumslab.com is your admin, you can reset lisa@ yourself. In Business Email, click the three dots next to lisa@momentumslab.com, select Manage at Google and sign in as info@. Click Users, hover over Lisa, click Reset password, choose Create password and click Reset.",
+   "verdict": "correct",
+   "points": 15,
+   "goTo": "s_solve2",
+   "retry": "N"
+  },
+  {
+   "screen_id": "s_solve2",
+   "choice_id": "A",
+   "text": "Yes! Open a private or Incognito window, go to mail.google.com and sign in with lisa@momentumslab.com and your new password. That way, no saved Google sign-ins get in the way.",
+   "verdict": "correct",
+   "points": 5,
+   "goTo": "s_close",
+   "retry": "N",
+   "caller1": "Lisa: I'm in! Finally. Thank you."
+  },
+  {
+   "screen_id": "s_solve2",
+   "choice_id": "B",
+   "text": "Yes, but the new password can take up to 48 hours to start working.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_close",
+   "retry": "N",
+   "caller1": "Lisa: 48 hours? Let me just try. Oh, it already works.",
+   "expert": "Expert: Great, I'm glad it's working already!"
+  },
+  {
+   "screen_id": "s_solve2",
+   "choice_id": "C",
+   "text": "Yes, sign in at admin.google.com with lisa@momentumslab.com and your new password.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "s_close",
+   "retry": "N",
+   "caller1": "Lisa: It says I don't have access to the Admin console.",
+   "expert": "Expert: Sorry about that! The Admin console is only for your admin account. Go to mail.google.com instead.",
+   "caller2": "Lisa: Okay, that worked. I'm in."
+  },
+  {
+   "screen_id": "s_solve2",
+   "choice_id": "D",
+   "text": "Yes, just sign in again the way you usually do.",
+   "verdict": "partial",
+   "points": 2,
+   "goTo": "s_close",
+   "retry": "N",
+   "caller1": "Lisa: It picked my other account at first, but I switched and I'm in now."
+  },
+  {
+   "screen_id": "s_close",
+   "choice_id": "A",
+   "text": "Glad you're back in, Lisa! Have a great day.",
+   "verdict": "partial",
+   "points": 3,
+   "goTo": "__end__",
+   "retry": "N"
+  },
+  {
+   "screen_id": "s_close",
+   "choice_id": "B",
+   "text": "You're all set, Lisa! To recap, info@momentumslab.com is your Google Workspace admin, so you can reset passwords for any of your business emails from Business Email > Manage at Google. If you have trouble signing in again, try a private window first. Good luck with the Momentum's Lab app! Is there anything else I can help with?",
+   "verdict": "correct",
+   "points": 5,
+   "goTo": "__end__",
+   "retry": "N",
+   "caller1": "Lisa: That's everything. Thanks for the quick help!"
+  },
+  {
+   "screen_id": "s_close",
+   "choice_id": "C",
+   "text": "Great! If this happens again, just contact Google support directly since they handle Gmail.",
+   "verdict": "incorrect",
+   "points": 0,
+   "goTo": "__end__",
+   "retry": "N",
+   "caller1": "Lisa: Oh, I thought Wix could help with this. Okay."
+  }
+ ],
+ "articles": [
+  {
+   "article_title": "[Action] Reply using \"Google Workspace: Login Issues\"",
+   "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=a8575b9e-3080-f111-ab0e-7ced8d8ef488&appid=5dc7a5c3-7785-f011-b4cc-7c1e5261b0bc",
+   "correct": "Y",
+   "credit": 20
+  },
+  {
+   "article_title": "[Action] Reply using \"Mailbox Awareness (Log-In Issues for Google Workspace)\"",
+   "url": "https://wixdynprod.crm4.dynamics.com/main.aspx?pagetype=kbarticle&navbar=off&forceUCI=1&articleId=e4c01caf-3080-f111-ab0e-7ced8d8efb79",
+   "correct": "Partial",
+   "credit": 10
+  },
+  {
+   "article_title": "[Action] Reply using \"Google Workspace: Resetting a Workspace User's Password\"",
+   "url": "https://support.wix.com/en/article/google-workspace-resetting-a-workspace-users-password",
+   "correct": "Y",
+   "credit": 20
+  },
+  {
+   "article_title": "[Action] Reply using \"Google Workspace: Troubleshooting Login Issues\"",
+   "url": "https://support.wix.com/en/article/google-workspace-troubleshooting-login-issues",
+   "correct": "Y",
+   "credit": 20
+  },
+  {
+   "article_title": "[Action] Reply using \"Google Workspace: Identifying Your Admin Workspace User\"",
+   "url": "https://support.wix.com/en/article/google-workspace-identifying-your-admin-workspace-user",
+   "correct": "Partial",
+   "credit": 10
+  },
+  {
+   "article_title": "[Action] Reply using \"Google Workspace: Resetting Your Admin Password and Updating Recovery Info\"",
+   "url": "https://support.wix.com/en/article/google-workspace-resetting-your-admin-password",
+   "correct": "Partial",
+   "credit": 10
+  },
+  {
+   "article_title": "[Action] Reply using \"Google Workspace: Accessing your Business Email Through Your Wix Account\"",
+   "url": "https://support.wix.com/en/article/google-workspace-accessing-your-business-email-through-your-wix-account",
+   "correct": "N",
+   "credit": 0
+  }
+ ]
+}
