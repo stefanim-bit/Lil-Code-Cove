@@ -21,21 +21,24 @@ VERDICTS = {"correct", "partial", "incorrect"}
 BEHAVIOR_WORDS = ["familiariz", "clarif", "roadmap", "dynamics", "recreate", "empath", "rapport", "opening", "closing"]
 
 HEADERS = {
-    "Meta": ["field", "value", "notes"],
-    "Stages": ["id", "name", "max", "strength (shown at end if done well)",
-               "improvement (shown at end if missed/partial)"],
-    "Screens": ["screen_id", "stage", "gate (Y/N)", "learner (expert line, optional)",
-                "speaker (caller line, optional)", "prompt (neutral — never names the behavior)"],
-    "Choices": ["screen_id", "choice_id", "text", "verdict (correct/partial/incorrect)", "points",
-                "goTo (screen_id or __end__)", "retry (Y/N)", "capIfRetried",
-                "consequence (optional caller reaction or inline outcome) 1",
-                "consequence (optional expert reply or inline outcome)",
-                "consequence (optional caller reaction or inline outcome) 2",
-                "stage Override (optional)", "credit_stage (optional floating credit)",
-                "credit_points", "credit_verdict", "asset"],
-    "Articles": ["title", "stage (this credits)", "article_title", "URL", "correct (Y/N)", "Credit"],
+    "Meta": ["Scenario Info", "Your value"],
+    "Stages": ["Stage ID", "Name on scorecard", "Max points", "Strength (shown at end if done well)",
+               "Improvement (shown at end if missed/partial)", "Additive (Y/N)"],
+    "Screens": ["Screen ID", "Stage scored", "Expert message (optional)",
+                "User message (optional)", "Question or Prompt"],
+    "Choices": ["Screen ID", "Choice letter", "Choice text", "Rating (correct/partial/\nincorrect)", "Points",
+                "Next screen (Screen ID or __end__)", "Retry (Y/N)", "Max points on second try",
+                "Reaction 1: user reply or inline text (optional)",
+                "Reaction 2: Expert reply or inline text (optional)",
+                "Reaction 3: user reply or inline text (optional)",
+                "Score to a different stage (optional)", "Extra credit: stage (optional)",
+                "Extra credit: points", "Extra credit: rating", "Screenshot to display",
+                "Only after a retry (Y/N, optional)"],
+    "Articles": ["Article title (same words as the choice)", "Article link", "Right article? (Y/Partial/N)",
+                 "Points"],
 }
-COLS = {"Meta": "C", "Stages": "E", "Screens": "F", "Choices": "P", "Articles": "F"}
+COLS = {"Meta": "B", "Stages": "F", "Screens": "E", "Choices": "Q", "Articles": "D"}
+SHOT_MARK = re.compile(r"^\s*\[(?:screenshot|image)\]\s*$", re.I | re.M)
 
 errors, warnings = [], []
 
@@ -63,11 +66,19 @@ def num(v):
 
 
 def norm_title(t):
-    return re.sub(r"[\s.,;:]+$", "", t.strip()).replace("’", "'").lower()
+    """Same matching as the engine's Check Resources lock: ignores case,
+    punctuation and &/and."""
+    return frozenset(re.sub(r"[^a-z0-9]+", " ", t.lower().replace("&", " and ")).split())
+
+
+def title_matches(t, titles):
+    """Words all in an article's title, or the other way round (shortened titles count)."""
+    k = norm_title(t)
+    return bool(k) and any(k <= a or a <= k for a in titles if a)
 
 
 def reply_titles(text):
-    m = re.search(r"Reply using (.+)$", text)
+    m = re.search(r"(?:Reply using|Provide a response using) (.+)$", text, re.I)
     return re.findall(r"[\"“](.+?)[\"”]", m.group(1)) if m else []
 
 
@@ -118,7 +129,7 @@ def check(d):
         warn(f"Stage ids differ from the default eight: {ids}. Confirmed with the user?")
     total = sum(num(x.get("max")) or 0 for x in stages)
     if total != 100:
-        err(f"Stage max values sum to {total}, not 100")
+        warn(f"Stage max values sum to {total}, not 100 (Care Dojo default; fine for other projects)")
     stage_max = {x.get("id"): num(x.get("max")) or 0 for x in stages}
     additive = {x.get("id") for x in stages if x.get("additive")}
     for x in stages:
@@ -136,14 +147,13 @@ def check(d):
     for x in screens:
         if x.get("stage") not in stage_max:
             err(f"Screen {x.get('screen_id')}: unknown stage {x.get('stage')!r}")
-        if s(x.get("gate")) not in ("Y", "N"):
-            err(f"Screen {x.get('screen_id')}: gate must be Y or N")
         prompt = s(x.get("prompt"))
         if not prompt.strip():
             err(f"Screen {x.get('screen_id')}: prompt is empty")
         hits = [w for w in BEHAVIOR_WORDS if w in prompt.lower()]
         if hits:
-            warn(f"Screen {x.get('screen_id')}: prompt may name the behavior ({hits}): {prompt!r}")
+            warn(f"Screen {x.get('screen_id')}: prompt may name the behavior ({hits}) - fine if intended "
+                 f"for this project; Care Dojo keeps prompts neutral: {prompt!r}")
 
     # Choices
     by_screen = defaultdict(list)
@@ -151,7 +161,9 @@ def check(d):
         by_screen[c.get("screen_id")].append(c)
     article_titles = {}
     for a in articles:
-        for t in re.findall(r"[\"“](.+?)[\"”]", s(a.get("article_title"))):
+        title = s(a.get("article_title"))
+        # Plain title (current template); older drafts wrap it as Reply using "<title>"
+        for t in re.findall(r"[\"“](.+?)[\"”]", title) if "Reply using" in title else [title]:
             article_titles[norm_title(t)] = a
     for c in choices:
         cid = f"{c.get('screen_id')}/{c.get('choice_id')}"
@@ -178,10 +190,14 @@ def check(d):
             err(f"Choice {cid}: credit_stage {c.get('credit_stage')!r} is not a stage")
         if c.get("credit_stage") and num(c.get("credit_points")) is None:
             err(f"Choice {cid}: credit_stage needs credit_points")
-        if c.get("asset") and c.get("asset") not in asset_keys:
+        if c.get("credit_stage") and s(c.get("credit_verdict")) not in VERDICTS:
+            err(f"Choice {cid}: credit_stage needs credit_verdict (correct/partial/incorrect)")
+        if c.get("asset") and s(c.get("asset")).split()[0] not in asset_keys:
             err(f"Choice {cid}: asset {c.get('asset')!r} is not a Meta asset key")
+        if any(SHOT_MARK.search(s(c.get(k))) for k in ("caller1", "expert", "caller2")) and not c.get("asset"):
+            err(f"Choice {cid}: a reaction has a [Screenshot] line but no asset is set")
         for t in reply_titles(s(c.get("text"))):
-            if norm_title(t) not in article_titles:
+            if not title_matches(t, article_titles):
                 err(f"Choice {cid}: 'Reply using \"{t}\"' has no matching row in Articles")
 
     for sid, cs in by_screen.items():
@@ -192,6 +208,11 @@ def check(d):
             warn(f"Screen {sid}: {len(cs)} choices (usual is 2 to 4, template goes up to 5)")
         if not any(c.get("verdict") == "correct" for c in cs):
             warn(f"Screen {sid}: no correct choice")
+        first_view = [c for c in cs if not c.get("retryOnly")]
+        if first_view and all(s(c.get("retry")) == "Y" for c in first_view):
+            err(f"Screen {sid}: every choice shown on the first try has retry Y, so the learner gets stuck")
+        if any(c.get("retryOnly") for c in cs) and not any(s(c.get("retry")) == "Y" for c in cs):
+            warn(f"Screen {sid}: a retryOnly choice never shows, since no choice here has retry Y")
     for sid in screen_stage:
         if sid not in by_screen:
             err(f"Screen {sid}: has no choices")
@@ -266,6 +287,13 @@ def cid_of(c):
 NUMLIKE = re.compile(r"^\s*[-+]?(\d[\d,]*\.?\d*|\.\d+)\s*%?\s*$|^\s*\d{1,4}[/-]\d{1,2}([/-]\d{1,4})?\s*$")
 
 
+def plain_title(t):
+    """The Articles tab holds the bare title; older drafts wrap it as Reply using "<title>"."""
+    t = s(t)
+    m = re.findall(r"[\"“](.+?)[\"”]", t) if "Reply using" in t else []
+    return m[0] if m else t
+
+
 def cell_text(v):
     """Keep text as text: update_values parses like the Sheets UI."""
     t = s(v)
@@ -279,32 +307,55 @@ def cell_num(v):
     return "" if n is None else n
 
 
+# Meta column A = setting name, then its help text on the next line (the build reads line 1 only).
+META_HELP = {
+    "Chat title": "Shown in the chat header. Format: Topic: Scenario, e.g. Domains: Connecting a Domain.",
+    "Intro bio": "Shown on the Meet screen. One simple sentence about the user and their issue, then: "
+                 "\"In this activity, you'll simulate a chat with [them/her/him]…\"",
+    "First screen": "The Screen ID the chat opens on, usually s_open. Must match a Screen ID in the Screens tab.",
+    "User name": "The user's first name, from the Character Tracker. Shown in the chat and on their replies.",
+    "Meet image": "The user's portrait on the Meet screen. Folder and file name as they'll sit next to the sim, "
+                  "e.g. Samantha M/Samantha_Meet.png.",
+    "Close image": "The user's portrait on the results screen. Folder and file name, "
+                   "e.g. Samantha M/Samantha_Close.png.",
+    "Tracking form": "Optional. Link to your tracking Google Form (see Track Results in the build guide). "
+                     "Blank = no tracking.",
+}
+
+
+def meta_label(name, help_text=None):
+    h = s(help_text if help_text is not None else META_HELP.get(name, ""))
+    return f"{name}\n{h}" if h else name
+
+
 def build_values(d, clear_rows):
     meta = d["meta"]
     res = meta.get("resources", {})
     rows = {
-        "Meta": [["title", cell_text(meta["title"]), "Shown in the chat header."],
-                 ["userBio", cell_text(meta["userBio"]), "One line: who they are + why they're calling."],
-                 ["start", cell_text(meta["start"]),
-                  "screen_id of the very first screen (must exist in the Screens tab)."]]
-        + [[a["key"], cell_text(a.get("value", "")), cell_text(a.get("notes", ""))]
+        "Meta": [[meta_label(k), cell_text(v)] for k, v in (
+                    ("Chat title", meta["title"]), ("Intro bio", meta["userBio"]),
+                    ("First screen", meta["start"]), ("User name", meta.get("user_name", "")),
+                    ("Meet image", meta.get("meet_image", "")), ("Close image", meta.get("close_image", "")),
+                    ("Tracking form", meta.get("tracking_form", "")))]
+        + [[meta_label(a["key"], a.get("notes", "")), cell_text(a.get("value", ""))]
            for a in meta.get("assets", [])]
-        + [["resources.title", cell_text(res.get("title", "Check Resources")),
-            "Title for the resources button/drawer."],
-           ["resources.sheet", cell_text(res.get("sheet", "Articles")), "Source tab for reference articles."],
-           ["resources.enabled", "TRUE" if res.get("enabled", True) else "FALSE",
-            "Whether the resources helper drawer is enabled."]],
+        + [[meta_label("resources.title", "Title for the resources button/drawer."),
+            cell_text(res.get("title", "Check Resources"))],
+           [meta_label("resources.sheet", "Source tab for reference articles."), cell_text(res.get("sheet", "Articles"))],
+           [meta_label("resources.enabled", "Whether the resources helper drawer is enabled."),
+            "TRUE" if res.get("enabled", True) else "FALSE"]],
         "Stages": [[x["id"], cell_text(x["name"]), cell_num(x["max"]), cell_text(x.get("strength")),
-                    cell_text(x.get("improvement"))] for x in d["stages"]],
-        "Screens": [[x["screen_id"], x["stage"], x.get("gate", "Y"), cell_text(x.get("learner")),
+                    cell_text(x.get("improvement")), "Y" if x.get("additive") else ""] for x in d["stages"]],
+        "Screens": [[x["screen_id"], x["stage"], cell_text(x.get("learner")),
                      cell_text(x.get("speaker")), cell_text(x.get("prompt"))] for x in d["screens"]],
         "Choices": [[c["screen_id"], c["choice_id"], cell_text(c.get("text")), c.get("verdict", ""),
                      cell_num(c.get("points")), c.get("goTo", ""), c.get("retry") or "N",
                      cell_num(c.get("capIfRetried")), cell_text(c.get("caller1")),
                      cell_text(c.get("expert")), cell_text(c.get("caller2")),
                      s(c.get("stageOverride")), s(c.get("credit_stage")), cell_num(c.get("credit_points")),
-                     s(c.get("credit_verdict")), s(c.get("asset"))] for c in d["choices"]],
-        "Articles": [["Check Resources", "article", cell_text(a["article_title"]), s(a.get("url")),
+                     s(c.get("credit_verdict")), s(c.get("asset")),
+                     "Y" if c.get("retryOnly") else ""] for c in d["choices"]],
+        "Articles": [[cell_text(plain_title(a["article_title"])), s(a.get("url")),
                       s(a.get("correct")), cell_num(a.get("credit"))] for a in d.get("articles", [])],
     }
     out = {}

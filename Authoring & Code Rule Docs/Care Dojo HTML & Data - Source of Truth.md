@@ -644,29 +644,69 @@ You never touch the engine — you only produce the `window.SCENARIO = { … }` 
 the `<script id="scenario">` tag directly, following Part 3. Best when you want full
 control or the scenario uses newer fields.
 
-**B) Author in a spreadsheet, then generate the JS.** Good for non-coders and for
-building a scenario alongside its reviewer matrix.
+**B) Author in the Google Sheet, then build with the converter.** Good for non-coders
+and the team's normal flow (see the Chat Simulation Build Guide).
 
-1. Copy **`Practice_Session_Scenario_Template.xlsx`** (in `Authoring & Code Rule
-   Docs/`) and fill in its tabs — **Meta, Stages, Screens, Choices, Resources** (the
-   **Read Me** tab explains each). The tab columns map 1:1 to the Part 3 schema.
-2. Download it as `.xlsx`.
-3. Hand the filled-in spreadsheet to **Claude** (or another assistant) and ask it to
-   generate the `window.SCENARIO = { … }` JS block following the Part 3 schema. No
-   local script or Python install is needed.
-4. Paste the generated block into your copied engine file's `<script id="scenario">`
-   tag, replacing the old block. Add the image files it references.
+1. Copy the **Chat Simulation Template (Blank)** Google Sheet
+   (`133O6hcQLAKR1ZOcTxitToR9xzAX7-hoHk50aZ8pz9fw`) and fill in its tabs: Meta,
+   Stages, Screens, Choices, Articles. The Info tab and header hover notes explain each.
+2. Download it as `.xlsx` (File > Download > Microsoft Excel) right before building.
+3. Run `python3 "Authoring & Code Rule Docs/scenario_xlsx_to_js.py" "<sheet>.xlsx"`.
+   It checks the Sheet (plain-language FIX/CHECK messages), then builds a
+   ready-to-test folder: a copy of the canonical engine with the scenario data, image
+   subfolders, and a list of image files to add. `--js-only` prints just the block.
+4. Add the images, test-play, then zip for the Rise Code Block.
 
-The generated block should use the **current** schema (`user{}`, `consequence`, the
-`correct:true` + `capIfUnchecked` resources model, choice `id`, `additive`, images).
-Have the assistant sanity-check that stage `max` values sum to 100, every `goTo` points
-somewhere real, and no em-dashes slip in. Screen order follows the row order of the
-**Screens** tab. For multi-line `speaker`/`consequence` cells, use a real line break
-(Alt+Enter) and label the parts (`Samantha:` / `Expert:`).
+The converter applies two fixes to its engine copy only (the PS1 Layers file is never
+changed): inline text works in any reaction, and tracking goes to the Meta tab's
+Tracking form (blank = no tracking). It also reads Sheets made before 2026-10-21
+(old header names). The older local `Practice_Session_Scenario_Template.xlsx` is
+superseded.
 
-> The template columns map 1:1 to this schema. If you add a brand-new engine field,
-> update the template columns too and point the assistant at the new field so the
-> generated JS includes it, or author that field by hand.
+#### Sheet header → engine field
+
+Sheet headers are plain English; engine field names stay as they are until the
+end-of-October engine rename. This is the translation the converter uses.
+
+| Tab | Sheet header (before 2026-10-21) | Engine field |
+|---|---|---|
+| Meta | Chat title (`title`) | `title` (used as written) |
+| Meta | Intro bio (`userBio`) | `user.bio` |
+| Meta | First screen (`start`) | `start` |
+| Meta | User name | `user.name` (also labels the user's reaction lines) |
+| Meta | Meet image / Close image | `user.image` / `user.completeImage` |
+| Meta | Tracking form | `TELEMETRY_ENDPOINT` in the engine copy (blank = off) |
+| Meta | `asset.<name>` value = image folder/file | `image:{ src }` on the choice that uses it |
+| Stages | Stage ID (`ID`) | `stages[].id` |
+| Stages | Name on scorecard (`Name`) | `stages[].name` |
+| Stages | Max points (`Max`) | `stages[].max` |
+| Stages | Strength / Improvement | `stages[].strength` / `stages[].improvement` |
+| Stages | Additive (Y/N) | `stages[].additive:true` |
+| Screens | Screen ID (`Screen_ID`) | the screen's key in `screens` |
+| Screens | Stage scored (`Stage`) | `stage` |
+| Screens | Expert message (`Learner`) | first part of `speaker`: `Expert: ...` then `<User name>: ...`, joined by a blank line |
+| Screens | User message (`Speaker`) | `speaker` |
+| Screens | Question or Prompt (older: Question above choices, `Prompt`) | `prompt` |
+| Choices | Choice letter (`Choice_ID`) | `id` |
+| Choices | Choice text (`Text`) | `text` |
+| Choices | Rating (`Verdict`) | `verdict` |
+| Choices | Points | `points` |
+| Choices | Next screen (`GoTo`) | `goTo` |
+| Choices | Retry (Y/N) / Max points on second try (`CapIfRetried`) | `retry:true` / `capIfRetried` |
+| Choices | Reaction 1, 2, 3 (`Consequence` x3) | one `consequence` string: `<User name>: ...`, `Expert: ...`, `<User name>: ...`, joined by blank lines |
+| Choices | Score to a different stage (`Stage Override`) | `stageOverride` |
+| Choices | Extra credit: stage / points / rating (`Credit_Stage/Points/Verdict`) | `credits:[{ stage, points, verdict }]` (rating required) |
+| Choices | Screenshot to display (`Asset`) | `image:{ src }` + `showsImageAfter:true`, or `showsImage:true` with `(show first)`; with a `[Screenshot]` line in a reaction, just `image:{ src }` and that line becomes `[image]` in `consequence` |
+| Choices | Only after a retry (Y/N) | `retryOnly:true` |
+| Articles | Article title (`Article_Title`) | `resources.items[].label` |
+| Articles | Article link (`URL`) | `resources.items[].url` |
+| Articles | Right article? (`Correct`) | `correct:true` when Y |
+| Articles | Points (`Credit`) | not read by the engine yet (end-of-October update) |
+| Articles | (old `Title` / `Stage` columns) | set once by the build: `resources.title:"Check Resources"`, `stage:"article"`, `capIfUnchecked:10` |
+
+Inline text: a reaction that starts with `[Inline text]` or `[Inline]`, or is wrapped
+in `(parentheses)`, becomes `(...)` in `consequence`, which renders as a centered note
+(see §3.6). The engine's `gate` field is not read by the engine and isn't written.
 
 ---
 

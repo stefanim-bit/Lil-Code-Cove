@@ -479,13 +479,12 @@ window.SCENARIO = {
       stage:"dynamics", gate:true,
       prompt:"What do you say next?",
       choices:[
-        { id:"A", text:"I can help with that. Can you please confirm your domain name and where you purchased it from?",
+        { id:"A", text:"Can you please confirm your domain name and where you purchased it from?",
           verdict:"correct", points:10, goTo:"s_dynamics2",
           consequence:"Jordan: The domain is housingourparents.org. I bought it from GoDaddy.",
           credits:[{ stage:"clarify", points:8, verdict:"partial" }] },
         { id:"B", text:"To help you with this, I'll need to send you to a specialized team that deals with these kinds of cases.",
-          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:8,
-          consequence:"Jordan: Aw man ok." }
+          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:8 }
       ]
     },
 
@@ -495,8 +494,7 @@ window.SCENARIO = {
       prompt:"What do you say?",
       choices:[
         { id:"A", text:"[Action] Look up Jordan in Overview Tab.",
-          verdict:"partial", points:5, goTo:"s_roadmap", retry:true, capIfRetried:8,
-          consequence:"(You open the Overview tab.)" },
+          verdict:"partial", points:5, goTo:"s_roadmap", retry:true, capIfRetried:8 },
         { id:"B", text:"[Action] Find Jordan's active sites in User Manager.",
           verdict:"correct", points:10, goTo:"s_roadmap",
           consequence:"(You open User Manager. My Site 1 is published on a Free plan, no Premium plan attached, and the domain isn't added in Wix yet.)" },
@@ -629,13 +627,13 @@ window.SCENARIO = {
       stage:"open", gate:false,
       prompt:"How do you close?",
       choices:[
-        { id:"A", text:"You're all set! You upgraded to a Premium plan, added the domain in Wix, and replaced your GoDaddy nameservers. Allow up to 48 hours for propagation. Anything else I can help with?",
+        { id:"A", text:"You're all set! You upgraded to a Premium plan, added the domain in Wix, and replaced your GoDaddy nameservers 🥳 Please allow up to 48 hours for propagation. Anything else I can help with?",
           verdict:"correct", points:5, goTo:"__end__",
           consequence:"Jordan: Nope, you covered everything clearly! Thanks a ton for your help!" },
-        { id:"B", text:"Glad we could get your domain connected today, Jordan! Allow a little time for the changes to update, and reach back out if you need more help.",
+        { id:"B", text:"Glad we could get your domain connected today, Jordan! 🥳 Please allow a little time for the changes to update, and reach back out if you need more help.",
           verdict:"partial", points:3, goTo:"__end__",
           consequence:"Jordan: Thanks, bye." },
-        { id:"C", text:"Everything should be saved on both ends now! Feel free to keep this chat window open in case the connection fails or runs into any errors.",
+        { id:"C", text:"Everything should be saved on both ends now! 🥳 Feel free to keep this chat window open in case the connection fails or runs into any errors.",
           verdict:"incorrect", points:0, goTo:"__end__",
           consequence:"Jordan: Um, okay?" }
       ]

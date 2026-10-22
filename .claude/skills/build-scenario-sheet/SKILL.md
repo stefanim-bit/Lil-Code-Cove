@@ -1,6 +1,6 @@
 ---
 name: build-scenario-sheet
-description: Build the content for a new Care Dojo practice scenario (Wix CC L&D chat/call sim) from a scenario brief - propose personas, research the correct resolution with the Dynamics Expert Assistant through Claude in Chrome, draft every screen/choice/score for review, then fill a copy of the PS4 "Connect a Domain" Google Sheet template. Use when the user runs /build-scenario-sheet or asks to create, draft, or research a new practice scenario sheet.
+description: Build the content for a new Care Dojo practice scenario (Wix CC L&D chat/call sim) from a scenario brief - propose personas, research the correct resolution with the Dynamics Expert Assistant through Claude in Chrome, draft every screen/choice/score for review, then fill a copy of the "Chat Simulation Template (Blank)" Google Sheet. Use when the user runs /build-scenario-sheet or asks to create, draft, or research a new practice scenario sheet.
 ---
 
 # Build a scenario sheet
@@ -31,7 +31,8 @@ build, BPO copies and zips is a separate step. Don't start it unless asked.
 
 | What | Where |
 |---|---|
-| Template sheet (copy this) | `PS4 Domains: Connect a Domain`, id `1Wyx8Nd7WEtMGzwTyiKHnTi5jnkcsIs-5EY9vW4vvl10`, folder id `1FR21DNLjVyM8ivqaoTzYVfG-6vKDcAm1` |
+| Template sheet (copy this) | `Chat Simulation Template (Blank)`, id `133O6hcQLAKR1ZOcTxitToR9xzAX7-hoHk50aZ8pz9fw`, folder id `1FR21DNLjVyM8ivqaoTzYVfG-6vKDcAm1` (plain-English headers since 2026-10-21) |
+| Filled example (content reference only, older header names) | `PS4 Domains: Connect a Domain`, id `1Wyx8Nd7WEtMGzwTyiKHnTi5jnkcsIs-5EY9vW4vvl10` |
 | Tab and column spec | [references/sheet-format.md](references/sheet-format.md) |
 | Driving the Expert Assistant | [references/expert-assistant.md](references/expert-assistant.md) |
 | Research log template | [references/research-log-template.md](references/research-log-template.md) |
@@ -130,17 +131,24 @@ Write the full draft as `Research/scenario-draft.json` (shape in
 PS4 scenarios:
 
 - Screen flow: open, familiarize, clarify, dynamics, roadmap, recreate, article,
-  solve (can span several screens, `additive`), close. Order, repeats and gates can
+  solve (can span several screens, `additive`), close. Order and repeats can
   vary per scenario. Propose, and let the user confirm.
 - **Correct choices start from the Expert Assistant's suggested phrasing**, then apply
   our tone and copy rules (Source of Truth Part 4): no em-dashes, contractions,
   personalized empathy, no internal jargon to the user, "isn't available" not "won't".
 - Distractors: realistic Expert mistakes, including the Expert Assistant answers you
   couldn't verify (with OK). The correct answer isn't always the longest; shuffle its position.
-- Consequences: caller reaction (col I), Expert follow-up (col J), caller again
-  (col K). Inline action results go in col I in plain words.
-- Article screen choices: `[Action] Reply using "<exact article title>"`, matching
-  rows in the Articles tab. Points: complete source 20, partial 10, wrong 0.
+- Reactions: user reply (col I), Expert follow-up (col J), user again (col K). Any of
+  them can be inline text (a centered note) by starting it with `[Inline]` or
+  `[Inline text]`, or wrapping it in parentheses. Action results go in col I as
+  `[Inline] <result in plain words>`.
+- Extra credit: if a choice has `credit_stage`, also give `credit_points` and
+  `credit_verdict` (the checker requires both).
+- Meta also needs `user_name`, `meet_image`, `close_image` (from the Character
+  Tracker) and optional `tracking_form`; asset values are image folder/file names.
+- Article screen choices: `[Action] Reply using "<article title>"`, quoting a title
+  in the Articles tab (the tab holds the plain title). Points: complete source 20,
+  partial 10, wrong 0.
 - Stage `strength` / `improvement` lines name this scenario's specifics.
 
 Run the checker and fix everything it flags:
@@ -151,9 +159,9 @@ python3 .claude/skills/build-scenario-sheet/scripts/check_draft.py "Practice Ses
 
 Then present for review **in chat**:
 1. Open questions and conflicts first (AskUserQuestion for decisions).
-2. The flow as a compact table: screen, stage, gate, caller line, prompt.
-3. Each screen's choices: letter, text, verdict, points, goTo, consequence.
-4. Articles with correct/partial/wrong and credit.
+2. The flow as a compact table: screen, stage scored, user message, question.
+3. Each screen's choices: letter, text, rating, points, next screen, reactions.
+4. Articles with right article (Y/Partial/N) and points.
 5. Stages with strength/improvement.
 6. Checker result (warnings you kept, and why).
 
@@ -171,8 +179,11 @@ approves writing it to the sheet.
    Raise `--clear-rows` if any tab of the copy has more rows than that.
 4. `update_values` once per tab (Meta, Stages, Screens, Choices, Articles) using the
    ranges in `sheet-values.json`. Leave the Info tab as it is.
+   The template's example rows are grey italic (`#999999`). On each tab, `repeatCell`
+   the written data rows (row 2 down, the `sheet-values.json` columns only) to
+   `textFormat {italic:false, foregroundColor #333333}` so your content isn't greyed out.
 5. Verify: `get_values` each tab, compare to the draft (row counts, a few spot cells,
-   no leftover template text like "Jordan" / "GoDaddy"). The verdict colors on Choices
+   no leftover grey example text from PS1 Layers like "Samantha"). The rating colors on Choices
    come from the template's conditional formatting and need no work.
 
 ### 7. Hand-off
