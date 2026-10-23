@@ -1,6 +1,6 @@
 ---
 name: build-scenario-sheet
-description: Build the content for a new Care Dojo practice scenario (Wix CC L&D chat/call sim) from a scenario brief - propose personas, research the correct resolution with the Dynamics Expert Assistant through Claude in Chrome, draft every screen/choice/score for review, then fill a copy of the "Chat Simulation Template (Blank)" Google Sheet. Use when the user runs /build-scenario-sheet or asks to create, draft, or research a new practice scenario sheet.
+description: Build the content for a new Care Dojo practice scenario (Wix CC L&D chat/call sim) from a scenario brief - propose personas, research the correct resolution with the Dynamics Expert Assistant through Claude in Chrome, draft every screen/choice/score for review, then fill a copy of the "Chat Simulation Template (Blank)" Google Sheet. Also migrates existing scenario sheets to the template (compare with the live build, let the user pick conflicts, rebuild in place). Use when the user runs /build-scenario-sheet, asks to create, draft, or research a new practice scenario sheet, or asks to move/migrate/transfer old sheets to the new template.
 ---
 
 # Build a scenario sheet
@@ -37,6 +37,7 @@ build, BPO copies and zips is a separate step. Don't start it unless asked.
 | Driving the Expert Assistant | [references/expert-assistant.md](references/expert-assistant.md) |
 | Research log template | [references/research-log-template.md](references/research-log-template.md) |
 | Draft checker + sheet values | `scripts/check_draft.py` |
+| Migrate an old sheet | `scripts/compare_sheet_code.py`, `scripts/sheet_from_code.py`, `scripts/template_requests.py` (see Migrate mode) |
 | Dynamics (UAT) with Expert Assistant | https://wixdynuat.crm4.dynamics.com/main.aspx?forceUCI=1&appid=5dc7a5c3-7785-f011-b4cc-7c1e5261b0bc |
 | Recent built scenarios to match | `Practice Session 4/*/Current/*/index.html` (Connecting a Domain, Contact Updates, Transfer Away) |
 
@@ -192,3 +193,54 @@ Tell the user, briefly: the sheet link (title as a link), the research log path,
 anything left open (unverified facts, assets/screenshots and Meet/Close portraits
 still needed, placeholder asset keys). Offer the next step (HTML build) as a
 follow-up. Don't start it.
+
+## Migrate mode: move an existing sheet to the template
+
+Use when the user asks to move, migrate or transfer older scenario sheets to the new
+template. One sheet at a time, edited in place (same file and link), with a
+`(backup YYYY-MM-DD, old layout)` copy first. Scripts are in `scripts/`; run them with
+`python3 -E` and keep downloads and work files in the scratchpad.
+
+1. **Find the pairs.** List the Drive folder (`search_files` with `parentId`, follow
+   `nextPageToken`, then each subfolder). Match each sheet to its live chat build,
+   `Practice Session */*/Current/*/index.html` (not the BPO copy). Check the persona
+   name: a sheet and a build with different users aren't a pair. No build = the sheet
+   is the source (layout only).
+2. **Download** each sheet with `download_file_content` and
+   `exportMimeType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`.
+   The result is too big to return, so it's saved to a file: decode its `content`
+   (base64) to an .xlsx.
+3. **Compare** (sheets with a build): `compare_sheet_code.py <xlsx> <index.html>
+   --choices-tab "Chat Choices" --json <out>`. It sorts differences into conflicts,
+   blank-in-sheet (copied from code) and format-only (code wins). Try each candidate
+   choices tab (`Chat Choices`, `Copy of Choices`) and use the one with fewer conflicts.
+   Write all conflicts to a review .md in the repo, then **show the user highlights and
+   let them pick per sheet** (sheet vs code, articles shown one by one with links).
+   Never pick a winner yourself. Sheet vs code edit dates (Drive `modifiedTime`, git log)
+   help them decide.
+4. **Generate rows**: `sheet_from_code.py <index.html or old .xlsx> --out <dir> --old <old
+   .xlsx>`. It writes `sheet-values.json` (one `update_values` per tab), `migration.json`
+   and `roundtrip.xlsx`. Engine fields the template has no column for (`showIf`,
+   `skipTo`, `sets`, `speakerIf`, `say`...) become cell notes. Chat title gets the
+   `Practice Chat - ` prefix (user decision 2026-10-22; `--title` to override).
+   Round-trip check before writing: `compare_sheet_code.py roundtrip.xlsx <index.html>`
+   must show only the title.
+5. **Layout.** The template's data tabs carry example screenshots the API can't delete,
+   so never copy them. The first sheet gets a full rebuild:
+   `template_requests.py --template <template-format.json> --migration ... --existing
+   ... --info-sheet-id <copied Info> --replace "<old tabs>" --no-values`, where
+   template-format.json is `get_spreadsheet` on the template with grid data for
+   `Meta!A1:C12`, `Stages!A1:G3`, `Screens!A1:F3`, `Choices!A1:R3`, `Articles!A1:E3`
+   (fields: properties, conditionalFormats, columnMetadata, rowMetadata, and the cells'
+   value/format/note/textFormatRuns). Every later sheet copies the already-migrated
+   sheet's six tabs (`copy_sheet_to_another_spreadsheet`; Info can come from the
+   template, it has no images) and runs the same script with `--copied '{"Meta": id,
+   ...}'`, which only clears values and notes, adds asset labels and notes, deletes the
+   old tabs and orders the new ones. Keep tabs the migration doesn't replace (Call
+   Choices, Copy of Choices).
+6. **Values**: `update_values` per tab from `sheet-values.json`.
+7. **Verify**: download again and compare. With a build: `compare_sheet_code.py` shows
+   only the title. Without: build the new and old sheets with the converter and compare
+   (only title, the `Caller` stand-in and renames you were told to make). Also check no
+   images landed on the new tabs and the converter runs. Report the converter's
+   remaining sheet issues (they were in the old sheet too).
