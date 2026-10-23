@@ -505,7 +505,7 @@ window.SCENARIO = {
           "text": "Sure, just open Domains, click the Domain Actions icon, choose Transfer Away, and you'll get the EPP code by email in up to 24 hours.",
           "verdict": "incorrect",
           "points": 0,
-          "goTo": "s_dynamics",
+          "goTo": "s_clarify",
           "consequence": "Katy: I figured it'd be something like that, but I'd rather confirm the domain's actually eligible before I kick anything off. I've been burned by this before."
         },
         {
@@ -513,7 +513,7 @@ window.SCENARIO = {
           "text": "Hi Katy, thanks for reaching out to Wix Customer Care. My name is [name], and I'd be glad to help you move this one over. Let me pull up the account first so we're working from the same details.",
           "verdict": "correct",
           "points": 5,
-          "goTo": "s_dynamics",
+          "goTo": "s_clarify",
           "consequence": "Katy: Perfect, thanks."
         },
         {
@@ -521,43 +521,43 @@ window.SCENARIO = {
           "text": "Hi Katy! Happy to help with a transfer. Which site is this for?",
           "verdict": "partial",
           "points": 3,
-          "goTo": "s_dynamics",
+          "goTo": "s_clarify",
           "consequence": "Katy: It's for one of my clients. My agency builds and manages their site."
         }
       ]
     },
-    "s_dynamics": {
-      "stage": "dynamics",
+    "s_clarify": {
+      "stage": "clarify",
       "gate": false,
       "prompt": "What do you do next?",
       "choices": [
         {
           "id": "A",
-          "text": "Can you confirm the domain name, that it's registered with Wix (not just connected), and which account it sits under?",
-          "verdict": "partial",
+          "text": "Can you please confirm the domain name, that it's registered with Wix, and which account it sits under?",
+          "verdict": "correct",
           "points": 5,
-          "goTo": "s_dynamics2",
+          "goTo": "s_dynamics",
           "consequence": "Katy: It's registered through Wix. I bought it inside the client's Wix account. It's under their account, and I'm the owner-of-record."
         },
         {
           "id": "B",
-          "text": "Since you're a Partner and know your way around, go ahead and start the transfer on your end and tell me if it errors out.",
+          "text": "Since you're a Partner and know your way around, go ahead and start the transfer on your end and tell me if it errors out. That'll tell us if it's eligible.",
           "verdict": "incorrect",
           "points": 0,
-          "goTo": "s_dynamics2",
-          "consequence": "Katy: I'd really rather confirm it's eligible first. That's kind of why I reached out instead of just doing it myself."
+          "goTo": "s_dynamics",
+          "consequence": "Katy: I'd really rather actually confirm it's eligible first. That's kind of why I reached out instead of just doing it myself."
         },
         {
           "id": "C",
           "text": "Sure, which site is the domain connected to?",
           "verdict": "partial",
           "points": 3,
-          "goTo": "s_dynamics2",
+          "goTo": "s_dynamics",
           "consequence": "Katy: My client's site, but the domain's the part I care about here."
         }
       ]
     },
-    "s_dynamics2": {
+    "s_dynamics": {
       "stage": "dynamics",
       "gate": true,
       "prompt": "What do you check next?",
@@ -598,28 +598,28 @@ window.SCENARIO = {
           "text": "I see you co-own One Creative. How many client sites are you managing on Wix these days? Always great to work with a Partner.",
           "verdict": "correct",
           "points": 10,
-          "goTo": "s_clarify",
-          "consequence": "Katy: Quite a few! We build and manage sites across a bunch of clients. This one's a Brazilian nonprofit we launched last year. Nice to talk to someone who gets the Partner side of things.\n\nExpert: Love it. I'll keep this efficient then."
+          "goTo": "s_clarify2",
+          "consequence": "Katy: Quite a few! We build and manage sites across a bunch of clients. This one's a Brazilian nonprofit we launched last year. Nice to talk to someone who gets the Partner side of things.\n\nExpert: Very nice! And yes, absolutely. I know your time is valuable so we'll keep things speedy."
         },
         {
           "id": "B",
           "text": "How long have you managed this particular domain?",
           "verdict": "partial",
           "points": 4,
-          "goTo": "s_clarify",
-          "consequence": "Katy: About a year now."
+          "goTo": "s_clarify2",
+          "consequence": "Katy: About a year now.\n\nExpert: Got it!"
         },
         {
           "id": "C",
           "text": "Thanks Katy. Let’s go ahead and get into the transfer.",
           "verdict": "incorrect",
           "points": 0,
-          "goTo": "s_clarify",
+          "goTo": "s_clarify2",
           "consequence": "Katy: Sure."
         }
       ]
     },
-    "s_clarify": {
+    "s_clarify2": {
       "stage": "clarify",
       "gate": true,
       "prompt": "What do you ask next?",
@@ -629,15 +629,15 @@ window.SCENARIO = {
           "text": "Just so I’m on the same page: do you want the domain fully moved to GoDaddy, or just pointed there while the registration stays where it is?",
           "verdict": "correct",
           "points": 8,
-          "goTo": "s_clarify2",
+          "goTo": "s_clarify3",
           "consequence": "Katy: Full registration transfer. They want it off Wix entirely, not just pointed."
         },
         {
           "id": "B",
-          "text": "Got it. You want to transfer it, not just update DNS, is that right?",
+          "text": "You want to transfer it, not just update DNS, is that right?",
           "verdict": "partial",
           "points": 4,
-          "goTo": "s_clarify2",
+          "goTo": "s_clarify3",
           "consequence": "Katy: Right, a full registration transfer."
         },
         {
@@ -645,14 +645,14 @@ window.SCENARIO = {
           "text": "No problem, head to GoDaddy and add an A record plus a CNAME pointing to Wix and you'll be set.",
           "verdict": "incorrect",
           "points": 0,
-          "goTo": "s_clarify2",
+          "goTo": "s_clarify3",
           "retry": true,
           "capIfRetried": 4,
           "consequence": "Katy: Hmm, that sounds like connecting a domain, not transferring it."
         }
       ]
     },
-    "s_clarify2": {
+    "s_clarify3": {
       "stage": "clarify",
       "gate": false,
       "prompt": "What do you ask next?",
@@ -690,7 +690,7 @@ window.SCENARIO = {
       "choices": [
         {
           "id": "A",
-          "text": "I’ll check the domain’s status first to make sure it’s eligible, then I'll go over the steps with you. Give me two minutes.",
+          "text": "Alright, please allow me two minutes to go ahead and check the domain’s status to make sure it’s eligible, then I'll go over the steps with you.",
           "verdict": "correct",
           "points": 10,
           "goTo": "s_recreate",
@@ -731,7 +731,7 @@ window.SCENARIO = {
         },
         {
           "id": "B",
-          "text": "[Action] Open the domain in a browser to see if the live site loads.",
+          "text": "[Action] Open the domain in a browser.",
           "verdict": "partial",
           "points": 5,
           "goTo": "s_article",
@@ -739,7 +739,7 @@ window.SCENARIO = {
         },
         {
           "id": "C",
-          "text": "[Action] Tell Katy to unlock the domain and disable DNSSEC in GoDaddy right now.",
+          "text": "Katy can you unlock the domain and disable DNSSEC in GoDaddy right now?",
           "verdict": "incorrect",
           "points": 0,
           "goTo": "s_article",
@@ -784,11 +784,11 @@ window.SCENARIO = {
         },
         {
           "id": "E",
-          "text": "Katy is a Partner, so you offer to walk her through a high-level overview Transfer-Away steps from what you last remember.",
+          "text": "Since you're a Partner, I'm just going to walk you through a high-level overview of the Transfer-Away steps from what I last remember.",
           "verdict": "partial",
           "points": 8,
           "goTo": "s_connect_q",
-          "consequence": "Katy: I appreciate it, but for a .br I’d want to be sure about the steps. I'm sure you understand..."
+          "consequence": "Katy: I appreciate it, but for a .br I’d want to be sure about the steps. I'm sure you understand...\n\nExpert: Yes I totally understand."
         },
         {
           "id": "F",
@@ -910,7 +910,7 @@ window.SCENARIO = {
     "s_pushback": {
       "stage": "solve",
       "gate": true,
-      "speaker": "Katy: Wait, I was looking at Wix’s transfer article and it mentions getting an EPP code and an authorization email. Do I need that code?",
+      "speaker": "Katy: Wait, I was just looking at Wix’s transfer article and it mentions getting an EPP code and an authorization email. Do I need that code?",
       "prompt": "How do you clarify the process?",
       "choices": [
         {
@@ -943,7 +943,7 @@ window.SCENARIO = {
       "stage": "solve",
       "gate": true,
       "speaker": "Katy: Before I head to Registro.br, is there anything I need to do on the Wix side? And does the timing matter?",
-      "prompt": "How do you advise Katy regarding Wix account settings?",
+      "prompt": "How do you advise Katy?",
       "choices": [
         {
           "id": "A",
@@ -967,7 +967,7 @@ window.SCENARIO = {
           "verdict": "partial",
           "points": 1,
           "goTo": "s_pushback",
-          "consequence": "Katy: Whenever? Wouldn’t it matter if it renews while the transfer’s pending? I’ll do it first to be safe."
+          "consequence": "Katy: Whenever? Wouldn’t it matter if it renews while the transfer’s pending? I’ll do it first to be safe.\n\nExpert: Ok no problem."
         }
       ]
     },
@@ -1030,7 +1030,7 @@ window.SCENARIO = {
           "verdict": "incorrect",
           "points": 0,
           "goTo": "__end__",
-          "consequence": "Katy: Um, okay?"
+          "consequence": "Katy: Um, okay? Thanks for the positivity lol."
         }
       ]
     }

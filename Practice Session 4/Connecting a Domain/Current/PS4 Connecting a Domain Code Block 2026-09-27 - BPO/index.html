@@ -53,7 +53,8 @@
     STAGE  : id, name, max, strength (shown at end if done), improvement (if missed).
     SCREEN : stage, gate, speaker (caller line), prompt, choices[].
     CHOICE : text, verdict, points, goTo, credits[], retry/capIfRetried,
-             consequence, stageOverride.
+             consequence, stageOverride, noSend (retry choice that is just greyed
+             out — nothing is sent; the learner must pick another option).
 ==================================================================================
 -->
 
@@ -484,7 +485,7 @@ window.SCENARIO = {
           consequence:"Jordan: The domain is housingourparents.org. I bought it from GoDaddy.",
           credits:[{ stage:"clarify", points:8, verdict:"partial" }] },
         { id:"B", text:"To help you with this, I'll need to send you to a specialized team that deals with these kinds of cases.",
-          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:8 }
+          verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, noSend:true, capIfRetried:5 }
       ]
     },
 
@@ -497,7 +498,7 @@ window.SCENARIO = {
           verdict:"partial", points:5, goTo:"s_roadmap", retry:true, capIfRetried:8 },
         { id:"B", text:"[Action] Find Jordan's active sites in User Manager.",
           verdict:"correct", points:10, goTo:"s_roadmap",
-          consequence:"(You open User Manager. My Site 1 is published on a Free plan, no Premium plan attached, and the domain isn't added in Wix yet.)" },
+          consequence:"(My Site 1 is published on a Free plan, no Premium plan attached, and the domain isn't added in Wix yet.)" },
         { id:"C", text:"[Action] Open housingourparents.org in a browser tab to see if it loads.",
           verdict:"incorrect", points:0, goTo:"s_roadmap", retry:true, capIfRetried:5,
           consequence:"(The site cannot be reached: DNS_PROBE_FINISHED_NXDOMAIN.)" }
@@ -1361,6 +1362,15 @@ window.SCENARIO = {
         notifyResourceNotOpened();
         return;
       }
+    }
+    // noSend retry: nothing is posted — the picked option just greys out and
+    // the learner must choose another one (capped at capIfRetried).
+    if(ch.retry && ch.noSend && !retriedIds.includes(ch.id)){
+      logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+                 text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
+                 notes:'first attempt — option greyed out, not sent (retry capped at '+ch.capIfRetried+')' });
+      renderScreen(scr.id, { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true });
+      return;
     }
     [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
     // The learner's pick renders as:
