@@ -255,6 +255,16 @@ Choosing/looking up the right thing **is** the graded skill — surfacing the an
 
 ---
 
+## Authoring rule — emoji only in chat builds, never in call builds
+
+Call builds use **no emoji or decorative symbols** anywhere in learner-facing text: scenario data (`text`, `say`, `consequence`, prompts), status messages, buttons, and the results screen. That includes ✓ / ✔ / ✅ in sentences such as "Completed ✓" or "✓ We can hear you." A call is spoken, so an emoji in a response or caller line can't be said aloud and reads as unnatural.
+
+- **Chat builds** may use emoji where a real chat would (e.g. a caller's 😊), since they are typed.
+- When converting a chat scenario into a call, strip every emoji from the data and the UI strings.
+- UI icons drawn in code (SVG icons, the step-pill and strengths-list check marks) are not text and are fine in both.
+
+---
+
 ## Rule 4 — Screenshots: choice-gated, no caption, click-to-zoom
 
 Screenshots (the Layers panel, Accessibility Wizard, etc.) live on a screen as

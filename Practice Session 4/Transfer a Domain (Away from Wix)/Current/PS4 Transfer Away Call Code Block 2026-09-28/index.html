@@ -1625,6 +1625,7 @@ window.SCENARIO = {
         // resource" — this gates speaker lines like "(You open CSI.)" that
         // should only appear if the learner actually looked something up.
         help.openedAnyResourceLink = true;
+        if(document.fullscreenElement) fsLostToResource = true;
         help.openedLabels.add((it.label||'').trim().toLowerCase());
         if(it.correct){
           if(callSeconds >= RESOURCE_CREDIT_MIN_SECONDS){
@@ -1645,6 +1646,38 @@ window.SCENARIO = {
       logEvent({type:'helper', helper:'resources', action:'closed Check Resources', seconds:secondsOnResources()});
     }, {once:true});
   }
+
+  /* End screen for the call tab: tells the learner to go back to the course tab
+     (until the sim is embedded in the course). "Back to my course" focuses the
+     opener tab when the browser allows it, then tries to close this one. */
+  function showReturnToCourse(){
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<p style="margin:0 0 1rem">Your results are saved and this activity is marked complete. Go back to your course tab to keep going.</p>'+
+      '<button class="btn btn-dark" type="button" id="backToCourse">Back to my course</button>';
+    openModal("You're all done", wrap);
+    document.getElementById('backToCourse').onclick=()=>{
+      try{ if(window.opener && !window.opener.closed) window.opener.focus(); }catch(_){}
+      window.close();
+    };
+  }
+
+  /* Re-entering full screen needs a click, so when an article tab knocks the sim
+     out of full screen, offer a one-click way back when the learner returns. */
+  let fsLostToResource = false;
+  function offerFullscreenReturn(){
+    if(!fsLostToResource || document.fullscreenElement || document.getElementById('fsReturn')) return;
+    const simWrap=document.getElementById('simWrap');
+    if(!simWrap) return;
+    const b=document.createElement('button');
+    b.id='fsReturn'; b.type='button'; b.className='btn btn-dark';
+    b.style.cssText='position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:50';
+    b.textContent='Go back to full screen';
+    b.onclick=()=>{ fsLostToResource=false; b.remove(); simWrap.requestFullscreen().catch(()=>{}); };
+    document.body.appendChild(b);
+    setTimeout(()=>{ if(b.isConnected){ b.remove(); fsLostToResource=false; } }, 10000);
+  }
+  window.addEventListener('focus', offerFullscreenReturn);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) offerFullscreenReturn(); });
 
   /* Centered in-sim notice (styled like the Check Resources panel) shown when a
      learner tries to reply from an article they never opened in Check Resources —
@@ -1903,7 +1936,7 @@ window.SCENARIO = {
 
       <div class="gate">
         <button class="btn btn-dark" id="finishBtn" type="button" disabled>Finish</button>
-        <span class="hint" id="gateHint">Open all three sections to finish.</span>
+        <span class="hint" id="gateHint">Open all ${dv ? 'four' : 'three'} sections to finish.</span>
       </div>
 
       <div class="actions">
@@ -1919,7 +1952,7 @@ window.SCENARIO = {
     // unlocks only once all three rows have each been opened at least once;
     // re-collapsing a row does not re-lock it. Finishing pushes the Rise/
     // Storyline variable that marks the activity complete.
-    const needIds = ['scorecard','strengths','areas'];
+    const needIds = ['scorecard','strengths','areas'].concat(dv ? ['delivery'] : []);
     const opened  = new Set();
     const finishBtn = document.getElementById('finishBtn');
     const gateHint  = document.getElementById('gateHint');
@@ -1952,6 +1985,8 @@ window.SCENARIO = {
       finishBtn.textContent = 'Completed ✓';
       gateHint.textContent = IS_CALL_TAB ? 'Marked complete. You can close this tab and go back to your course.' : 'Marked complete.';
       gateHint.classList.add('ready');
+      // Return-to-course end screen: the call tab doesn't take learners back by itself.
+      if(IS_CALL_TAB) showReturnToCourse();
     };
 
     document.getElementById('txBtn').onclick = () => {

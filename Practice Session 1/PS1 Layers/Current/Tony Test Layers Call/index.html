@@ -284,7 +284,7 @@
   .dv-ev:hover,.dv-ev:focus-visible{border-color:var(--agent);outline:none}
   .dv-ev.static{cursor:default} .dv-ev.static:hover{border-color:var(--line)}
   .dv-ev-tag{font-size:0.75rem;font-weight:700;color:#fff;border-radius:62rem;padding:0.125rem 0.5rem;white-space:nowrap}
-  .dv-ev-tag.quiet{background:#D0210F} .dv-ev-tag.loud{background:#E0900A}
+  .dv-ev-tag.quiet{background:#B38F00} .dv-ev-tag.loud{background:#3E8A00}
   .dv-ev-where{font-size:0.8125rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .dv-ev-time{font-size:0.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
   .dv-ev-said{grid-column:2 / 4;min-width:0;font-size:0.8125rem;color:var(--ink-2);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -432,7 +432,7 @@
      2) Check Resources + Full screen callouts
      3) "Say it" vs "Click it" choice groups
      4) "What you'll be scored on / this is just practice" note */
-  .intro{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);min-height:37.5rem;display:flex;flex-direction:column}
+  .intro{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);min-height:30rem;display:flex;flex-direction:column}
   .intro-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.25rem 2rem;border-bottom:0.0625rem solid var(--line)}
   .intro-steps{display:flex;gap:0.375rem;flex-wrap:wrap}
   .intro-step{font-size:0.75rem;font-weight:600;color:var(--muted);padding:0.25rem 0.625rem;border-radius:62rem;background:var(--bg);display:inline-flex;align-items:center;gap:0.375rem}
@@ -461,12 +461,23 @@
   .tools-mock{border:0.0625rem solid var(--line);border-radius:var(--r-md);background:#fff;overflow:visible;position:relative;margin-top:2.25rem}
   .tools-mock .panel-head{border-radius:var(--r-md) var(--r-md) 0 0}
   .tools-mock .mock-chat{height:3.5rem;background:repeating-linear-gradient(0deg,#fff 0 0.75rem,#F7F7F7 0.75rem 1.5rem);border-radius:0 0 var(--r-md) var(--r-md)}
-  .tools-mock .hbtn,.tools-mock .btn-end,.tools-mock .fs-pill{pointer-events:none}
+  .tools-mock .btn-end{pointer-events:none}
+  .tools-stage{position:relative;padding-top:3rem}
+  .tools-stage .tools-mock{margin-top:0}
+  .tools-mock .panel-head{flex-wrap:wrap;row-gap:0.75rem}
+  .mock-call{display:flex;flex-direction:column;gap:0.5rem;padding:0.75rem 1rem;pointer-events:none;background:#fff;border-radius:0 0 var(--r-md) var(--r-md)}
+  .mock-call .bubble{font-size:0.8125rem;padding:0.5rem 0.75rem}
+  .mock-opts{border-top:0.0625rem solid var(--line);padding-top:0.625rem;display:flex;flex-direction:column;gap:0.375rem}
+  .mock-opts .choice{margin:0;font-size:0.8125rem;padding:0.5rem 0.75rem}
+  .tools-mock .who-sub{white-space:nowrap}
+  .intro-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .intro-head .intro-fs{position:static;flex:0 0 auto}
+  .app:fullscreen{background:var(--bg);overflow:auto;padding:1.5rem}
   .tag-num{display:inline-flex;align-items:center;justify-content:center;width:1.375rem;height:1.375rem;border-radius:50%;background:#116DFF;color:#fff;font-size:0.75rem;font-weight:700;flex:0 0 auto}
   .tools-mock .tag-num{position:absolute;top:-0.6875rem;box-shadow:0 0 0 0.1875rem #fff}
   .tools-list{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
   .tools-list .demo-card h3{font-size:0.9375rem}
-  .score-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:1rem;align-items:start}
+  .score-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:1rem;align-items:start}
   .score-list{list-style:none;margin:0;padding:0}
   .score-list li{display:flex;justify-content:space-between;gap:0.75rem;font-size:0.875rem;padding:0.4375rem 0;border-bottom:0.0625rem solid #F1F1F1}
   .score-list li:last-child{border-bottom:0}
@@ -474,6 +485,7 @@
   .practice-note{background:#F1F8EE;border:0.0625rem solid #CFE6C6;border-radius:var(--r-md);padding:1rem 1.125rem}
   .practice-note h3{font-size:0.9375rem;color:#1F5A0E;margin:0 0 0.5rem}
   .practice-note ul{margin:0;padding-left:1.125rem}
+  .practice-tip{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0}
   .practice-note li{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0 0 0.375rem}
   .mic-step{max-width:40rem}
   @media (max-width:45rem){
@@ -490,22 +502,31 @@
   .sim-wrap:fullscreen .fs-pill{top:0.75rem;right:0.75rem;z-index:20;padding:0 0.25rem}
   .sim-wrap:fullscreen .fs-pill .fs-label{display:none}
   .sim-wrap:fullscreen .panel-head{padding-right:3.5rem}
-  /* Check Resources pulses until it's opened the first time */
-  .hbtn.pulse{animation:hbpulse 1.8s ease-out infinite}
-  @keyframes hbpulse{0%{box-shadow:0 0 0 0 rgba(17,109,255,.45)}70%{box-shadow:0 0 0 0.625rem rgba(17,109,255,0)}100%{box-shadow:0 0 0 0 rgba(17,109,255,0)}}
   /* First-call coach marks */
   .coach-scrim{position:absolute;inset:0;background:rgba(20,24,40,.35);border-radius:var(--r-lg);z-index:30}
   .coach{position:absolute;z-index:31;background:#101585;color:#fff;border-radius:var(--r-md);padding:0.875rem 1rem;max-width:17.5rem;font-size:0.875rem;line-height:1.45;box-shadow:0 0.75rem 2rem rgba(20,24,40,.3)}
   .coach b{display:block;font-size:0.9375rem;margin-bottom:0.25rem}
   .coach::before{content:"";position:absolute;top:-0.4375rem;width:0.875rem;height:0.875rem;background:#101585;transform:rotate(45deg);border-radius:0.125rem}
   .coach::before{left:var(--ax,1.25rem)}
-  .coach-done{position:absolute;z-index:31;left:50%;transform:translateX(-50%);bottom:1.5rem;background:#fff;border-radius:var(--r-md);padding:1rem 1.25rem;max-width:26rem;width:calc(100% - 2rem);text-align:center;box-shadow:0 0.75rem 2rem rgba(20,24,40,.3)}
+  .coach-done{position:absolute;z-index:31;left:50%;transform:translate(-50%,-50%);top:45%;background:#fff;border-radius:var(--r-md);padding:1rem 1.25rem;max-width:26rem;width:calc(100% - 2rem);text-align:center;box-shadow:0 0.75rem 2rem rgba(20,24,40,.3)}
   .coach-done p{margin:0 0 0.75rem;font-size:0.875rem;color:var(--ink-2)}
   .coach-done .btn{margin:0 auto}
   .lift{z-index:32}
   .hbtn.lift{position:relative}
   /* Spoken vs clicked choice groups */
-  .cgroup{margin:0 0 0.875rem}
+  .cgroup{margin:0 0 0.625rem}
+  /* Testing update: shorter options panel */
+  .sheet-body .choice{padding:0.5625rem 0.875rem;margin:0.3125rem 0;line-height:1.4}
+  .sheet-body .voice{padding:0.625rem 0.875rem;margin:0 0 0.5rem}
+  .sheet-body .voice-status{margin-top:0.375rem}
+  .top-tools{position:absolute;top:0;right:0;display:flex;align-items:center;gap:0.5rem;z-index:5}
+  .top-tools .fs-pill{position:static}
+  .sim-wrap:fullscreen .top-tools{top:0.75rem;right:0.75rem;z-index:20}
+  .info-pill{width:2.25rem;height:2.25rem;border-radius:50%;border:0;background:#fff;box-shadow:0 0.0625rem 0.25rem rgba(20,24,40,.14);font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:1rem;color:var(--ink);cursor:pointer}
+  .info-pill:hover{transform:scale(1.04)}
+  .info-body h4{font-size:0.8125rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0.875rem 0 0.25rem}
+  .info-body h4:first-child{margin-top:0}
+  .info-body p{font-size:0.875rem;color:var(--ink-2);margin:0 0 0.375rem;line-height:1.45}
   .cgroup:last-child{margin-bottom:0}
   .cgroup-head{display:flex;align-items:center;gap:0.5rem;margin:0.375rem 0 0.25rem}
   .cgroup-head .demo-ico{width:1.5rem;height:1.5rem}
@@ -519,6 +540,14 @@
   .choice.act{border-left:0.25rem solid #E07A00;display:flex;align-items:center;gap:0.625rem}
   .choice.act .act-ico{flex:0 0 auto;color:#B34700;display:inline-flex}
   .choice.act .act-ico svg{width:1rem;height:1rem}
+  .choice.act .act-body{display:flex;flex-direction:column;gap:0.25rem;align-items:flex-start}
+  .task-tag{font-size:0.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#6B3FA0;background:#F2ECFA;border-radius:62rem;padding:0.0625rem 0.5rem}
+  .lock-hint{display:none;font-size:0.75rem;color:var(--muted)}
+  .choice.act.locked{background:#F7F7F8;border-left-color:#C9CDD4;cursor:not-allowed}
+  .choice.act.locked .act-ico{color:#9AA0A8}
+  .choice.act.locked .lock-hint{display:block}
+  .choice.act.locked:hover{box-shadow:none;border-color:var(--line-2);border-left-color:#C9CDD4}
+  .msg.system .screenshot.ref img{max-width:min(16rem,100%)}
   .choice.act:hover:not(:disabled){border-color:#E07A00;border-left-color:#E07A00;box-shadow:0 0.125rem 0.625rem rgba(224,122,0,.14)}
   .cbadge.act{color:#B34700;background:#FFF1E6;border-color:#FFD9B8}
   .say-hint{font-size:0.75rem;color:#C81C0F;margin:0.25rem 0 0;display:none}
@@ -841,6 +870,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       if(p && p.SetVar) p.SetVar(name, value);
     } catch(e){}
     try { window.parent && window.parent.postMessage({ type:'setVar', name:name, value:value }, '*'); } catch(e){}
+    // SCORM package: scorm.js (only present in the LMS build) reports score + completion.
+    try { if(!IS_CALL_TAB && window.CDScorm) window.CDScorm.setVar(name, value); } catch(e){}
     // Call tab: pass it back to the course copy, which forwards it to Rise.
     try { if(IS_CALL_TAB && window.opener) window.opener.postMessage({ type:'cd-relay', payload:{ type:'setVar', name:name, value:value } }, '*'); } catch(e){}
   }
@@ -1129,16 +1160,15 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
      TONY TEST: replaces the old mic-check pop-up with a full, stepped screen so
      first-timers are walked through the call before it starts:
        1  How this call works  — "Say it" (spoken) vs "Click it" (actions)
-       2  Your tools           — Check Resources + Full screen callouts
-       3  How you're scored    — the rubric + "this is just practice"
-       4  Test your microphone — the same live mic check as before, inline
+       2  How you're scored    — the rubric + "what to expect"
+       3  Test your microphone — the same live mic check as before, inline
      The mic logic is unchanged from openMicCheck(): Chrome/Edge note, Allow
      prompt, recording note, the 0.22 volume gate, the embedded-page "Open the
      call in a new tab" path, and "Continue without speaking". */
   const MIC_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
   const CLICK_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 3.5v10.2l2.3-2.1 2 4.6 2.1-.9-2-4.5h3.1L9 3.5z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
   const ARROW_SVG = `<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span>`;
-  const INTRO_STEPS = ['How this call works', 'Your tools', "How you're scored", 'Test your mic'];
+  const INTRO_STEPS = ['How this call works', "How you're scored", 'Test your mic'];
   let introMicCheck = null;
 
   function renderIntro(step){
@@ -1150,8 +1180,11 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     let body = '';
     if(step === 0){
       body = `
-        <h1 class="display">How this call works</h1>
-        <p class="intro-lead">This is a practice phone call with ${name}. On each turn, the question shows at the bottom of the call with two kinds of responses: things you <b>say</b> and things you <b>click</b>. Pick one per turn.</p>
+        <div class="intro-head">
+          <h1 class="display">How this call works</h1>
+          <button class="fs-pill intro-fs" id="introFs" type="button" title="Enter full screen">${MAXIMIZE_SVG}<span class="fs-label">Full screen</span></button>
+        </div>
+        <p class="intro-lead">On each turn, a question appears with two kinds of responses: things you <b>say</b> and things you <b>click</b>.</p>
         <div class="demo-grid">
           <div class="demo-card">
             <h3><span class="demo-ico say">${MIC_SVG}</span>Say it</h3>
@@ -1170,54 +1203,18 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
           </div>
         </div>`;
     } else if(step === 1){
-      body = `
-        <h1 class="display">Your tools</h1>
-        <p class="intro-lead">Two buttons sit at the top of the call. You'll want both.</p>
-        <div style="position:relative;padding-top:3rem;margin-top:0.5rem" aria-hidden="true">
-          <span class="fs-pill" style="position:absolute;top:0;right:0">${MAXIMIZE_SVG}<span class="fs-label">Full screen</span></span>
-          <span class="tag-num" style="position:absolute;top:-0.5rem;right:-0.5rem">2</span>
-          <div class="tools-mock">
-            <div class="panel-head">
-              <div class="avatar">${escapeHtml((U.name||'?').charAt(0).toUpperCase())}</div>
-              <div><div class="who-name">${name}</div><div class="who-sub"><span class="livedot"></span> Live call · <span class="timer">00:00</span></div></div>
-              <div class="head-spacer"></div>
-              <span style="position:relative;margin-right:0.5rem"><span class="hbtn" style="display:inline-flex;align-items:center">Check Resources</span><span class="tag-num" style="position:absolute;top:-0.6875rem;left:-0.6875rem">1</span></span>
-              <span class="btn-end">End</span>
-            </div>
-            <div class="mock-chat"></div>
-          </div>
-        </div>
-        <div class="tools-list">
-          <div class="demo-card">
-            <h3><span class="tag-num">1</span>Check Resources</h3>
-            <p>Opens the internal and external help docs for this call. Each one opens in a new browser tab: read it, then come back to this tab to keep going.</p>
-            <p><b>Open the right article during the call, before you answer.</b> A "Reply using…" response only works after you've opened that article, and using resources is part of your score.</p>
-          </div>
-          <div class="demo-card">
-            <h3><span class="tag-num">2</span>Full screen</h3>
-            <p>Expands the call so the conversation and your responses have more room. We recommend turning it on as soon as the call starts.</p>
-            <p>To exit, click the icon again or press <b>Esc</b>.</p>
-          </div>
-        </div>`;
-    } else if(step === 2){
       const rows = S.stages.map(st=>`<li><span>${escapeHtml(st.name)}</span><span class="pts">${st.max} pts</span></li>`).join('');
       body = `
         <h1 class="display">How you're scored</h1>
-        <p class="intro-lead">This is just practice. Nothing is graded while you're on the call. Your feedback comes at the end.</p>
         <div class="score-grid">
+          <div class="practice-note">
+            <h3>What to expect:</h3>
+            <p class="practice-tip">You'll see your score, what you did well, what to work on, and the full transcript at the end.</p>
+            <p class="practice-tip" style="margin-top:0.5rem">Time isn't scored. The timer is there so it feels like a real call.</p>
+          </div>
           <div class="demo-card">
             <h3>What you'll be scored on (${maxTotal} pts)</h3>
             <ul class="score-list">${rows}</ul>
-          </div>
-          <div class="practice-note">
-            <h3>This is just practice</h3>
-            <ul>
-              <li>No score or right/wrong colors during the call. Picking a response just moves the call forward.</li>
-              <li>${name} may react in character to a weaker choice. That's part of the call, not feedback.</li>
-              <li>At the end you'll see your score, what you did well, what to work on, and the full transcript.</li>
-              <li>If you speak your responses, you'll also get feedback on your voice volume.</li>
-              <li>Handle it the way you would a real call. That's how you get the most out of it.</li>
-            </ul>
           </div>
         </div>`;
     } else {
@@ -1238,8 +1235,22 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       </section>`;
     const back = document.getElementById('introBack'); if(back) back.onclick = ()=>renderIntro(step-1);
     const next = document.getElementById('introNext'); if(next) next.onclick = ()=>renderIntro(step+1);
+    bindIntroTools();
     if(isMic) bindMicStep();
     try{ app.scrollIntoView({block:'start'}); }catch(_){}
+  }
+
+  /* Intro Full screen toggle on step 1. It expands #app, so it carries into the call. */
+  function toggleAppFullscreen(){
+    if(document.fullscreenElement) document.exitFullscreen();
+    else if(document.fullscreenEnabled) app.requestFullscreen().catch(()=>{});
+  }
+  function bindIntroTools(){
+    const fs = document.getElementById('introFs');
+    if(fs){
+      if(!document.fullscreenEnabled) fs.style.display='none';
+      else fs.onclick = toggleAppFullscreen;
+    }
   }
 
   function micEnv(){
@@ -1303,7 +1314,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       testB.disabled = true;
       st.textContent = 'Waiting for microphone access… click Allow if your browser asks.';
       const check = introMicCheck = CM.micCheck(document.getElementById('mcFill'), ()=>{
-        st.innerHTML = '<span style="color:#3E8A00;font-weight:700">✓ We can hear you.</span> You\'re ready to start the call.';
+        st.innerHTML = '<span style="color:#3E8A00;font-weight:700">We can hear you.</span> You\'re ready to start the call.';
         startB.disabled = false;
       });
       check.ready.then(()=>{
@@ -1312,7 +1323,29 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         if(introMicCheck === check) introMicCheck = null;
         testB.disabled = false;
         logEvent({ type:'helper', helper:'mic_check', action:'mic failed: ' + ((err && err.name) || 'Error') + (CM.embeddedBlocked() ? ' (embedded page blocks microphone)' : '') });
-        CM.micErrorMessage(err).then(h=>{ st.innerHTML = h; });
+        CM.micErrorMessage(err).then(h=>{
+          st.innerHTML = h;
+          // Some LMS frames (e.g. Wix Smart) block the mic without the up-front
+          // embedded check catching it. If we're in a frame, offer the new tab anyway.
+          let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
+          if(!inFrame || !/^https?:$/.test(location.protocol) || document.getElementById('mcTab')) return;
+          const tabB = document.createElement('button');
+          tabB.className = 'btn btn-dark btn-wide'; tabB.id = 'mcTab'; tabB.type = 'button';
+          tabB.textContent = 'Open the call in a new tab';
+          document.getElementById('introActions').prepend(tabB);
+          st.insertAdjacentHTML('beforeend', '<br>This course page may not allow microphone use. Open the call in a new tab to speak your responses there.');
+          tabB.onclick = ()=>{
+            if(openCallTab()){
+              stopCheck();
+              logEvent({ type:'helper', helper:'mic_check', action:'opened the call in a new tab (after mic error)' });
+              renderWaiting();
+            } else {
+              logEvent({ type:'helper', helper:'mic_check', action:'new tab was blocked' });
+              st.innerHTML = RED("The new tab was blocked.")
+                + " Your browser or course stopped it from opening. Allow pop-ups for this course and try again, or continue without speaking.";
+            }
+          };
+        });
       });
     };
   }
@@ -1384,7 +1417,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
   }
   function markWaitingDone(){
     const t = document.getElementById('wtTitle'); if(!t) return;
-    t.textContent = 'Call complete ✓';
+    t.textContent = 'Call complete';
     document.getElementById('wtText').textContent = "You finished the call in the other tab, so this activity is marked complete. You can close that tab.";
     document.getElementById('wtActions').style.display = 'none';
   }
@@ -1416,7 +1449,10 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     const initial = (U.name||'?').trim().charAt(0).toUpperCase();
     app.innerHTML = `
       <div class="sim-wrap" id="simWrap">
-      <button class="fs-pill" id="fsBtn" type="button" title="Enter full screen" aria-label="Enter full screen"><span id="fsIco">${MAXIMIZE_SVG}</span><span class="fs-label">Full screen</span></button>
+      <div class="top-tools">
+        <button class="info-pill" id="infoBtn" type="button" title="How this call works" aria-label="How this call works">i</button>
+        <button class="fs-pill" id="fsBtn" type="button" title="Enter full screen" aria-label="Enter full screen"><span id="fsIco">${MAXIMIZE_SVG}</span><span class="fs-label">Full screen</span></button>
+      </div>
       <section class="panel" id="sim">
         <div class="panel-head">
           <div class="avatar">${escapeHtml(initial)}</div>
@@ -1468,6 +1504,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       });
     } else if(fsBtn){ fsBtn.style.display='none'; }
     renderHelpers();
+    const infoBtn = document.getElementById('infoBtn'); if(infoBtn) infoBtn.onclick = showCallInfo;
     // TONY TEST: point out Check Resources + Full screen before the first line.
     // The call (and its timer) starts when the learner clicks "Start the call".
     showCoachMarks(()=>{
@@ -1478,7 +1515,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
 
   /* First-call coach marks: a dimmed panel and a short guided tour, one callout
      at a time, anchored to the REAL buttons (which stay lit and clickable):
-       1 Check Resources → 2 Full screen → "This is just practice" + Start.
+       1 Full screen → 2 Check Resources → "This is just practice" + Start.
+     (Replaces the old "Your tools" intro slide.)
      Positions are measured from the live DOM so they track any width. */
   function showCoachMarks(onDone){
     const wrap = document.getElementById('simWrap');
@@ -1486,8 +1524,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     const resBtn = document.querySelector('#helperbar .hbtn');
     const fsBtn = document.getElementById('fsBtn');
     const steps = [];
-    if(resBtn) steps.push({ el:resBtn, title:'Check Resources', text:'Your help docs live here. Open the right article during the call, before you answer. Using resources is part of your score.' });
-    if(fsBtn && fsBtn.style.display !== 'none') steps.push({ el:fsBtn, title:'Full screen', text:'Expand the call for more room. We recommend it. Click again or press Esc to exit.' });
+    if(fsBtn && fsBtn.style.display !== 'none') steps.push({ el:fsBtn, title:'Full screen', text:'Expand the call so the conversation and your responses have more room. We recommend turning it on now. Click again or press Esc to exit.' });
+    if(resBtn) steps.push({ el:resBtn, title:'Check Resources', text:'Your help docs live here. Each article opens in a new tab: read it, then come back. Open the right article before you answer: a "Reply using…" response only works after you\'ve opened it, and only articles opened here count toward your score.' });
     const layer = document.createElement('div');
     layer.innerHTML = `<div class="coach-scrim"></div>`;
     wrap.appendChild(layer);
@@ -1523,6 +1561,24 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       const nb = t.querySelector('button'); nb.onclick = ()=>{ i++; show(); }; nb.focus();
     };
     show();
+  }
+
+  /* Info button: the intro's key points in one panel, available any time
+     during the call without leaving it (testing: instructions should stay reachable). */
+  function showCallInfo(){
+    const name = escapeHtml(U.name);
+    const rows = S.stages.map(st=>`<li><span>${escapeHtml(st.name)}</span><span class="pts">${st.max} pts</span></li>`).join('');
+    const wrap = document.createElement('div'); wrap.className = 'info-body';
+    wrap.innerHTML = `
+      <h4>Responses</h4>
+      <p><b>Say it</b> (blue): what you'd say to ${name}. Hold the mic button and read one aloud.</p>
+      <p><b>Click it</b> (orange): something you'd do in your tools. Don't say it, just click it. Ones tagged <b>Task</b> unlock after you open their article in Check Resources.</p>
+      <h4>Tools</h4>
+      <p><b>Full screen</b> gives the call more room. <b>Check Resources</b> opens your help articles in a new tab. Only articles opened there count.</p>
+      <h4>Scoring (${maxTotal} pts)</h4>
+      <p>Nothing is graded during the call, and time isn't scored. You'll see your score, what you did well, what to work on, and the full transcript at the end.</p>
+      <ul class="score-list">${rows}</ul>`;
+    openModal('How this call works', wrap);
   }
 
   function confirmEnd(){
@@ -1600,18 +1656,19 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     // No caption — learners read the screenshot and locate the info themselves.
     // Click (or Enter/Space) opens the image in a full-screen zoom lightbox.
     const node = appendNode(
-      `<div class="msg system"><figure class="screenshot">`+
+      `<div class="msg system"><figure class="screenshot ref">`+
       `<img src="${escapeHtml(img.src)}" alt="${alt}" loading="lazy" tabindex="0" role="button" `+
       `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
       `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}" `+
       `onerror="this.closest('figure').innerHTML='<div class=\\'noimg\\'>[ screenshot not found ]</div>'">`+
-      `</figure></div>`);
+      `<figcaption>For your reference · click to enlarge</figcaption></figure></div>`);
     // Engine rule: a screenshot revealed by an ACTION (e.g. "You impersonate…and
     // find the element in the Layers panel") pops straight into the full-screen
     // lightbox so the learner sees the detail immediately; they close it (X / Esc /
     // click-outside) to continue. It stays inline in the chat afterward too.
     // Short label only (text before the dash) so the caption names the view without giving away the answer.
-    if(autoOpen) openLightbox(img.src, img.alt || '', (img.caption || '').split(' — ')[0]);
+    // Testing update: reference images no longer pop open by themselves; they
+    // sit inline as a small labeled thumbnail the learner can click to enlarge.
     return node;
   }
 
@@ -1819,9 +1876,9 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     if(!S.resources){ bar.style.display='none'; return; }
     bar.innerHTML='';
     const b=document.createElement('button');
-    b.className='hbtn' + (help.used ? '' : ' pulse');   // pulses until first opened
+    b.className='hbtn';
     b.textContent = S.resources.title || 'Check Resources';
-    b.onclick = ()=>{ help.used = true; b.classList.remove('pulse'); openResources(); };
+    b.onclick = ()=>{ help.used = true; openResources(); };
     bar.appendChild(b);
   }
   /* Opens the scenario's dynamic links in a modal. Opening the resource
@@ -1844,7 +1901,9 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         // resource" — this gates speaker lines like "(You open CSI.)" that
         // should only appear if the learner actually looked something up.
         help.openedAnyResourceLink = true;
+        if(document.fullscreenElement) fsLostToResource = true;
         help.openedLabels.add((it.label||'').trim().toLowerCase());
+        refreshLocks();
         if(it.correct){
           if(callSeconds >= RESOURCE_CREDIT_MIN_SECONDS){
             help.checkedCorrectArticle=true;
@@ -1865,9 +1924,73 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     }, {once:true});
   }
 
+  /* End screen for the call tab: tells the learner to go back to the course tab
+     (until the sim is embedded in the course). "Back to my course" focuses the
+     opener tab when the browser allows it, then tries to close this one. */
+  function showReturnToCourse(){
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<p style="margin:0 0 1rem">Your results are saved and this activity is marked complete. Go back to your course tab to keep going.</p>'+
+      '<button class="btn btn-dark" type="button" id="backToCourse">Back to my course</button>';
+    openModal("You're all done", wrap);
+    document.getElementById('backToCourse').onclick=()=>{
+      try{ if(window.opener && !window.opener.closed) window.opener.focus(); }catch(_){}
+      window.close();
+    };
+  }
+
+  /* Re-entering full screen needs a click, so when an article tab knocks the sim
+     out of full screen, offer a one-click way back when the learner returns. */
+  let fsLostToResource = false;
+  function offerFullscreenReturn(){
+    if(!fsLostToResource || document.fullscreenElement || document.getElementById('fsReturn')) return;
+    const simWrap=document.getElementById('simWrap');
+    if(!simWrap) return;
+    const b=document.createElement('button');
+    b.id='fsReturn'; b.type='button'; b.className='btn btn-dark';
+    b.style.cssText='position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:50';
+    b.textContent='Go back to full screen';
+    b.onclick=()=>{ fsLostToResource=false; b.remove(); simWrap.requestFullscreen().catch(()=>{}); };
+    document.body.appendChild(b);
+    setTimeout(()=>{ if(b.isConnected){ b.remove(); fsLostToResource=false; } }, 10000);
+  }
+  window.addEventListener('focus', offerFullscreenReturn);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) offerFullscreenReturn(); });
+
   /* Centered in-sim notice (styled like the Check Resources panel) shown when a
      learner tries to reply from an article they never opened in Check Resources —
      replaces the old browser alert(). */
+  /* "Reply using …" choices need their quoted article(s) opened in Check
+     Resources. Returns null for other choices, else { need, have } counts.
+     Matching is normalized (case/punctuation/&-and, plus a prefix-tolerant
+     subset test) so labels and quotes don't have to match exactly. */
+  function resourceProgress(text){
+    text = px(text) || '';
+    if(!/\b(?:reply using|provide a response using)\b/i.test(text)) return null;
+    const toks = s => new Set((s||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean));
+    const subset = (a,b) => [...a].every(t => b.has(t));   // a ⊆ b
+    const opened = [...help.openedLabels].map(toks).filter(s => s.size);
+    const needed = (text.match(/["“”'‘’]([^"“”'‘’]+)["“”'‘’]/g)||[])
+                     .map(q => toks(q.replace(/["“”'‘’]/g,''))).filter(s => s.size);
+    const have = needed.filter(n => opened.some(o => subset(n,o) || subset(o,n))).length;
+    return { need: needed.length, have };
+  }
+  // Locked "Task" choices: greyed with a hint until every article is opened.
+  function lockLabel(prog){
+    if(prog.have >= prog.need) return 'Ready';
+    return prog.need > 1 ? `${prog.have} of ${prog.need} opened. Open them in Check Resources to unlock`
+                         : 'Open this resource in Check Resources to unlock';
+  }
+  function refreshLocks(){
+    if(!composerEl) return;
+    composerEl.querySelectorAll('.choice-action[data-res]').forEach(b=>{
+      const prog = resourceProgress(b.dataset.res); if(!prog) return;
+      const done = prog.need > 0 && prog.have >= prog.need;
+      b.classList.toggle('locked', !done);
+      b.setAttribute('aria-disabled', done ? 'false' : 'true');
+      const h = b.querySelector('.lock-hint'); if(h) h.textContent = lockLabel(prog);
+    });
+  }
+
   function notifyResourceNotOpened(){
     const wrap=document.createElement('div');
     wrap.innerHTML='<div class="mnote" style="margin:0;font-size:0.875rem;color:var(--ink-2)">'
@@ -1933,7 +2056,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         + `<span class="cgroup-sub">${voiceOn ? 'Hold the mic and read one aloud' : 'Tap what you would say'}</span></div>`;
       const actHead = `<div class="cgroup-head"><span class="demo-ico click">${CLICK_SVG}</span><span class="cgroup-title">${both ? 'Or click it' : 'Click it'}</span>`
         + `<span class="cgroup-sub">${spoken.length ? "An action you'd take. Don't say it" : "This step is an action. Nothing to say aloud"}</span></div>`;
-      setComposer(`<div class="choices-label" id="choicesLabel">${both ? 'Choose one: say a response or click an action' : (spoken.length ? 'Say one of these responses' : "Click the action you'd take")}</div>`
+      setComposer((both ? `<div class="choices-label" id="choicesLabel">Choose one: say a response or click an action</div>` : '')
                 + (spoken.length ? `<div class="cgroup">${sayHead}<div id="choices"></div><div id="voicepanel"></div>`
                     + (voiceOn ? `<p class="say-hint" id="sayHint">This is a spoken response. Hold the mic button and say it aloud.</p><button class="tap-fallback" id="tapFallback" type="button">Mic not working? Tap responses instead</button>` : '')
                     + `</div>` : '')
@@ -1947,7 +2070,15 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         b._choose = ()=>choose(scr,ch,retriedIds,opts.cap);
         if(act){
           b.className = 'choice act choice-action';
-          b.innerHTML = `<span class="act-ico">${CLICK_SVG}</span><span>${escapeHtml(stripAction(px(ch.text)))}</span>`;
+          const prog = resourceProgress(ch.text);
+          if(prog){
+            // Real task (needs Check Resources), not a stage direction: tag + lock.
+            b.dataset.res = ch.text;
+            b.innerHTML = `<span class="act-ico">${CLICK_SVG}</span><span class="act-body"><span class="task-tag">Task</span>`
+              + `${escapeHtml(stripAction(px(ch.text)))}<span class="lock-hint"></span></span>`;
+          } else {
+            b.innerHTML = `<span class="act-ico">${CLICK_SVG}</span><span>${escapeHtml(stripAction(px(ch.text)))}</span>`;
+          }
           b.onclick = b._choose;
         } else {
           b.className = 'choice say' + (voiceOn ? ' say-only' : '');
@@ -1965,6 +2096,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       };
       spoken.forEach(ch=>{ const b = makeBtn(ch, false); cWrap.appendChild(b); choiceBtns.push({ btn:b, choice:ch, disabled:!!b.disabled }); });
       acts.forEach(ch=>{ aWrap.appendChild(makeBtn(ch, true)); });
+      refreshLocks();
       const tf = document.getElementById('tapFallback');
       if(tf) tf.onclick = ()=>{
         tapFallback = true;
@@ -2008,17 +2140,11 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     // requires the learner to have opened the quoted article(s) in Check
     // Resources first. Matching is normalized (case/punctuation/&-and, plus a
     // prefix-tolerant substring test) and ALL quoted articles must be opened.
-    if(/\b(?:reply using|provide a response using)\b/i.test(px(ch.text)||'')){
-      const toks = s => new Set((s||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean));
-      const subset = (a,b) => [...a].every(t => b.has(t));   // a ⊆ b
-      const opened = [...help.openedLabels].map(toks).filter(s => s.size);
-      const needed = (px(ch.text).match(/["“”'‘’]([^"“”'‘’]+)["“”'‘’]/g)||[])
-                       .map(q => toks(q.replace(/["“”'‘’]/g,''))).filter(s => s.size);
-      const missing = needed.some(n => !opened.some(o => subset(n,o) || subset(o,n)));
-      if(!needed.length || missing){
-        notifyResourceNotOpened();
-        return;
-      }
+    // Stage lock: "Reply using …" needs ALL quoted article(s) opened first.
+    const prog = resourceProgress(ch.text);
+    if(prog && (!prog.need || prog.have < prog.need)){
+      notifyResourceNotOpened();
+      return;
     }
     [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
     // The learner's pick renders as:
@@ -2160,7 +2286,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
 
       <div class="gate">
         <button class="btn btn-dark" id="finishBtn" type="button" disabled>Finish</button>
-        <span class="hint" id="gateHint">Open all three sections to finish.</span>
+        <span class="hint" id="gateHint">Open all ${dv ? 'four' : 'three'} sections to finish.</span>
       </div>
 
       <div class="actions">
@@ -2173,10 +2299,10 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
 
     // ---- Accordion toggle + completion gate ----------------------------------
     // Each row opens independently (mirrors the Wix FAQ). The Finish button
-    // unlocks only once all three rows have each been opened at least once;
-    // re-collapsing a row does not re-lock it. Finishing pushes the Rise/
-    // Storyline variable that marks the activity complete.
-    const needIds = ['scorecard','strengths','areas'];
+    // unlocks only once every row (three, or four with Voice and Projection) has
+    // been opened at least once; re-collapsing a row does not re-lock it.
+    // Finishing pushes the Rise/Storyline variable that marks the activity complete.
+    const needIds = ['scorecard','strengths','areas'].concat(dv ? ['delivery'] : []);
     const opened  = new Set();
     const finishBtn = document.getElementById('finishBtn');
     const gateHint  = document.getElementById('gateHint');
@@ -2201,14 +2327,17 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     finishBtn.onclick = () => {
       if(finishBtn.disabled || finished) return;
       finished = true;
+      pushRiseVar('activity_score', String(Math.round(sum / maxTotal * 100)));   // percent, read by the SCORM wrapper
       pushRiseVar('activity_complete', 'true');
       logEvent({ type:'complete', points:sum, seconds:callSeconds,
                  notes:'learner reviewed all end-screen sections and finished — ' + sum + ' / ' + maxTotal });
       finishBtn.classList.remove('btn-dark');
       finishBtn.classList.add('done');
-      finishBtn.textContent = 'Completed ✓';
+      finishBtn.textContent = 'Completed';
       gateHint.textContent = IS_CALL_TAB ? 'Marked complete. You can close this tab and go back to your course.' : 'Marked complete.';
       gateHint.classList.add('ready');
+      // Return-to-course end screen: the call tab doesn't take learners back by itself.
+      if(IS_CALL_TAB) showReturnToCourse();
     };
 
     document.getElementById('txBtn').onclick = () => {
@@ -2368,19 +2497,15 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     let sum=0; for(let i=0;i<cm.data.length;i++){ const v=(cm.data[i]-128)/128; sum+=v*v; }
     return Math.min(1, Math.sqrt(sum/cm.data.length) * 3.2);
   }
-  /* Whole-bar color for the CURRENT loudness. Quiet is penalized hardest:
-     the entire red→orange band lives below the 0.22 "minimum projection" mark,
-     the good range is solid green, and only an extreme shout (>~0.9) tips into
-     a soft amber "ease off" — because too loud is far less bad than too quiet. */
+  /* Whole-bar color for the CURRENT loudness. Only "too quiet" gets a warning
+     color, and it's yellow, not red, so the meter never reads as failing.
+     Average through loud is green (testing: red/amber at normal volume caused stress). */
   const METER_STOPS = [
-    [0.00, [179, 18,  0 ]],   // deep red   — barely audible
-    [0.12, [230, 34, 20 ]],   // red        — too quiet
-    [0.20, [245,166, 35 ]],   // orange     — just under the projection threshold mark
-    [0.25, [232,195,  0 ]],   // amber-yellow
+    [0.00, [232,195,  0 ]],   // yellow      — too quiet
+    [0.20, [232,195,  0 ]],   // yellow      — just under the projection threshold mark
     [0.30, [143,203,  0 ]],   // yellow-green — entering the good zone
-    [0.42, [ 95,178,  0 ]],   // green      — good projection
-    [0.88, [ 79,163,  0 ]],   // solid green (holds through loud)
-    [1.00, [224,160, 32 ]]    // soft amber — only an extreme shout
+    [0.42, [ 95,178,  0 ]],   // green       — good projection
+    [1.00, [ 62,138,  0 ]]    // deeper green — loud is fine
   ];
   function meterColor(L){
     L = Math.max(0, Math.min(1, L));
@@ -2420,7 +2545,9 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
         const pct = Math.round(smoothed*100 / STEP_PCT) * STEP_PCT;
         if(pct !== lastPct){ cm.meterFill.style.width = pct + '%'; lastPct = pct; }
         const bucket = Math.round(smoothed / 0.05);           // recolor per 5% band
-        if(bucket !== lastBucket){ cm.meterFill.style.background = meterColor(smoothed); lastBucket = bucket; }
+        // Grey while the learner isn't holding the mic, so pauses never look like a warning.
+        const b2 = cm.recognizing ? bucket : -2;
+        if(b2 !== lastBucket){ cm.meterFill.style.background = cm.recognizing ? meterColor(smoothed) : '#D5DBE3'; lastBucket = b2; }
       }
       cm.rafId = requestAnimationFrame(step);
     };
@@ -2541,7 +2668,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
 
       if(strong){
         top.btn.classList.add('matched');
-        say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;✓ matched — sending…`);
+        say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;Matched. Sending…`);
         committed = true;
         setTimeout(()=>commit(top), 600);   // brief beat so the learner sees the match
         return;
@@ -2581,7 +2708,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     if(!voiced.length) return frames.length ? Math.max(...frames) : 0;
     return voiced[Math.min(voiced.length - 1, Math.floor(voiced.length * 0.9))];
   }
-  function zoneOf(L){ return L < ZONE_LOW ? 'quiet' : (L > ZONE_HIGH ? 'loud' : 'good'); }
+  // Only quiet is flagged. Loud counts as good (testing: "a bit loud" felt wrong at normal volume).
+  function zoneOf(L){ return L < ZONE_LOW ? 'quiet' : 'good'; }
   function logSpoken(kind, prompt, text){
     const lvl = speakingLevel(cm.curFrames);
     cm.volLog.push({ kind, prompt:String(prompt||''), text:String(text||''), level:lvl, peak:cm.peak,
@@ -2638,7 +2766,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       const want = tokens(line), heard = new Set(tokens(said));
       const cov = want.length ? want.filter(w=>heard.has(w)).length / want.length : 1;
       if(cov < 0.3){ say(`<span class="heard">“${escapeText(said)}”</span><br>That didn't sound like the line. Try again, reading it as written.`); return; }
-      say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;✓ sending…`);
+      say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;Sending…`);
       setTimeout(()=>send(true), 500);
     }
     micBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); start(); });
@@ -2677,10 +2805,9 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       </div>
       <div class="dv-times"><span>0:00</span><span id="dvTime"><b>0:00</b> / ${fmtTime(total)}</span><span>${fmtTime(total)}</span></div>
       <div class="dv-legend">
-        <span><i style="background:${meterColor(0.12)}"></i>Too quiet</span>
+        <span><i style="background:${meterColor(0.12)}"></i>Quiet</span>
         <span><i style="background:${meterColor(0.6)}"></i>Good</span>
-        <span><i style="background:${meterColor(1)}"></i>Too loud</span>
-        <span><i style="background:#D5DBE3"></i>Not speaking</span>
+        <span><i style="background:${meterColor(1)}"></i>Loud</span>
         <span><i style="background:rgba(79,163,0,.25)"></i>Good zone</span>
       </div>`;
   }
@@ -2699,7 +2826,8 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
             + `<rect x="0" y="${(mid+zoneBot).toFixed(1)}" width="${W}" height="${(zoneTop-zoneBot).toFixed(1)}" fill="rgba(79,163,0,.09)"/>`;
     log.filter(e=>e.zone !== 'good').forEach(e=>{
       const x0 = e.t0 / total * W, x1 = Math.max(x0 + pitch, e.t1 / total * W);
-      out += `<rect x="${x0.toFixed(1)}" y="0" width="${(x1-x0).toFixed(1)}" height="${H}" rx="4" fill="${e.zone==='quiet' ? 'rgba(208,33,15,.08)' : 'rgba(224,144,10,.11)'}"/>`;
+      if(e.zone !== 'quiet') return;   // only quiet stretches are tinted; loud is fine
+      out += `<rect x="${x0.toFixed(1)}" y="0" width="${(x1-x0).toFixed(1)}" height="${H}" rx="4" fill="rgba(232,195,0,.14)"/>`;
     });
     out += `<line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="#E6EAF0" stroke-width="1"/>`;
     b.forEach((k, i)=>{
@@ -2784,6 +2912,12 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
       msg = red("No microphone found.") + " Plug in your headset, then try again.";
     } else if(name==='NotReadableError' || name==='AbortError' || name==='TrackStartError'){
       msg = red("Your microphone is busy.") + " Another app may be using it (for example Zoom or Teams). Close it, then try again.";
+    } else if((name==='NotAllowedError' || name==='SecurityError') && /system/i.test((err && err.message) || '')){
+      // macOS/Windows privacy settings block Chrome itself, so Chrome never asks.
+      msg = red("Your computer is blocking Chrome from using the microphone.") + " On a Mac, go to <b>System Settings › Privacy &amp; Security › Microphone</b> and turn on Google Chrome, then quit and reopen Chrome. On Windows, go to <b>Settings › Privacy › Microphone</b>.";
+    } else if((name==='NotAllowedError' || name==='SecurityError') && (location.origin === 'null' || !location.origin)){
+      // Opaque origin: the host serves this page sandboxed, which blocks the mic without a prompt.
+      msg = red("The site hosting this activity blocks microphone use.") + " Your Chrome settings aren't the cause.";
     } else if(name==='NotAllowedError' || name==='SecurityError' || name==='PermissionDeniedError'){
       let state = '';
       try{ state = (await navigator.permissions.query({ name:'microphone' })).state; }catch(_){}
@@ -2793,7 +2927,13 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
     } else {
       msg = red("The microphone couldn't start.");
     }
-    return msg + `<span class="mc-code">Browser reported: ${escapeText(name)}${embedded ? ' (embedded page blocks microphone)' : ''}</span>`;
+    // Extra detail for L&D troubleshooting: Chrome's own message, the permission
+    // state, and the page's origin ("null" = sandboxed by the host).
+    let perm = '';
+    try{ perm = (await navigator.permissions.query({ name:'microphone' })).state; }catch(_){ perm = 'n/a'; }
+    let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
+    const detail = [err && err.message ? '"' + err.message + '"' : '', 'permission: ' + perm, 'origin: ' + (location.origin || 'none'), inFrame ? 'in a frame' : 'own tab'].filter(Boolean).join(' · ');
+    return msg + `<span class="mc-code">Browser reported: ${escapeText(name)}${embedded ? ' (embedded page blocks microphone)' : ''}<br>${escapeText(detail)}</span>`;
   }
 
   function shortLabel(ch){
@@ -2846,7 +2986,7 @@ image:{ src:"Scenario%20Screenshots/Lenas%20Organize%20DOM%20Order.png", caption
          <p class="dv-note">${note}</p>
          <div class="dv-section">Volume events<span class="dv-ev-count">${events}</span></div>
          ${events
-           ? `<p class="dv-ev-sub">Each time you spoke outside the good volume zone (${quiet} too quiet, ${loud} too loud). Click one to hear that moment.</p><ol class="dv-ev-list">${evItems}</ol>`
+           ? `<p class="dv-ev-sub">Each time you spoke too quietly (${quiet}). Click one to hear that moment.</p><ol class="dv-ev-list">${evItems}</ol>`
            : `<p class="dv-ev-sub">None. Every response stayed in the good volume zone.</p>`}
          ${graphHTML(log)}
          <div class="dv-playback" id="callPlayback">
