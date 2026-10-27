@@ -22,7 +22,7 @@
         .then(function (r) { return r.ok ? r.json() : []; })
         .catch(function () { return []; });
     }
-    var skip = /previous versions|\bcopy\b|\(outdated\)|build & (check|review)/i;
+    var skip = /build & (check|review)/i;
     var found = []; // {session, topic, name, path}
     function walk(path, session, topic) {
       return list(path).then(function (items) {
@@ -30,7 +30,7 @@
           if (skip.test(it.name)) return null;
           var p = path.concat(it.name);
           if (it.type === 'directory') return walk(p, session, topic || it.name);
-          if (/\.html$/i.test(it.name)) found.push({ session: session, topic: topic || '', name: it.name, path: p });
+          if (/\.html$/i.test(it.name)) found.push({ session: session, topic: topic || '', name: it.name, path: p, old: /previous versions/i.test(p.join('/')) });
           return null;
         }));
       });
@@ -43,15 +43,18 @@
       var bySession = {};
       found.forEach(function (f) { (bySession[f.session] = bySession[f.session] || []).push(f); });
       var html = '<h2>Scenarios</h2>';
+      function card(f) {
+        var href = '/' + f.path.map(encodeURIComponent).join('/');
+        var label = f.name.replace(/\.html$/i, '');
+        return '<a class="b44-card" href="' + href + '"><b>' + label + '</b>' +
+          (f.topic ? '<span>' + f.topic + '</span>' : '') + '</a>';
+      }
+      function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
       Object.keys(bySession).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).forEach(function (s) {
-        html += '<h3>' + s + '</h3><div class="b44-grid">';
-        bySession[s].sort(function (a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }).forEach(function (f) {
-          var href = '/' + f.path.map(encodeURIComponent).join('/');
-          var label = f.name.replace(/\.html$/i, '');
-          html += '<a class="b44-card" href="' + href + '"><b>' + label + '</b>' +
-            (f.topic ? '<span>' + f.topic + '</span>' : '') + '</a>';
-        });
-        html += '</div>';
+        var cur = bySession[s].filter(function (f) { return !f.old; }).sort(sorter);
+        var old = bySession[s].filter(function (f) { return f.old; }).sort(sorter);
+        html += '<h3>' + s + '</h3><div class="b44-grid">' + cur.map(card).join('') + '</div>';
+        if (old.length) html += '<details><summary>Older versions (' + old.length + ')</summary><div class="b44-grid">' + old.map(card).join('') + '</div></details>';
       });
       if (!found.length) html += '<p class="b44-note">No scenarios found.</p>';
       box.innerHTML = html;
