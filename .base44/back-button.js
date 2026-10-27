@@ -80,7 +80,7 @@
   btn.title = 'Back to home';
   btn.setAttribute('aria-label', 'Back to home');
   btn.style.cssText =
-    'position:fixed;z-index:2147483646;left:16px;bottom:16px;' +
+    'position:fixed;z-index:2147483646;left:16px;top:16px;' +
     'display:inline-flex;align-items:center;gap:6px;' +
     'background:#8fa3ff;color:#1e1b4b;text-decoration:none;' +
     'border:0;border-radius:999px;padding:11px 18px;' +
