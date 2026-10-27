@@ -22,3 +22,14 @@ pre a:hover { background: linear-gradient(90deg, #7c3aed, #c026d3); color: #fff;
 .start .no { background: #fdf2f8 !important; border-left-color: #db2777 !important; }
 .start code { background: #f3e8ff; padding: 1px 5px; border-radius: 4px; }
 .start li::marker { color: #7c3aed; font-weight: 700; }
+
+#b44-scenarios h2 { margin: 18px 0 6px; }
+#b44-scenarios h3 { margin: 14px 0 8px; font-size: 16px; color: #5b21b6; }
+#b44-scenarios .b44-note { color: #5b6270; }
+#b44-scenarios .b44-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+#b44-scenarios .b44-card { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 12px;
+  background: #f3e8ff; color: #4c1d95; text-decoration: none; border: 1px solid #d8b4fe; }
+#b44-scenarios .b44-card span { font-size: 12px; color: #6b21a8; word-break: break-word; }
+#b44-scenarios .b44-card:hover { background: linear-gradient(135deg, #e9d5ff, #fbcfe8); }
+details > summary { cursor: pointer; margin: 16px 0 8px; font-weight: 600; }
+#b44-scenarios { margin-bottom: 24px; }
