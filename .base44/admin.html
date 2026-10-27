@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage documents</title>
+<style>
+  :root { --b:#8fa3ff; --b2:#b6aff7; --ink:#1e1b4b; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system,"Segoe UI",Roboto,Arial,sans-serif; max-width: 820px; margin: 0 auto; padding: 28px 24px 48px; color: var(--ink); background: #fff; min-height: 100vh; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  p.note { color: #4b5270; margin: 0 0 18px; font-size: 14px; }
+  a.home { color: var(--b); font-weight: 600; text-decoration: none; }
+  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin: 16px 0 18px; padding: 12px 14px; background:#e1f8ff; border:1px solid var(--b2); border-radius:12px; }
+  .bar .sp { flex:1 1 120px; }
+  input[type=password] { padding: 10px 12px; border:1px solid var(--b2); border-radius:8px; font-size:15px; width: 100%; }
+  button { cursor:pointer; border:0; border-radius:999px; padding:10px 18px; font:600 14px/1 inherit; background:var(--b); color:#1e1b4b; }
+  button.ghost { background:#eef3ff; color:var(--ink); }
+  button:disabled { opacity:.5; cursor:default; }
+  #status { font-size:14px; font-weight:600; min-height:18px; }
+  #status.ok { color:#1f8a4c; } #status.err { color:#c0392b; }
+  #panel { display:none; }
+  h3 { margin: 18px 0 8px; font-size:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:8px; }
+  label.doc { display:flex; gap:8px; align-items:flex-start; padding:10px 12px; border:1px solid var(--b2); border-radius:10px; background:#f7f6ff; cursor:pointer; }
+  label.doc input { margin-top:2px; }
+  label.doc b { font-size:14px; overflow-wrap:anywhere; }
+  label.doc span { display:block; font-size:12px; color:#3b3a6b; word-break:break-word; }
+  .actions { position: sticky; bottom: 0; background:#fff; padding: 14px 0; border-top:1px solid #eee; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .count { font-size:14px; color:#4b5270; }
+  .loading { color:#4b5270; }
+</style>
+</head>
+<body>
+  <h1>Manage documents</h1>
+  <p class="note"><a class="home" href="/">&larr; Back to home</a> &middot; Choose which documents appear on the public home page. Only you can change this.</p>
+
+  <div class="bar" id="login">
+    <input type="password" id="pw" placeholder="Admin password" autocomplete="current-password">
+    <button id="signin">Sign in</button>
+    <span class="sp"></span>
+    <span id="login-msg" class="note"></span>
+  </div>
+
+  <div id="panel">
+    <div id="status"></div>
+    <div id="list"><p class="loading">Loading documents&hellip;</p></div>
+    <div class="actions">
+      <button id="save">Save selection</button>
+      <button id="all" class="ghost">Select all</button>
+      <button id="none" class="ghost">Clear</button>
+      <span class="count" id="count"></span>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var TOKEN_KEY = 'b44_admin_token';
+  var token = sessionStorage.getItem(TOKEN_KEY) || '';
+  var scenarios = [];      // discovered {session, topic, name, path}
+  var published = {};      // path -> true
+  var configured = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+  function status(msg, kind) { var s = $('status'); s.textContent = msg || ''; s.className = kind || ''; }
+  function authHeader() { return token ? { Authorization: 'Bearer ' + token } : {}; }
+
+  // --- scenario discovery (mirrors the home page tree walk) ---
+  function listDir(path) {
+    return fetch('/_b44_tree/' + path.map(encodeURIComponent).join('/') + '/')
+      .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+  }
+  var skip = /previous versions|build & (check|review)/i;
+  function walk(path, session, topic) {
+    return listDir(path).then(function (items) {
+      return Promise.all(items.map(function (it) {
+        if (skip.test(it.name)) return null;
+        var p = path.concat(it.name);
+        if (it.type === 'directory') return walk(p, session, topic || it.name);
+        if (/\.html$/i.test(it.name)) scenarios.push({ session: session, topic: topic || '', name: it.name, path: p, old: /previous versions/i.test(p.join('/')) });
+        return null;
+      }));
+    });
+  }
+  function discover() {
+    return listDir([]).then(function (root) {
+      var sessions = root.filter(function (x) { return x.type === 'directory' && /^Practice Session/.test(x.name); })
+        .sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); });
+      return Promise.all(sessions.map(function (s) { return walk([s.name], s.name, ''); }));
+    });
+  }
+
+  function render() {
+    var bySession = {};
+    scenarios.forEach(function (f) { (bySession[f.session] = bySession[f.session] || []).push(f); });
+    var html = '';
+    function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
+    Object.keys(bySession).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).forEach(function (s) {
+      var cur = bySession[s].filter(function (f) { return !f.old; }).sort(sorter);
+      html += '<h3>' + s + '</h3><div class="grid">' + cur.map(function (f) {
+        var key = f.path.join('/');
+        var on = !!published[key];
+        return '<label class="doc"><input type="checkbox" data-path="' + key.replace(/"/g, '&quot;') + '"' + (on ? ' checked' : '') + '><span><b>' + f.name.replace(/\.html$/i, '') + '</b>' + (f.topic ? '<br>' + f.topic : '') + '</span></label>';
+      }).join('') + '</div>';
+    });
+    if (!scenarios.length) html = '<p class="loading">No documents found.</p>';
+    $('list').innerHTML = html;
+    updateCount();
+  }
+  function updateCount() {
+    var n = document.querySelectorAll('input[data-path]:checked').length;
+    $('count').textContent = n + ' of ' + scenarios.length + ' selected' + (configured ? '' : ' (not yet applied — home shows all)');
+  }
+  function selectedPaths() {
+    return Array.prototype.map.call(document.querySelectorAll('input[data-path]:checked'), function (c) { return c.getAttribute('data-path'); });
+  }
+
+  function loadState() {
+    return fetch('/_b44_api/documents', { headers: authHeader() }).then(function (r) { return r.json(); });
+  }
+
+  function enterPanel() {
+    $('login').style.display = 'none';
+    $('panel').style.display = 'block';
+    status('Loading documents…');
+    return Promise.all([discover(), loadState()]).then(function (res) {
+      configured = !!(res[1] && res[1].configured);
+      published = {};
+      if (res[1] && Array.isArray(res[1].published)) res[1].published.forEach(function (p) { published[p] = true; });
+      render();
+      status(configured ? 'Selection is live on the home page.' : 'No selection saved yet — home currently shows all documents.', 'ok');
+    }).catch(function () { status('Could not load documents.', 'err'); });
+  }
+
+  $('signin').addEventListener('click', function () {
+    var pw = $('pw').value;
+    if (!pw) { $('login-msg').textContent = 'Enter your password.'; return; }
+    token = pw;
+    sessionStorage.setItem(TOKEN_KEY, token);
+    loadState().then(function (r) {
+      // A successful read confirms the password; the server returns 401 on a bad one.
+      enterPanel();
+    }).catch(function () {
+      token = ''; sessionStorage.removeItem(TOKEN_KEY);
+      $('login-msg').textContent = 'Wrong password or admin not configured.';
+    });
+  });
+  $('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('signin').click(); });
+
+  $('save').addEventListener('click', function () {
+    status('Saving…');
+    fetch('/_b44_api/documents', {
+      method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, authHeader()),
+      body: JSON.stringify({ published: selectedPaths() })
+    }).then(function (r) { return r.json(); }).then(function (s) {
+      if (s && s.error) { status(s.error, 'err'); return; }
+      configured = true;
+      published = {};
+      (s.published || []).forEach(function (p) { published[p] = true; });
+      render();
+      status('Saved. Only the selected documents now show on the home page.', 'ok');
+    }).catch(function () { status('Save failed.', 'err'); });
+  });
+  $('all').addEventListener('click', function () { document.querySelectorAll('input[data-path]').forEach(function (c) { c.checked = true; }); updateCount(); });
+  $('none').addEventListener('click', function () { document.querySelectorAll('input[data-path]').forEach(function (c) { c.checked = false; }); updateCount(); });
+  document.addEventListener('change', function (e) { if (e.target.matches('input[data-path]')) updateCount(); });
+
+  // If a saved session exists, try to resume silently.
+  if (token) {
+    loadState().then(function () { enterPanel(); }).catch(function () { sessionStorage.removeItem(TOKEN_KEY); token = ''; });
+  }
+})();
+</script>
+</body>
+</html>

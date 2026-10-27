@@ -35,14 +35,22 @@
         }));
       });
     }
+    // Fetch the admin's document selection. When configured, only listed documents display;
+    // until the admin saves a selection, the home page shows everything (out-of-the-box behaviour).
+    var selectionP = fetch('/_b44_api/documents').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
     fetch('/_b44_tree/').then(function (r) { return r.json(); }).then(function (root) {
       var sessions = root.filter(function (x) { return x.type === 'directory' && /^Practice Session/.test(x.name); })
         .sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); });
       return Promise.all(sessions.map(function (s) { return walk([s.name], s.name, ''); }));
-    }).then(function () {
+    }).then(function () { return selectionP; }).then(function (sel) {
+      sel = sel || {};
+      var configured = !!sel.configured;
+      var allowed = {};
+      if (configured && Array.isArray(sel.published)) sel.published.forEach(function (p) { allowed[p] = true; });
+      var visible = configured ? found.filter(function (f) { return allowed[f.path.join('/')]; }) : found;
       var bySession = {};
-      found.forEach(function (f) { (bySession[f.session] = bySession[f.session] || []).push(f); });
-      var html = '<h2>Scenarios</h2>';
+      visible.forEach(function (f) { (bySession[f.session] = bySession[f.session] || []).push(f); });
+      var html = '<h2>Scenarios <a class="b44-admin" href="/_b44_admin" title="Choose which documents display">Manage</a></h2>';
       function card(f) {
         var href = '/' + f.path.map(encodeURIComponent).join('/');
         var label = f.name.replace(/\.html$/i, '');
@@ -54,7 +62,9 @@
         var cur = bySession[s].filter(function (f) { return !f.old; }).sort(sorter);
         html += '<h3>' + s + '</h3><div class="b44-grid">' + cur.map(card).join('') + '</div>';
       });
-      if (!found.length) html += '<p class="b44-note">No scenarios found.</p>';
+      if (!visible.length) html += configured
+        ? '<p class="b44-note">No documents are published yet. Use <a href="/_b44_admin">Manage</a> to choose which to display.</p>'
+        : '<p class="b44-note">No scenarios found.</p>';
       box.innerHTML = html;
     });
   }

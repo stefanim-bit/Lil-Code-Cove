@@ -35,5 +35,24 @@ services:
       retries: 3
       start_period: 3s
 
+  # Document visibility store: only the admin (B44_ADMIN_PASSWORD) can change which documents
+  # the public home page lists. Data lives in a named volume, never committed.
+  docs:
+    image: node:22-alpine
+    env_file:
+      - /run/base44/app.env
+    volumes:
+      - ./.base44/docs-server.js:/app/server.js:ro
+      - docs-data:/data
+    command: ["node", "/app/server.js"]
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8081/_b44_api/documents || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+
 volumes:
   comments-data:
+  docs-data:

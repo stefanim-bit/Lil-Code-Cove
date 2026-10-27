@@ -36,4 +36,7 @@ details > summary { cursor: pointer; margin: 16px 0 8px; font-weight: 600; }
 #b44-scenarios { margin-bottom: 24px; }
 #b44-scenarios .b44-card b { overflow-wrap: anywhere; }
 #b44-scenarios .b44-card { min-width: 0; }
+#b44-scenarios h2 { display:flex; align-items:center; gap:10px; }
+#b44-scenarios .b44-admin { margin-left:auto; font-size:13px; font-weight:600; color:#1e1b4b; background:#c7d1ff; border:1px solid #b6aff7; border-radius:999px; padding:6px 14px; text-decoration:none; }
+#b44-scenarios .b44-admin:hover { background:#8fa3ff; }
 h1 { background: none; color: #1e1b4b; -webkit-text-fill-color: #1e1b4b; }
