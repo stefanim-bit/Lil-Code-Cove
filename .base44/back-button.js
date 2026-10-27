@@ -22,7 +22,7 @@
         .then(function (r) { return r.ok ? r.json() : []; })
         .catch(function () { return []; });
     }
-    var skip = /build & (check|review)/i;
+    var skip = /previous versions|build & (check|review)/i;
     var found = []; // {session, topic, name, path}
     function walk(path, session, topic) {
       return list(path).then(function (items) {
@@ -52,9 +52,7 @@
       function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
       Object.keys(bySession).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).forEach(function (s) {
         var cur = bySession[s].filter(function (f) { return !f.old; }).sort(sorter);
-        var old = bySession[s].filter(function (f) { return f.old; }).sort(sorter);
         html += '<h3>' + s + '</h3><div class="b44-grid">' + cur.map(card).join('') + '</div>';
-        if (old.length) html += '<details><summary>Older versions (' + old.length + ')</summary><div class="b44-grid">' + old.map(card).join('') + '</div></details>';
       });
       if (!found.length) html += '<p class="b44-note">No scenarios found.</p>';
       box.innerHTML = html;
@@ -84,7 +82,7 @@
   btn.style.cssText =
     'position:fixed;z-index:2147483646;left:16px;bottom:16px;' +
     'display:inline-flex;align-items:center;gap:6px;' +
-    'background:#1355d6;color:#fff;text-decoration:none;' +
+    'background:#8fa3ff;color:#1e1b4b;text-decoration:none;' +
     'border:0;border-radius:999px;padding:11px 18px;' +
     'font:600 14px/1 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;' +
     'box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;user-select:none;';
