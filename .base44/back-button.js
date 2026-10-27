@@ -75,6 +75,15 @@
     return;
   }
 
+  // Reserve a strip at the top for the preview buttons so they never cover the scenario.
+  var st = document.createElement('style');
+  st.textContent = 'html{padding-top:60px!important;box-sizing:border-box}' +
+    '#b44-topbar{position:fixed;z-index:2147483645;top:0;left:0;right:0;height:60px;background:#e1f8ff;border-bottom:1px solid #b6aff7}';
+  document.head.appendChild(st);
+  var bar = document.createElement('div');
+  bar.id = 'b44-topbar';
+  document.documentElement.appendChild(bar);
+
   var btn = document.createElement('a');
   btn.href = '/';
   btn.title = 'Back to home';
