@@ -175,7 +175,7 @@
     bInsp.classList.toggle('on', m === 'inspect'); bInsp.textContent = m === 'inspect' ? 'Exit inspect' : 'Inspect';
     bFb.classList.toggle('on', m === 'pick'); bFb.textContent = m === 'pick' ? 'Cancel' : 'Give feedback';
     if (m === 'inspect') { tip.textContent = 'Hover to see specs · click to lock · Esc to exit'; tip.style.display = 'block'; }
-    if (m === 'pick') { tip.textContent = 'Click the thing you want to change (Esc to cancel)'; tip.style.display = 'block'; }
+    if (m === 'pick') { tip.textContent = 'Click the element you\'d like to leave a comment on (Esc to cancel)'; tip.style.display = 'block'; }
   }
   bInsp.addEventListener('click', function () { setMode(mode === 'inspect' ? 'off' : 'inspect'); });
   bFb.addEventListener('click', function () { setMode(mode === 'off' ? 'pick' : 'off'); });
