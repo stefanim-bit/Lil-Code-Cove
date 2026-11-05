@@ -2,5 +2,12 @@
   "previewPort": 3000,
   "healthPath": "/",
   "startCommand": "docker compose -f docker-compose.base44.yml up -d",
-  "secrets": []
+  "secrets": [
+    {
+      "name": "B44_ADMIN_PASSWORD",
+      "description": "Password only you use to sign in at /_b44_admin and choose which documents display on the home page. Until set, the admin panel rejects sign-ins and the home page shows every document.",
+      "requiredAtBoot": false,
+      "generatedForDevelopment": false
+    }
+  ]
 }

@@ -1,29 +1,35 @@
 <style>
   .start { line-height: 1.55; }
-  .start h1 { font-size: 26px; margin: 0 0 4px; }
+  .app-title { font-size: 30px !important; margin: 0 0 14px !important; letter-spacing: -.01em; }
+  .start h2 { font-size: 20px; margin: 0 0 4px; }
   .start ol { padding-left: 22px; }
   .start li { margin: 0 0 12px; }
   .start .ex { background: #eef3ff; border-left: 4px solid #1355d6; padding: 8px 12px; border-radius: 6px; margin-top: 6px; }
   .start .no { background: #fff1f0; border-left: 4px solid #d64545; padding: 8px 12px; border-radius: 6px; margin-top: 6px; }
   .start .note { color: #5b6270; font-size: 14px; }
+  .start details { margin-top: 18px; border: 1px solid #b6aff7; border-radius: 10px; padding: 10px 14px; background: #f7f6ff; }
+  .start summary { cursor: pointer; font-weight: 700; font-size: 17px; }
   h1 + hr { display: none; }
 </style>
+<h1 class="app-title">Collaborative Feedback Tool</h1>
 <div class="start">
-  <h1>START HERE: how to review and request changes</h1>
-  <p class="note">No coding or GitHub needed. The scenarios are listed above this guide.</p>
+  <h2>How to Use This Tool</h2>
   <ol>
-    <li><b>Open a scenario.</b> Click a card in the <b>Scenarios</b> list above to open it directly. The full folder list is under <b>Browse all folders</b>.</li>
-    <li><b>Click through every path.</b> Try every reply choice, including the "wrong" ones, until the end. Check text, colors, spacing, images, and buttons on each screen.</li>
-    <li><b>Point at what you want changed.</b> On the scenario page, click the blue <b>Give feedback</b> button (top right). Click the exact thing you mean, such as a speech bubble or a reply button. Type what should change, then click <b>Copy note</b>. The note already includes the scenario, screen, and element.
-      <div class="ex"><b>Good comment:</b> "Make this text bigger and add more space between the reply buttons."</div>
-      <div class="no"><b>Hard to act on:</b> "This looks off."</div>
-      <span class="note">Other buttons at the top right: <b>Inspect</b> shows an element's font, size, colors and spacing as you hover (click to lock, Esc to exit). <b>Comments</b> opens the shared list. After picking an element you can <b>Post comment</b> (everyone sees it, grouped by person) or <b>Copy note for Base44</b> to request a change in chat. Design team: tick "Design team" in the Comments panel to resolve or delete.</span><br>
-      <span class="note">Make one note per issue. If the copy button doesn't work, select the text shown in the box and copy it yourself.</span></li>
-    <li><b>Paste the note into the Base44 chat</b> (left side of the app) and send it. You can paste several notes for one scenario in one message. Only one person should send requests at a time, so check the project owner isn't mid-request.</li>
-    <li><b>Wait for Base44 to say it's done</b>, then refresh the scenario.</li>
-    <li><b>Preview and confirm.</b> Check the change. If it's right, reply "confirmed". If not, use <b>Give feedback</b> on the same element again and say what to adjust.</li>
-    <li><b>Approve.</b> Tell the project owner "approved". The owner merges the pull request, which saves the final version to the main project.</li>
+    <li><b>Open a project</b> below and click through it to test.</li>
+    <li>To leave a comment, click the <b>"Give feedback"</b> button, then click the element you'd like to leave a comment on. Please be as specific as possible, like: <i>"Make this text bigger and add more space between the reply buttons."</i></li>
+    <li>Type your comment, click <b>"Post comment,"</b> and enter your name. <b>"Comments"</b> on top right shows what everyone has posted.</li>
   </ol>
-  <p class="note">Tip: keep each round small, one scenario at a time.</p>
-  <hr>
+  <p class="note"><b>That's it, you're done!</b></p>
+
+  <details>
+    <summary>For Amber (design): turning comments into changes</summary>
+    <ol>
+      <li><b>Review comments.</b> Go to <b>Manage</b> (home page, top right), sign in, and open the <b>Comments</b> tab. Use the filter to see Open comments. Each links to its file.</li>
+      <li><b>Pick what to change.</b> On the project page, click <b>Comments</b>, tick "Design team", and use <b>Show</b> to jump to the element. To request a change, click <b>Give feedback</b> on it and choose <b>Copy note for Base44</b>.</li>
+      <li><b>Paste the note into the Base44 chat</b> and send it. Several notes for one project can go in one message. Keep rounds small: one project at a time.</li>
+      <li><b>Check the result</b>, then mark the comment <b>Resolved</b>.</li>
+      <li><b>Approve.</b> Tell the project owner "approved" so they merge the pull request.</li>
+    </ol>
+    <p class="note"><b>Inspect</b> (top right) shows an element's font, size, colors and spacing. Click to lock, Esc to exit. In <b>Manage</b> you also choose which projects appear on the home page.</p>
+  </details>
 </div>

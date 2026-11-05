@@ -1,6 +1,14 @@
 // Tiny comment store for the preview feedback tool. No dependencies. Data lives in /data/comments.json (a docker volume, not the repo).
 const http = require('http');
 const fs = require('fs');
+const crypto = require('crypto');
+const PASS = process.env.B44_ADMIN_PASSWORD || '';
+const isAdmin = (req) => {
+  const h = req.headers['authorization'] || '';
+  if (!PASS || !h.startsWith('Bearer ')) return false;
+  const a = crypto.createHash('sha256').update(h.slice(7)).digest(), b = crypto.createHash('sha256').update(PASS).digest();
+  return crypto.timingSafeEqual(a, b);
+};
 const FILE = '/data/comments.json';
 let items = [];
 try { items = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch (e) {}
@@ -12,8 +20,11 @@ http.createServer((req, res) => {
   const m = u.pathname.match(/^\/_b44_api\/comments(?:\/(\w+))?$/);
   if (!m) return send(res, 404, { error: 'not found' });
   const id = m[1];
+  if (req.method === 'GET' && id === 'auth') return isAdmin(req) ? send(res, 200, { ok: true }) : send(res, 401, { error: 'unauthorized' });
   if (req.method === 'GET') return send(res, 200, items);
-  if (req.method === 'DELETE' && id) { items = items.filter(c => c.id !== id); save(); return send(res, 200, { ok: true }); }
+  if (req.method === 'DELETE' && id) {
+    if (!isAdmin(req)) return send(res, 401, { error: 'unauthorized' });
+    items = items.filter(c => c.id !== id); save(); return send(res, 200, { ok: true }); }
   let raw = '';
   req.on('data', d => { raw += d; if (raw.length > 100000) req.destroy(); });
   req.on('end', () => {

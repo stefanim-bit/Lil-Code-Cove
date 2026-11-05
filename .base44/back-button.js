@@ -8,9 +8,11 @@
     if (!pre) return;
     var box = document.createElement('div');
     box.id = 'b44-scenarios';
-    box.innerHTML = '<h2>Scenarios</h2><p class="b44-note">Loading scenarios\u2026</p>';
+    box.innerHTML = '<h2>Projects</h2><p class="b44-note">Loading projects\u2026</p>';
+    document.title = 'Collaborative Feedback Tool';
+    Array.prototype.forEach.call(document.querySelectorAll('h1'), function (h) { if (/^Index of/.test(h.textContent)) h.style.display = 'none'; });
     var guide = document.querySelector('.start');
-    (guide || pre).parentNode.insertBefore(box, guide || pre);
+    if (guide) guide.parentNode.insertBefore(box, guide.nextSibling); else pre.parentNode.insertBefore(box, pre);
     // Keep the raw folder list available, but tucked away.
     var d = document.createElement('details');
     d.innerHTML = '<summary>Browse all folders</summary>';
@@ -35,27 +37,51 @@
         }));
       });
     }
+    // Fetch the admin's document selection. When configured, only listed documents display;
+    // until the admin saves a selection, the home page shows everything (out-of-the-box behaviour).
+    var selectionP = fetch('/_b44_api/documents').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
     fetch('/_b44_tree/').then(function (r) { return r.json(); }).then(function (root) {
       var sessions = root.filter(function (x) { return x.type === 'directory' && /^Practice Session/.test(x.name); })
         .sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); });
       return Promise.all(sessions.map(function (s) { return walk([s.name], s.name, ''); }));
-    }).then(function () {
-      var bySession = {};
-      found.forEach(function (f) { (bySession[f.session] = bySession[f.session] || []).push(f); });
-      var html = '<h2>Scenarios</h2>';
+    }).then(function () { return selectionP; }).then(function (sel) {
+      sel = sel || {};
+      var configured = !!sel.configured;
+      var allowed = {};
+      if (configured && Array.isArray(sel.published)) sel.published.forEach(function (p) { allowed[p] = true; });
+      var visible = configured ? found.filter(function (f) { return allowed[f.path.join('/')]; }) : found;
+      function nice(t) {
+        var w = String(t).replace(/_/g, ' ').replace(/\.html$/i, '').trim().split(/\s+/);
+        return w.map(function (x, i) {
+          if (/^[A-Z0-9]+$/.test(x) && /\d/.test(x)) return x; // keep codes like PS1
+          x = x.toLowerCase();
+          return (i === 0 || /-/.test(x)) ? x.replace(/(^|-)([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }) : x;
+        }).join(' ');
+      }
+      function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+      var html = '<h2>Projects <a class="b44-admin" href="/_b44_admin" title="Choose which documents display">Manage</a></h2>';
       function card(f) {
         var href = '/' + f.path.map(encodeURIComponent).join('/');
-        var label = f.name.replace(/\.html$/i, '');
-        return '<a class="b44-card" href="' + href + '"><b>' + label + '</b>' +
-          (f.topic ? '<span>' + f.topic + '</span>' : '') + '</a>';
+        return '<span class="b44-item"><a class="b44-card" href="' + href + '"><b>' + esc(f.name.replace(/_/g, ' ').replace(/\.html$/i, '')) + '</b></a><button type="button" class="b44-copy" title="Copy a link to this page" data-href="' + href + '">Copy link</button></span>';
       }
       function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
-      Object.keys(bySession).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).forEach(function (s) {
-        var cur = bySession[s].filter(function (f) { return !f.old; }).sort(sorter);
-        html += '<h3>' + s + '</h3><div class="b44-grid">' + cur.map(card).join('') + '</div>';
-      });
-      if (!found.length) html += '<p class="b44-note">No scenarios found.</p>';
+      var cur = visible.filter(function (f) { return !f.old; }).sort(sorter);
+      var isDE = function (f) { return /^de-?escalation$/i.test(f.topic || ''); };
+      var dojo = cur.filter(function (f) { return !isDE(f); }), de = cur.filter(isDE);
+      if (dojo.length) html += '<h3>Care Dojo</h3><div class="b44-grid">' + dojo.map(card).join('') + '</div>';
+      if (de.length) html += '<h3>De-Escalation</h3><div class="b44-grid">' + de.map(card).join('') + '</div>';
+      if (!visible.length) html += configured
+        ? '<p class="b44-note">No documents are published yet. Use <a href="/_b44_admin">Manage</a> to choose which to display.</p>'
+        : '<p class="b44-note">No projects found.</p>';
       box.innerHTML = html;
+      box.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('.b44-copy');
+        if (!b) return;
+        var url = location.origin + b.getAttribute('data-href');
+        var done = function () { b.textContent = 'Copied!'; setTimeout(function () { b.textContent = 'Copy link'; }, 1500); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(done, function () { window.prompt('Copy this link:', url); });
+        else { window.prompt('Copy this link:', url); }
+      });
     });
   }
 
