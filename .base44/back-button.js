@@ -8,7 +8,7 @@
     if (!pre) return;
     var box = document.createElement('div');
     box.id = 'b44-scenarios';
-    box.innerHTML = '<h2>Scenarios</h2><p class="b44-note">Loading scenarios\u2026</p>';
+    box.innerHTML = '<h2>Projects</h2><p class="b44-note">Loading projects\u2026</p>';
     var guide = document.querySelector('.start');
     (guide || pre).parentNode.insertBefore(box, guide || pre);
     // Keep the raw folder list available, but tucked away.
@@ -48,23 +48,27 @@
       var allowed = {};
       if (configured && Array.isArray(sel.published)) sel.published.forEach(function (p) { allowed[p] = true; });
       var visible = configured ? found.filter(function (f) { return allowed[f.path.join('/')]; }) : found;
-      var bySession = {};
-      visible.forEach(function (f) { (bySession[f.session] = bySession[f.session] || []).push(f); });
-      var html = '<h2>Scenarios <a class="b44-admin" href="/_b44_admin" title="Choose which documents display">Manage</a></h2>';
+      function nice(t) {
+        var w = String(t).replace(/_/g, ' ').replace(/\.html$/i, '').trim().split(/\s+/);
+        return w.map(function (x, i) {
+          if (/^[A-Z0-9]+$/.test(x) && /\d/.test(x)) return x; // keep codes like PS1
+          x = x.toLowerCase();
+          return i === 0 ? x.charAt(0).toUpperCase() + x.slice(1) : x;
+        }).join(' ');
+      }
+      function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+      var html = '<h2>Projects <a class="b44-admin" href="/_b44_admin" title="Choose which documents display">Manage</a></h2>';
       function card(f) {
         var href = '/' + f.path.map(encodeURIComponent).join('/');
-        var label = f.name.replace(/\.html$/i, '');
-        return '<a class="b44-card" href="' + href + '"><b>' + label + '</b>' +
-          (f.topic ? '<span>' + f.topic + '</span>' : '') + '</a>';
+        return '<a class="b44-card" href="' + href + '"><b>' + esc(nice(f.topic || f.name)) + '</b>' +
+          '<span>' + esc(nice(f.name)) + '</span></a>';
       }
       function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
-      Object.keys(bySession).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).forEach(function (s) {
-        var cur = bySession[s].filter(function (f) { return !f.old; }).sort(sorter);
-        html += '<h3>' + s + '</h3><div class="b44-grid">' + cur.map(card).join('') + '</div>';
-      });
+      var cur = visible.filter(function (f) { return !f.old; }).sort(sorter);
+      if (cur.length) html += '<h3>Care Dojo</h3><div class="b44-grid">' + cur.map(card).join('') + '</div>';
       if (!visible.length) html += configured
         ? '<p class="b44-note">No documents are published yet. Use <a href="/_b44_admin">Manage</a> to choose which to display.</p>'
-        : '<p class="b44-note">No scenarios found.</p>';
+        : '<p class="b44-note">No projects found.</p>';
       box.innerHTML = html;
     });
   }
