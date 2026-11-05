@@ -9,8 +9,10 @@
     var box = document.createElement('div');
     box.id = 'b44-scenarios';
     box.innerHTML = '<h2>Projects</h2><p class="b44-note">Loading projects\u2026</p>';
+    document.title = 'Collaborative Feedback Tool';
+    Array.prototype.forEach.call(document.querySelectorAll('h1'), function (h) { if (/^Index of/.test(h.textContent)) h.style.display = 'none'; });
     var guide = document.querySelector('.start');
-    (guide || pre).parentNode.insertBefore(box, guide || pre);
+    if (guide) guide.parentNode.insertBefore(box, guide.nextSibling); else pre.parentNode.insertBefore(box, pre);
     // Keep the raw folder list available, but tucked away.
     var d = document.createElement('details');
     d.innerHTML = '<summary>Browse all folders</summary>';

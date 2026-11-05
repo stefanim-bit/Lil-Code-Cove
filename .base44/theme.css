@@ -42,3 +42,14 @@ details > summary { cursor: pointer; margin: 16px 0 8px; font-weight: 600; }
 h1 { background: none; color: #1e1b4b; -webkit-text-fill-color: #1e1b4b; }
 
 #b44-scenarios h4 { margin: 14px 0 8px; font-size: 16px; color: #1e1b4b; }
+
+/* Compact, sleeker projects menu */
+#b44-scenarios { margin: 22px 0 8px; padding-top: 18px; border-top: 1px solid #e3e6ff; }
+#b44-scenarios h2 { font-size: 20px; margin: 0 0 6px; }
+#b44-scenarios h3 { margin: 12px 0 6px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b6fa3; }
+#b44-scenarios .b44-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+#b44-scenarios .b44-card { display: inline-flex; padding: 6px 12px; border-radius: 999px; font-size: 13px; background: #eef1ff; border: 1px solid #d6dbff; }
+#b44-scenarios .b44-card b { font-weight: 600; }
+#b44-scenarios .b44-card:hover { background: #c7d1ff; border-color: #8fa3ff; }
+.start details > summary { margin: 0; }
+.start details[open] > summary { margin-bottom: 8px; }
