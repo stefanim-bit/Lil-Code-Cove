@@ -62,7 +62,7 @@
       var html = '<h2>Projects <a class="b44-admin" href="/_b44_admin" title="Choose which documents display">Manage</a></h2>';
       function card(f) {
         var href = '/' + f.path.map(encodeURIComponent).join('/');
-        return '<a class="b44-card" href="' + href + '"><b>' + esc(f.name.replace(/_/g, ' ').replace(/\.html$/i, '')) + '</b></a>';
+        return '<span class="b44-item"><a class="b44-card" href="' + href + '"><b>' + esc(f.name.replace(/_/g, ' ').replace(/\.html$/i, '')) + '</b></a><button type="button" class="b44-copy" title="Copy a link to this page" data-href="' + href + '">Copy link</button></span>';
       }
       function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
       var cur = visible.filter(function (f) { return !f.old; }).sort(sorter);
@@ -74,6 +74,14 @@
         ? '<p class="b44-note">No documents are published yet. Use <a href="/_b44_admin">Manage</a> to choose which to display.</p>'
         : '<p class="b44-note">No projects found.</p>';
       box.innerHTML = html;
+      box.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('.b44-copy');
+        if (!b) return;
+        var url = location.origin + b.getAttribute('data-href');
+        var done = function () { b.textContent = 'Copied!'; setTimeout(function () { b.textContent = 'Copy link'; }, 1500); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(done, function () { window.prompt('Copy this link:', url); });
+        else { window.prompt('Copy this link:', url); }
+      });
     });
   }
 
