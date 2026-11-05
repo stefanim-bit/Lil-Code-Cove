@@ -60,12 +60,16 @@
       var html = '<h2>Projects <a class="b44-admin" href="/_b44_admin" title="Choose which documents display">Manage</a></h2>';
       function card(f) {
         var href = '/' + f.path.map(encodeURIComponent).join('/');
-        return '<a class="b44-card" href="' + href + '"><b>' + esc(nice(f.topic || f.name)) + '</b>' +
-          '<span>' + esc(f.name.replace(/_/g, ' ').replace(/\.html$/i, '')) + '</span></a>';
+        return '<a class="b44-card" href="' + href + '"><b>' + esc(f.name.replace(/_/g, ' ').replace(/\.html$/i, '')) + '</b></a>';
       }
       function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
       var cur = visible.filter(function (f) { return !f.old; }).sort(sorter);
-      if (cur.length) html += '<h3>Care Dojo</h3><div class="b44-grid">' + cur.map(card).join('') + '</div>';
+      if (cur.length) html += '<h3>Care Dojo</h3>';
+      var order = [], byTopic = {};
+      cur.forEach(function (f) { var t = f.topic || f.name; if (!byTopic[t]) { byTopic[t] = []; order.push(t); } byTopic[t].push(f); });
+      order.forEach(function (t) {
+        html += '<h4>' + esc(nice(t)) + '</h4><div class="b44-grid">' + byTopic[t].map(card).join('') + '</div>';
+      });
       if (!visible.length) html += configured
         ? '<p class="b44-note">No documents are published yet. Use <a href="/_b44_admin">Manage</a> to choose which to display.</p>'
         : '<p class="b44-note">No projects found.</p>';
