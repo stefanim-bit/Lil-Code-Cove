@@ -53,7 +53,7 @@
         return w.map(function (x, i) {
           if (/^[A-Z0-9]+$/.test(x) && /\d/.test(x)) return x; // keep codes like PS1
           x = x.toLowerCase();
-          return i === 0 ? x.charAt(0).toUpperCase() + x.slice(1) : x;
+          return (i === 0 || /-/.test(x)) ? x.replace(/(^|-)([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }) : x;
         }).join(' ');
       }
       function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
@@ -61,7 +61,7 @@
       function card(f) {
         var href = '/' + f.path.map(encodeURIComponent).join('/');
         return '<a class="b44-card" href="' + href + '"><b>' + esc(nice(f.topic || f.name)) + '</b>' +
-          '<span>' + esc(nice(f.name)) + '</span></a>';
+          '<span>' + esc(f.name.replace(/_/g, ' ').replace(/\.html$/i, '')) + '</span></a>';
       }
       function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
       var cur = visible.filter(function (f) { return !f.old; }).sort(sorter);
