@@ -64,12 +64,10 @@
       }
       function sorter(a, b) { return (a.topic + a.name).localeCompare(b.topic + b.name); }
       var cur = visible.filter(function (f) { return !f.old; }).sort(sorter);
-      if (cur.length) html += '<h3>Care Dojo</h3>';
-      var order = [], byTopic = {};
-      cur.forEach(function (f) { var t = f.topic || f.name; if (!byTopic[t]) { byTopic[t] = []; order.push(t); } byTopic[t].push(f); });
-      order.forEach(function (t) {
-        html += '<h4>' + esc(nice(t)) + '</h4><div class="b44-grid">' + byTopic[t].map(card).join('') + '</div>';
-      });
+      var isDE = function (f) { return /^de-?escalation$/i.test(f.topic || ''); };
+      var dojo = cur.filter(function (f) { return !isDE(f); }), de = cur.filter(isDE);
+      if (dojo.length) html += '<h3>Care Dojo</h3><div class="b44-grid">' + dojo.map(card).join('') + '</div>';
+      if (de.length) html += '<h3>De-Escalation</h3><div class="b44-grid">' + de.map(card).join('') + '</div>';
       if (!visible.length) html += configured
         ? '<p class="b44-note">No documents are published yet. Use <a href="/_b44_admin">Manage</a> to choose which to display.</p>'
         : '<p class="b44-note">No projects found.</p>';
