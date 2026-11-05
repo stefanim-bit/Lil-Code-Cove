@@ -1,0 +1,3033 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Care Dojo - Billing: Sticker Shock (Call)</title>
+
+<!--
+==================================================================================
+  WIX L&D  ·  PRACTICE SESSION  ·  INTERACTIVE SCENARIO TEMPLATE  (Rise Code Block)
+  v2 — Wix-branded redesign. SAME interaction/scoring model as v1; look only.
+==================================================================================
+
+  HOW TO READ THIS FILE (for stakeholders / non-coders)
+  -----------------------------------------------------
+  Two parts, on purpose:
+    1) THE SCENARIO  (<script id="scenario">) — the CONTENT. Reads like a table.
+    2) THE ENGINE    (<script id="engine">)   — the machinery that plays ANY scenario.
+
+  WHAT CHANGED IN v2 (design only — the model below is unchanged)
+  --------------------------------------------------------------
+    • Wix Madefor typography (Display for headings, Text for body) via Google Fonts.
+    • Three phases in one self-contained embed: MEET THE USER → LIVE CHAT → COMPLETE.
+    • The live chat mirrors the real Wix Communication Panel: gray customer bubbles
+      (left), blue agent bubbles (right), a call timer, and a red "End" button.
+      (No sentiment chip — deliberately omitted.)
+    • Brand palette applied. The END scorecard keeps the locked correctness legend
+      (green / amber / red · done / partial / missed) — unchanged.
+    • Helper pop-ups use the native <dialog> element (MDN-recommended for modals).
+
+  THE INTERACTION MODEL (unchanged from v1)
+  -----------------------------------------
+  Each scenario mirrors a real Expert <-> user interaction across eight graded
+  behaviors (the rubric, 100 pts):
+     open(5) · dynamics(10) · familiarize(10) · clarify(15)
+     roadmap(10) · article(20) · recreate(10) · solve(20)
+
+  Rules:
+    • FEEDBACK IS SAVED FOR THE END. No grade, no correctness colors, no running
+      score during play. Choosing an answer simply advances the call.
+    • IN-CHARACTER REACTIONS ARE NOT FEEDBACK. A weak choice may draw a caller
+      reaction in dialogue; that line is part of the sim, not a grade.
+    • MOSTLY GATED, SOME FREEDOM — "gate:true" screens must be finished to advance.
+    • RETRY ONLY IF THE USER PROMPTS — a choice marked "retry:true" re-opens the
+      screen because the caller pushed back; the retry is capped by "capIfRetried".
+    • SKIPS ARE RECOVERABLE — each stage keeps its own best score.
+    • ROADMAP FLOATS — attach roadmap credit to any choice via credits:[...].
+
+  FIELD GUIDE
+  -----------
+    user   : { name, image, bio } — shown on the MEET screen and in the call header.
+    STAGE  : id, name, max, strength (shown at end if done), improvement (if missed).
+    SCREEN : stage, gate, speaker (caller line), prompt, choices[].
+    CHOICE : text, verdict, points, goTo, credits[], retry/capIfRetried,
+             retryOnly (hidden until the screen re-opens for a retry),
+             consequence, stageOverride.
+==================================================================================
+-->
+
+<link rel="preconnect" href="https://static.parastorage.com">
+<link href="https://static.parastorage.com/fonts/v2/f73e760d-c6b3-4659-9a8c-9ce1d76c1173/madefor-text.var.original.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="https://static.parastorage.com/fonts/v2/26656ec7-c27d-4bdc-a9f4-6b498bbfad69/madefor-display.var.original.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: 'Wix Madefor Text';
+    src: url('https://static.parastorage.com/fonts/v2/f73e760d-c6b3-4659-9a8c-9ce1d76c1173/madefor-text.var.original.woff2') format('woff2-variations');
+    font-weight: 100 900;
+  }
+  @font-face {
+    font-family: 'Wix Madefor Display';
+    src: url('https://static.parastorage.com/fonts/v2/26656ec7-c27d-4bdc-a9f4-6b498bbfad69/madefor-display.var.original.woff2') format('woff2-variations');
+    font-weight: 100 900;
+  }
+</style>
+
+<style>
+  :root{
+    /* ---- Brand palette (the exact hexes supplied) ---- */
+    --ink:#242424; --ink-2:#424242; --muted:#707070;
+    --line:#E0E0E0; --line-2:#D1D1D1; --bg:#F5F5F5; --paper:#ffffff;
+    --brand:#DA3B01;                 /* Wix orange-red — the End button + accents   */
+    --agent:#0F62E6; --agent-deep:#1464A0;  /* agent (you) blue                     */
+    --positive:#5BBE7E;
+    --agent-bubble:#EAF1FE; --agent-bubble-line:#CFE0FF;
+    /* ---- LOCKED end-screen correctness legend (scorecard only) ---- */
+    --correct:#38761d; --correct-bg:#D9EAD3;
+    --partial:#bf9000;  --partial-bg:#FFF2CC;
+    --incorrect:#cc0000;--incorrect-bg:#F4CCCC;
+    /* ---- shape ---- */
+    --r-lg:1.25rem; --r-md:0.875rem; --r-sm:0.625rem;
+    --shadow:0 0.625rem 1.875rem rgba(20,24,40,.10);
+    --font-display:'Wix Madefor Display','Wix Madefor Text',system-ui,Arial,sans-serif;
+    --font-text:'Wix Madefor Text',system-ui,Arial,Helvetica,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  html{font-size:16px}
+  html,body{margin:0}
+  body{
+    font-family:var(--font-text); color:var(--ink); line-height:1.5;
+    background:
+      radial-gradient(68.75rem 31.25rem at 12% -10%, #EEF3FF 0%, rgba(238,243,255,0) 60%),
+      radial-gradient(56.25rem 31.25rem at 105% 0%, #F3F0FA 0%, rgba(243,240,250,0) 55%),
+      var(--bg);
+    min-height:100vh;
+  }
+  .app{max-width:66.25rem;margin:0 auto;padding:1.5rem 1.25rem}
+  h1,h2,h3{font-family:var(--font-display);letter-spacing:-.01em;margin:0}
+  .display{font-weight:800;line-height:1.05}
+
+  /* ============================ MEET THE USER ============================ */
+  .meet{
+    display:grid;grid-template-columns:0.37fr 0.65fr;gap:0;
+    background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow);overflow:hidden;height:37.5rem;
+  }
+  .meet .portrait{
+    position:relative;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;padding:0;
+    overflow:hidden;min-height:0;
+  }
+  /* Full-bleed cropped headshot — matches Amber's meet spec and the Layers
+     scenario: `cover` fills the container so the photo's own background always
+     reaches every edge and never leaves a gap. Use this for all future scenarios. */
+  .meet .portrait img{width:100%;height:100%;object-fit:cover}
+  .meet .portrait .noimg{align-self:center;color:var(--muted);font-size:0.875rem;text-align:center;padding:1.5rem}
+  .meet .body{padding:2.5rem 3.75rem;display:flex;flex-direction:column;justify-content:center}
+  .eyebrow{font-size:0.75rem;font-weight:700;color:#101585;text-transform:uppercase;letter-spacing:0;margin-bottom:0.625rem}
+  .meet .body h1{font-weight:400;font-size:2.5rem;line-height:2.625rem;margin-bottom:1.125rem;color:#000000}
+  .meet .body p{font-size:1rem;color:#000000;line-height:1.5rem;margin:0 0 1.75rem;max-width:65ch}
+
+  /* black pill buttons — matches the Rise course (Get Started / Next / Restart) */
+  .btn{font-family:var(--font-text);font-weight:500;font-size:0.875rem;cursor:pointer;border:0;border-radius:18.75rem;padding:0.375rem 1.5rem;transition:transform .12s ease, box-shadow .12s ease, background .12s ease, padding .12s ease;display:flex;align-items:center;justify-content:center;white-space:nowrap;position:relative}
+  .btn-dark{background:#000000;color:#fff;width:126px;height:32px;padding:0.375rem 1.5rem}
+  .btn-dark:hover{background:#000;padding:0.375rem 1rem}
+  .btn-arrow{width:11px;height:8px;opacity:0;margin-left:-11px;transition:opacity 200ms ease-out, margin-left 200ms ease-out;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+  .btn-arrow svg{width:100%;height:100%;display:block}
+  .btn-dark:hover .btn-arrow{opacity:1;margin-left:0.3125rem}
+  .btn-ghost{background:var(--paper);color:var(--ink);border:0.0625rem solid var(--line-2)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  /* ============================ THE CALL (Communication Panel) ============================ */
+  .panel{position:relative;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;height:600px;display:flex;flex-direction:column}
+  .panel-head{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1.125rem;border-bottom:0.0625rem solid var(--line);background:#fff;flex:0 0 auto}
+  .avatar{width:2.375rem;height:2.375rem;border-radius:50%;background:var(--agent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.9375rem;flex:0 0 auto}
+  .who-name{font-weight:700;font-size:0.9375rem}
+  .who-sub{display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.78125rem;margin-top:0.0625rem}
+  .livedot{width:0.5rem;height:0.5rem;border-radius:50%;background:var(--positive);display:inline-block;box-shadow:0 0 0 0.1875rem rgba(91,190,126,.20)}
+  .timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
+  .head-spacer{flex:1}
+  .helperbar-head{display:flex;gap:0.5rem;margin-right:0.5rem}
+  .btn-end{background:var(--brand);color:#fff;font-weight:700;font-size:0.875rem;border:0;border-radius:0.5rem;padding:0.5625rem 1.125rem;cursor:pointer}
+  .btn-end:hover{filter:brightness(.94)}
+
+
+  /* Fixed height so the chat window stays the SAME SIZE for the whole call —
+     it no longer grows message-by-message; overflow scrolls internally. */
+  /* Fixed-height chat window: it stays ONE consistent size on every screen and
+     scrolls internally, so the response options below always sit on screen and
+     can be read in full without scrolling the page. 40vh is tuned so the
+     options fit for the common (≤4 option) screens. */
+  .chat{padding:1rem 1.125rem 3.5rem;display:flex;flex-direction:column;gap:0.875rem;flex:1;min-height:0;overflow-y:auto}
+  .msg{display:flex;flex-direction:column;max-width:78%}
+  .msg .meta{font-size:0.6875rem;color:var(--muted);margin:0 0 0.25rem}
+  .bubble{padding:0.6875rem 0.875rem;border-radius:1rem;font-size:0.90625rem;line-height:1.45}
+  .msg.caller{align-self:flex-start;align-items:flex-start}
+  .msg.caller .bubble{background:#F5F5F5;border:0px;border-top-left-radius:0.3125rem;color:var(--ink)}
+  .msg.you{align-self:flex-end;align-items:flex-end}
+  .msg.you .meta{text-align:right;color:#707070}
+  .msg.you .bubble{background:#E4EFFE;border:0px;border-top-right-radius:0.3125rem;color:var(--ink)}
+  .msg.system{align-self:center;max-width:90%;align-items:center}
+  .msg.system .bubble{background:transparent;border:0;color:var(--muted);font-style:normal;font-size:0.78125rem;padding:0.125rem 0.375rem;text-align:center}
+  /* Inline screenshot figure (Layers panel, Accessibility Wizard, etc.) */
+  .msg.system .screenshot{margin:0.25rem 0;max-width:100%;display:flex;flex-direction:column;align-items:center}
+  .msg.system .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
+  /* Expert-sent screenshot ([image] line in a consequence): right-side, like an Expert message */
+  .msg.you .screenshot{margin:0.25rem 0;max-width:100%}
+  .msg.you .screenshot img{max-width:100%;height:auto;border:0.0625rem solid var(--line);border-radius:0.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.08);display:block;cursor:zoom-in}
+
+  /* Lightbox: click-to-enlarge overlay for inline screenshots */
+  .lightbox{border:0;padding:0;background:transparent;max-width:95vw;max-height:95vh}
+  .lightbox::backdrop{background:rgba(15,17,25,0.82)}
+  .lightbox img{display:block;max-width:95vw;max-height:95vh;object-fit:contain;border-radius:0.5rem;box-shadow:0 1.5rem 3rem rgba(0,0,0,0.35)}
+  .lightbox-close{position:fixed;top:1rem;right:1.5rem;background:rgba(255,255,255,0.92);border:0;border-radius:50%;width:2.5rem;height:2.5rem;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink)}
+  .lightbox-close:hover{background:#fff}
+  .lightbox-caption{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%);max-width:min(90vw,40rem);background:rgba(255,255,255,0.94);color:var(--ink);font-size:0.875rem;line-height:1.4;padding:0.5rem 0.875rem;border-radius:0.5rem;text-align:center}
+  .msg.system .screenshot figcaption{font-size:0.6875rem;color:var(--muted);font-style:italic;margin-top:0.375rem;text-align:center}
+  .msg.system .screenshot .noimg{color:var(--muted);font-size:0.8125rem;padding:1rem;border:0.0625rem dashed var(--line);border-radius:0.5rem}
+
+  /* [Action] choices render their result as an inline centered system note in the
+     chat stream (reusing .msg.system), so there's no separate action bar. */
+  .msg.system .bubble.action{font-style:normal;color:#242424;background:none;border:none;border-radius:62.4375rem;padding:0.25rem 0.75rem}
+
+  /* Inline notes — the centered "system" bubbles only: an action you take
+     ("You clone the site…") or a thing you find ("(You find…)"). These are the
+     ONLY lines painted green; caller replies are untouched. */
+  .msg.reaction .bubble,
+  .msg.reaction .bubble.action{color:#242424 !important}
+
+  /* legacy in-header fullscreen text button (replaced by the .fs-fab icon) */
+  .btn-fs{background:none;border:0;color:var(--muted);font-family:var(--font-text);font-weight:600;font-size:0.875rem;cursor:pointer;padding:0.4375rem 0.625rem;border-radius:62.4375rem;display:inline-flex;align-items:center;gap:0.375rem}
+  .btn-fs:hover{color:var(--agent);background:var(--agent-bubble)}
+  .panel:fullscreen{border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .panel:fullscreen .chat{min-height:0;flex:1}
+  /* Fullscreen toggle — a round icon that lives OUTSIDE the chat panel (top-right). */
+  .sim-wrap{position:relative;padding-top:3rem}
+  .fs-fab{position:absolute;top:0;right:0;width:2.25rem;height:2.25rem;padding:0;border:0;border-radius:50%;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 0.0625rem 0.25rem rgba(20,24,40,.14);transition:transform .12s ease}
+  .fs-fab:hover{transform:scale(1.08)}
+  .fs-fab svg{width:100%;height:100%;display:block}
+  .sim-wrap:fullscreen{padding-top:0;background:var(--bg);display:flex;flex-direction:column}
+  .sim-wrap:fullscreen .panel{flex:1;height:auto;border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .sim-wrap:fullscreen .chat{min-height:0;flex:1}
+  .sim-wrap:fullscreen .fs-fab{top:0.75rem;right:0.75rem;z-index:20}
+  /* In fullscreen the round fullscreen icon floats at the panel's top-right and
+     would sit on top of the End button. Pad the header right so the buttons
+     shift left and clear the icon. */
+  .sim-wrap:fullscreen .panel-head{padding-right:3.5rem}
+
+  /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
+     from spoken replies, right inside the choice button. */
+  .cbadge{display:inline-block;font-weight:700;font-size:0.625rem;text-transform:uppercase;letter-spacing:.05em;color:var(--agent-deep);background:var(--agent-bubble);border:0.0625rem solid var(--agent-bubble-line);border-radius:0.375rem;padding:0.0625rem 0.375rem;margin-right:0.5rem;vertical-align:0.05rem}
+
+  /* composer / decision area — where the real panel's message box sits */
+  .composer{border-top:0.0625rem solid var(--line);background:#FBFBFC;padding:0.875rem 1.125rem 1.125rem}
+  /* ===== CALL MODE — speak-aloud voice panel ===== */
+  .voice{border:0.0625rem solid #D6E6FE;background:#F7FAFF;border-radius:0.75rem;padding:0.875rem 1rem;margin:0 0 0.75rem}
+  .voice-row{display:flex;align-items:center;gap:0.75rem}
+  .mic-btn{flex:none;display:inline-flex;align-items:center;gap:0.5rem;font-family:var(--font-text);font-size:0.9375rem;font-weight:700;color:#fff;background:#116DFF;border:none;border-radius:62rem;padding:0.625rem 1.125rem;cursor:pointer;transition:background .15s,transform .05s}
+  .mic-btn:hover{background:#0F5EDB}
+  .mic-btn:active{transform:scale(.98)}
+  .mic-btn.listening{background:#E62214}
+  .mic-btn.listening:hover{background:#C81C0F}
+  .mic-btn:disabled{background:#B7C7E3;cursor:default}
+  .mic-ico{width:0.875rem;height:0.875rem;border-radius:62rem;background:#fff;display:inline-block}
+  .mic-btn.listening .mic-ico{animation:micpulse 1s ease-in-out infinite}
+  @keyframes micpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.6)}}
+  /* live volume meter — segmented bar driven by mic RMS */
+  .meter{flex:1 1 auto;height:0.75rem;border-radius:62rem;background:#E3ECFB;overflow:hidden;position:relative}
+  /* Color is set per-frame from meterColor(L); width tracks live level. */
+  .meter-fill{height:100%;width:0%;border-radius:62rem;background:#B31200;transition:width .18s ease-out,background-color .3s ease-out}
+  .meter-mark{position:absolute;top:-2px;bottom:-2px;width:2px;background:#116DFF;opacity:.55}
+  .voice-status{font-size:0.8125rem;color:var(--ink-2);margin:0.5rem 0 0;min-height:1.1rem;line-height:1.35}
+  .voice-status .heard{color:var(--ink);font-style:italic}
+  .voice-tip{font-size:0.75rem;color:#E07A00;margin:0.25rem 0 0}
+  .voice-confirm{display:flex;gap:0.5rem;margin:0.625rem 0 0;flex-wrap:wrap}
+  .vc-yes{font-size:0.8125rem;font-weight:700;color:#fff;background:#0F6B3B;border:none;border-radius:0.5rem;padding:0.5rem 0.875rem;cursor:pointer}
+  .vc-no{font-size:0.8125rem;font-weight:600;color:var(--ink-2);background:#fff;border:0.0625rem solid var(--line-2);border-radius:0.5rem;padding:0.5rem 0.875rem;cursor:pointer}
+  .choice.matched{border-color:#116DFF;box-shadow:0 0 0 0.125rem rgba(17,109,255,.25)}
+  .choices-label{font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0.25rem 0 0.5rem}
+  .voice-unsupported{font-size:0.8125rem;color:#C81C0F;background:#FDECEA;border-radius:0.5rem;padding:0.5rem 0.75rem;margin:0 0 0.5rem}
+  /* ===== Results page — Delivery (voice & projection) panel ===== */
+  .dv-wrap{padding:0.25rem 0}
+  .dv-top{display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;margin:0 0 0.75rem}
+  .dv-pill{font-size:0.8125rem;font-weight:700;color:#fff;border-radius:62rem;padding:0.3125rem 0.75rem}
+  .dv-pill.good{background:#3E8A00} .dv-pill.mid{background:#E0900A} .dv-pill.low{background:#D0210F}
+  .dv-meta{font-size:0.8125rem;color:var(--ink-2)}
+  .dv-bar{position:relative;height:0.75rem;border-radius:62rem;background:#E3ECFB;overflow:visible;margin:0 0 0.75rem}
+  .dv-fill{height:100%;border-radius:62rem;transition:width .3s ease}
+  .dv-mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:#116DFF;opacity:.6}
+  .dv-note{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0}
+  .dv-none{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0}
+  .dv-playback{margin:1rem 0 0;padding:0.875rem 0 0;border-top:0.0625rem solid var(--line)}
+  .dv-playback.is-empty{display:none}
+  .dv-pb-label{font-size:0.8125rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 0.5rem}
+  .dv-pb-slot audio{width:100%;height:2.25rem;display:block}
+  .dv-pb-prep{font-size:0.875rem;color:var(--muted);font-style:italic}
+  /* ===== Pre-call mic check popup ===== */
+  .mc-lead{font-size:0.875rem;color:var(--ink-2);margin:0 0 0.75rem;line-height:1.45}
+  .mc-notes{margin:0 0 1rem;padding-left:1.125rem;font-size:0.875rem;color:var(--ink-2);line-height:1.5}
+  .mc-notes li{margin:0 0 0.375rem}
+  .mc-row{margin:0 0 0.25rem}
+  .mc-code{display:block;font-size:0.75rem;color:var(--muted);margin-top:0.25rem}
+  /* Action-only step: mic shown but switched off */
+  .voice-off{background:#F5F5F5;border-color:var(--line)}
+  /* Expert follow-up line the learner says aloud */
+  .say-line{background:#E4EFFE;border-radius:var(--r-sm);border-top-right-radius:0.3125rem;padding:0.8125rem 0.9375rem;margin:0.25rem 0 0.75rem;font-size:0.90625rem;line-height:1.45;color:var(--ink)}
+  /* Results: volume events + volume-through-the-call graph */
+  .dv-section{font-size:0.8125rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:1rem 0 0.5rem}
+  .dv-ev-count{display:inline-block;min-width:1.375rem;padding:0 0.375rem;margin-left:0.375rem;border-radius:62rem;background:var(--bg);color:var(--ink);text-align:center;letter-spacing:0}
+  .dv-ev-sub{font-size:0.8125rem;color:var(--ink-2);margin:0 0 0.5rem}
+  .dv-ev-list{list-style:none;margin:0;padding:0}
+  .dv-ev{width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:0.25rem 0.625rem;align-items:center;text-align:left;background:#fff;border:0.0625rem solid var(--line);border-radius:var(--r-sm);padding:0.5rem 0.75rem;margin:0 0 0.375rem;font-family:var(--font-text);color:var(--ink);cursor:pointer}
+  .dv-ev:hover,.dv-ev:focus-visible{border-color:var(--agent);outline:none}
+  .dv-ev.static{cursor:default} .dv-ev.static:hover{border-color:var(--line)}
+  .dv-ev-tag{font-size:0.75rem;font-weight:700;color:#fff;border-radius:62rem;padding:0.125rem 0.5rem;white-space:nowrap}
+  .dv-ev-tag.quiet{background:#B38F00} .dv-ev-tag.loud{background:#3E8A00}
+  .dv-ev-where{font-size:0.8125rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dv-ev-time{font-size:0.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .dv-ev-said{grid-column:2 / 4;min-width:0;font-size:0.8125rem;color:var(--ink-2);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dv-graph{position:relative;cursor:pointer;outline:none;touch-action:none}
+  .dv-plot{position:relative;height:7rem}
+  .dv-plot svg{position:absolute;inset:0;display:block;overflow:visible}
+  .dv-dim{position:absolute;top:0;bottom:0;right:0;left:100%;background:rgba(255,255,255,.6);pointer-events:none}
+  .dv-head{position:absolute;top:-0.25rem;bottom:-0.25rem;left:0;width:2px;margin-left:-1px;border-radius:1px;background:#116DFF;opacity:0;pointer-events:none}
+  .dv-graph:not(.static) .dv-head{opacity:1}
+  .dv-graph:focus-visible .dv-plot{outline:0.125rem solid var(--agent);outline-offset:0.25rem;border-radius:0.25rem}
+  .dv-graph.static{cursor:default}
+  .dv-times{display:flex;justify-content:space-between;margin:0.3125rem 0 0.5rem;font-size:0.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .dv-times b{color:var(--ink);font-weight:600}
+  .dv-legend{display:flex;gap:0.5rem 0.875rem;flex-wrap:wrap;margin:0 0 0.25rem;font-size:0.75rem;color:var(--ink-2)}
+  .dv-legend i{display:inline-block;width:0.625rem;height:0.625rem;border-radius:0.125rem;margin-right:0.3125rem;vertical-align:-0.0625rem}
+  .helperbar{display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 0.75rem}
+  .hbtn{font-size:0.875rem;font-weight:500;padding:0.375rem 1.5rem;border-radius:18.75rem;border:1px solid #424242;background:#fff;color:#242424;cursor:pointer;height:32px}
+  .hbtn:hover{border-color:#424242;color:#fff;background:#424242}
+  .prompt{font-weight:700;font-size:0.875rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;margin:0.125rem 0 0.625rem}
+  /* ---- slide-up decision sheet: the question + choices overlay the lower chat,
+     so the panel height is FIXED and never grows. Click the handle to
+     minimize/expand; it auto-opens for each new question, no backdrop dim. ---- */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#FBFBFC;border-top:0.0625rem solid var(--line);border-top-left-radius:var(--r-md);border-top-right-radius:var(--r-md);box-shadow:0 -0.5rem 1.5rem rgba(20,24,40,.10);display:flex;flex-direction:column;max-height:82%;transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:2}
+  .sheet.min{transform:translateY(calc(100% - 3.25rem))}
+  .sheet-handle{position:relative;flex:0 0 auto;height:3.25rem;width:100%;display:flex;align-items:center;gap:0.75rem;padding:0 1.125rem;cursor:pointer;user-select:none;background:none;border:0;font-family:var(--font-text);text-align:left}
+  .sheet-handle:hover{background:#F3F4F7}
+  .sheet-grab{position:absolute;top:0.4375rem;left:50%;transform:translateX(-50%);width:2.25rem;height:0.25rem;border-radius:62.4375rem;background:var(--line-2)}
+  .sheet-q{flex:1;font-weight:700;font-size:0.8125rem;color:var(--muted);text-transform:uppercase;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:0.25rem}
+  .sheet-chev{flex:0 0 auto;color:var(--ink-2);display:inline-flex;transition:transform .28s ease;padding-top:0.25rem}
+  .sheet:not(.min) .sheet-chev{transform:rotate(180deg)}
+  .sheet-body{flex:1;min-height:0;overflow-y:auto;padding:0.25rem 1.125rem 1.125rem}
+  .choice{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.8125rem 0.9375rem;margin:0.5rem 0;font-size:0.90625rem;font-family:var(--font-text);color:var(--ink);cursor:pointer;transition:border-color .12s ease, box-shadow .12s ease, background .12s ease}
+  .choice:hover:not(:disabled){border-color:var(--agent);box-shadow:0 0.125rem 0.625rem rgba(15,98,230,.10);background:#fff}
+  .choice:disabled{opacity:.45;cursor:not-allowed}
+  .next{margin-top:0.75rem}
+
+  /* typing awareness indicator (TAI) — the user "typing…" bubble before a reply */
+  .msg.typing .bubble{display:inline-flex;align-items:center;gap:0.3125rem;padding:0.8125rem 0.9375rem}
+  .tai-dot{width:0.4375rem;height:0.4375rem;border-radius:50%;background:var(--muted);opacity:.4;animation:tai-blink 1.2s infinite ease-in-out}
+  .tai-dot:nth-child(2){animation-delay:.2s}
+  .tai-dot:nth-child(3){animation-delay:.4s}
+  @keyframes tai-blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:.9;transform:translateY(-0.125rem)}}
+
+  /* learner name field on the Meet screen */
+  .namefield{display:flex;flex-direction:column;gap:0.3125rem;margin:0 0 1.5rem;max-width:21.25rem}
+  .namefield label{font-size:0.875rem;font-weight:400;color:#000000}
+  .nameinput{font-family:var(--font-text);font-size:1rem;padding:0.375rem 0.375rem;border:0.0625rem solid #D6E6FE;border-radius:0.375rem;color:var(--ink);background:#fff}
+  .nameinput::placeholder{color:#868AA5;font-size:1rem}
+  .nameinput:focus{outline:none;border-color:#116DFF}
+  .nameinput.invalid{border-color:#E62214}
+  .nameerror{font-size:0.75rem;color:#44485F;opacity:0;visibility:hidden;transition:opacity 200ms ease-out, visibility 200ms ease-out}
+  .nameerror.show{opacity:1;visibility:visible}
+
+  /* confirm-your-details step (between Meet and the call) */
+  .confirm-details{display:flex;flex-direction:column;gap:0.75rem;margin:0 0 1.75rem;max-width:21.25rem}
+  .confirm-row{display:flex;flex-direction:column;gap:0.1875rem;border-bottom:0.0625rem solid var(--line);padding-bottom:0.625rem}
+  .confirm-label{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .confirm-value{font-size:1rem;color:#000000;word-break:break-word}
+  .confirm-actions{display:flex;gap:0.625rem;align-items:center}
+  .btn-wide{width:auto;padding:0.375rem 1.5rem}
+  .confirm-consent{display:flex;gap:0.5rem;align-items:flex-start;max-width:24rem;margin:0 0 1.5rem;
+    padding:0.75rem 0.875rem;background:var(--bg);border:0.0625rem solid var(--line);border-radius:0.5rem;
+    font-size:0.8125rem;line-height:1.45;color:var(--ink-2)}
+  .confirm-consent svg{flex:0 0 auto;margin-top:0.0625rem}
+
+  /* ============================ COMPLETE ============================ */
+  .complete-hero{display:grid;grid-template-columns:0.7fr 1.3fr;gap:0;background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.125rem}
+  .complete-hero .portrait{background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0}
+  .complete-hero .portrait img{width:100%;height:100%;object-fit:cover}
+  .complete-hero .body{padding:2.5rem 2.75rem;display:flex;flex-direction:column;justify-content:center}
+  .complete-hero h1{font-size:3rem;margin-bottom:0.75rem}
+  .complete-hero .lead{font-size:1rem;color:var(--ink-2);margin:0 0 1.375rem;max-width:46ch}
+  .scorenum{font-family:var(--font-display);font-weight:800;font-size:3.5rem;line-height:1}
+  .scorenum small{font-size:1.375rem;color:var(--muted);font-weight:700}
+
+  .card{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);padding:1.25rem 1.375rem;margin-top:1rem;box-shadow:0 0.25rem 1rem rgba(20,24,40,.05)}
+  .card h3{font-size:0.9375rem;margin:0 0 0.5rem}
+  .srow{display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;padding:0.5625rem 0;border-bottom:0.0625rem solid #F1F1F1}
+  .srow:last-child{border-bottom:0}
+  .sdot{width:0.5625rem;height:0.5625rem;border-radius:50%;margin-right:0.5625rem;display:inline-block}
+  .sdot.done{background:var(--correct)} .sdot.partial{background:var(--partial)} .sdot.miss{background:var(--incorrect)}
+  .sval{font-variant-numeric:tabular-nums;font-weight:600}
+  .list{margin:0.5rem 0 0;padding-left:0;list-style:none}
+  .list li{padding:0.5625rem 0 0.5625rem 1.625rem;position:relative;font-size:0.875rem;border-bottom:0.0625rem solid #F4F4F4}
+  .list li:last-child{border-bottom:0}
+  .list.str li:before{content:"✓";position:absolute;left:0.125rem;color:var(--correct);font-weight:800}
+  .list.imp li:before{content:"→";position:absolute;left:0.125rem;color:var(--partial);font-weight:800}
+  .pick{font-size:0.78125rem;color:var(--muted);margin-top:0.3125rem;font-style:italic}
+  .pick.miss{color:#9aa0a6}
+
+  /* ---- End-screen accordion — mirrors wix.com "Website builder FAQs" ----
+     Flat list of rows with divider lines and a +/× toggle. Each row opens
+     independently (multiple can be open at once). All start collapsed so the
+     completion gate below is meaningful. */
+  .acc{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-md);box-shadow:0 0.25rem 1rem rgba(20,24,40,.05);margin-top:1rem;overflow:hidden}
+  .acc-item{border-top:0.0625rem solid var(--line)}
+  .acc-item:first-child{border-top:0}
+  .acc-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:none;border:0;cursor:pointer;font-family:var(--font-display);font-size:1.0625rem;font-weight:500;letter-spacing:-.01em;color:var(--ink);text-align:left;padding:1.125rem 1.375rem}
+  .acc-head:hover{color:#000}
+  .acc-head:focus-visible{outline:0.125rem solid var(--agent);outline-offset:-0.125rem}
+  .acc-icon{position:relative;width:1rem;height:1rem;flex:0 0 auto;transition:transform .2s ease}
+  .acc-icon::before,.acc-icon::after{content:"";position:absolute;background:var(--ink)}
+  .acc-icon::before{left:0;top:calc(50% - 0.03125rem);width:1rem;height:0.0625rem}
+  .acc-icon::after{top:0;left:calc(50% - 0.03125rem);width:0.0625rem;height:1rem}
+  .acc-item.open .acc-icon{transform:rotate(45deg)}
+  .acc-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+  .acc-item.open .acc-panel{grid-template-rows:1fr}
+  .acc-clip{overflow:hidden;min-height:0}
+  .acc-inner{padding:0.25rem 1.375rem 1.25rem}
+  .acc-inner .list{margin-top:0}
+  .acc-inner .srow:last-child{border-bottom:0}
+
+  /* completion gate */
+  .gate{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:1.125rem}
+  .gate .hint{font-size:0.8125rem;color:var(--muted)}
+  .gate .hint.ready{color:var(--correct);font-weight:600}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;pointer-events:none}
+  .btn.done{background:var(--correct);color:#fff;cursor:default;pointer-events:none;opacity:1;width:auto;padding:0.375rem 1.25rem}
+
+  .actions{display:flex;gap:0.625rem;flex-wrap:wrap;margin-top:1.125rem}
+  /* end-screen transcript reuses the LIVE chat bubbles (.msg/.bubble) so it
+     mirrors the simulation exactly — gray Sarah left, blue Expert right,
+     centered action/system notes. */
+  .txchat{display:flex;flex-direction:column;gap:0.75rem;padding:0.5rem 0 0.25rem}
+
+  /* ============================ helper <dialog> ============================ */
+  dialog.modal{border:0;border-radius:var(--r-md);max-width:35rem;width:calc(100% - 2rem);padding:0;box-shadow:0 1.5rem 3.75rem rgba(20,24,40,.28)}
+  dialog.modal::backdrop{background:rgba(20,24,40,.45)}
+  .modal-inner{padding:1.25rem 1.375rem 1.375rem}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+  .mhead h3{font-size:1.0625rem}
+  .mx{border:0;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--muted)}
+  .mx:hover{color:var(--ink)}
+  .mopt{display:block;width:100%;text-align:left;border:0.0625rem solid var(--line-2);background:#fff;border-radius:var(--r-sm);padding:0.6875rem 0.8125rem;margin:0 0 0.5rem;font-size:0.875rem;font-family:var(--font-text);color:var(--ink);cursor:pointer}
+  .mopt:hover{border-color:var(--agent)}
+  .tabrow{display:flex;gap:0.375rem;margin-bottom:0.625rem}
+  .tab{font-size:0.8125rem;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:0.0625rem solid var(--line-2);background:#fff;font-family:var(--font-text);cursor:pointer}
+  .tab.active{border-color:var(--agent);color:var(--agent);font-weight:700}
+  .article-body{white-space:pre-wrap;font-size:0.875rem;background:var(--bg);border-radius:var(--r-sm);padding:0.8125rem;min-height:5.625rem;line-height:1.5}
+  .mnote{font-size:0.78125rem;color:var(--muted);margin-top:0.5rem}
+  .speakerbox{background:var(--bg);border:0.0625rem solid var(--line);padding:0.6875rem 0.8125rem;border-radius:var(--r-sm);font-size:0.875rem}
+
+  /* ===================== TONY TEST — QUICK WINS =====================
+     1) Guided "Before your call" screen (replaces the mic-check pop-up)
+     2) Check Resources + Full screen callouts
+     3) "Say it" vs "Click it" choice groups
+     4) "What you'll be scored on / this is just practice" note */
+  .intro{background:var(--paper);border:0.0625rem solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);min-height:30rem;display:flex;flex-direction:column}
+  .intro-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.25rem 2rem;border-bottom:0.0625rem solid var(--line)}
+  .intro-steps{display:flex;gap:0.375rem;flex-wrap:wrap}
+  .intro-step{font-size:0.75rem;font-weight:600;color:var(--muted);padding:0.25rem 0.625rem;border-radius:62rem;background:var(--bg);display:inline-flex;align-items:center;gap:0.375rem}
+  .intro-step b{display:inline-flex;align-items:center;justify-content:center;width:1.125rem;height:1.125rem;border-radius:50%;background:#fff;border:0.0625rem solid var(--line-2);font-size:0.6875rem}
+  .intro-step.on{background:#E4EFFE;color:#101585}
+  .intro-step.on b{background:#116DFF;border-color:#116DFF;color:#fff}
+  .intro-step.past b{background:var(--correct);border-color:var(--correct);color:#fff}
+  .intro-body{flex:1;padding:2rem 2.5rem;display:flex;flex-direction:column;gap:1rem}
+  .intro-body h1{font-weight:400;font-size:2rem;line-height:2.25rem;color:#000}
+  .intro-lead{font-size:1rem;color:var(--ink-2);margin:0;max-width:62ch}
+  .intro-foot{display:flex;justify-content:space-between;align-items:center;gap:0.75rem;padding:1rem 2rem;border-top:0.0625rem solid var(--line);background:#FBFBFC;border-bottom-left-radius:var(--r-lg);border-bottom-right-radius:var(--r-lg)}
+  .intro-foot .actions{margin:0}
+  .demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .demo-card{border:0.0625rem solid var(--line);border-radius:var(--r-md);padding:1rem 1.125rem;background:#fff;display:flex;flex-direction:column;gap:0.625rem}
+  .demo-card h3{font-size:1rem;display:flex;align-items:center;gap:0.5rem}
+  .demo-card p,.demo-card li{font-size:0.875rem;color:var(--ink-2);margin:0;line-height:1.45}
+  .demo-card ul{margin:0;padding-left:1.125rem}
+  .demo-ico{width:1.75rem;height:1.75rem;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .demo-ico.say{background:#E4EFFE;color:#116DFF}
+  .demo-ico.click{background:#FFF1E6;color:#B34700}
+  .demo-ico svg{width:1rem;height:1rem}
+  .demo-mock{background:#FBFBFC;border:0.0625rem dashed var(--line-2);border-radius:var(--r-sm);padding:0.75rem;pointer-events:none}
+  .demo-mock .choice{margin:0 0 0.5rem;font-size:0.8125rem;padding:0.625rem 0.75rem}
+  .demo-mock .voice{margin:0}
+  .demo-mock .mic-btn{font-size:0.8125rem;padding:0.5rem 0.875rem}
+  .tools-mock{border:0.0625rem solid var(--line);border-radius:var(--r-md);background:#fff;overflow:visible;position:relative;margin-top:2.25rem}
+  .tools-mock .panel-head{border-radius:var(--r-md) var(--r-md) 0 0}
+  .tools-mock .mock-chat{height:3.5rem;background:repeating-linear-gradient(0deg,#fff 0 0.75rem,#F7F7F7 0.75rem 1.5rem);border-radius:0 0 var(--r-md) var(--r-md)}
+  .tools-mock .btn-end{pointer-events:none}
+  .tools-stage{position:relative;padding-top:3rem}
+  .tools-stage .tools-mock{margin-top:0}
+  .tools-mock .panel-head{flex-wrap:wrap;row-gap:0.75rem}
+  .mock-call{display:flex;flex-direction:column;gap:0.5rem;padding:0.75rem 1rem;pointer-events:none;background:#fff;border-radius:0 0 var(--r-md) var(--r-md)}
+  .mock-call .bubble{font-size:0.8125rem;padding:0.5rem 0.75rem}
+  .mock-opts{border-top:0.0625rem solid var(--line);padding-top:0.625rem;display:flex;flex-direction:column;gap:0.375rem}
+  .mock-opts .choice{margin:0;font-size:0.8125rem;padding:0.5rem 0.75rem}
+  .tools-mock .who-sub{white-space:nowrap}
+  .intro-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .intro-head .intro-fs{position:static;flex:0 0 auto}
+  .app:fullscreen{background:var(--bg);overflow:auto;padding:1.5rem}
+  .tag-num{display:inline-flex;align-items:center;justify-content:center;width:1.375rem;height:1.375rem;border-radius:50%;background:#116DFF;color:#fff;font-size:0.75rem;font-weight:700;flex:0 0 auto}
+  .tools-mock .tag-num{position:absolute;top:-0.6875rem;box-shadow:0 0 0 0.1875rem #fff}
+  .tools-list{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .tools-list .demo-card h3{font-size:0.9375rem}
+  .score-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:1rem;align-items:start}
+  .score-list{list-style:none;margin:0;padding:0}
+  .score-list li{display:flex;justify-content:space-between;gap:0.75rem;font-size:0.875rem;padding:0.4375rem 0;border-bottom:0.0625rem solid #F1F1F1}
+  .score-list li:last-child{border-bottom:0}
+  .score-list .pts{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2);white-space:nowrap}
+  .practice-note{background:#F1F8EE;border:0.0625rem solid #CFE6C6;border-radius:var(--r-md);padding:1rem 1.125rem}
+  .practice-note h3{font-size:0.9375rem;color:#1F5A0E;margin:0 0 0.5rem}
+  .practice-note ul{margin:0;padding-left:1.125rem}
+  .practice-tip{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0}
+  .practice-note li{font-size:0.875rem;color:var(--ink-2);line-height:1.45;margin:0 0 0.375rem}
+  .mic-step{max-width:40rem}
+  @media (max-width:45rem){
+    .demo-grid,.tools-list,.score-grid{grid-template-columns:1fr}
+    .intro-body{padding:1.5rem 1.25rem}
+    .intro-top,.intro-foot{padding:1rem 1.25rem}
+  }
+
+  /* Full screen: labeled pill instead of a bare icon (icon-only once in fullscreen) */
+  .fs-pill{position:absolute;top:0;right:0;height:2.25rem;padding:0 0.875rem 0 0.25rem;border:0;border-radius:62rem;background:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:0.375rem;box-shadow:0 0.0625rem 0.25rem rgba(20,24,40,.14);font-family:var(--font-text);font-size:0.8125rem;font-weight:600;color:var(--ink);transition:transform .12s ease}
+  .fs-pill:hover{transform:scale(1.04)}
+  .fs-pill svg{width:1.875rem;height:1.875rem;display:block}
+  .tools-mock .fs-pill{position:static;box-shadow:none;border:0.0625rem solid var(--line-2)}
+  .sim-wrap:fullscreen .fs-pill{top:0.75rem;right:0.75rem;z-index:20;padding:0 0.25rem}
+  .sim-wrap:fullscreen .fs-pill .fs-label{display:none}
+  .sim-wrap:fullscreen .panel-head{padding-right:3.5rem}
+  /* First-call coach marks */
+  .coach-scrim{position:absolute;inset:0;background:rgba(20,24,40,.35);border-radius:var(--r-lg);z-index:30}
+  .coach{position:absolute;z-index:31;background:#101585;color:#fff;border-radius:var(--r-md);padding:0.875rem 1rem;max-width:17.5rem;font-size:0.875rem;line-height:1.45;box-shadow:0 0.75rem 2rem rgba(20,24,40,.3)}
+  .coach b{display:block;font-size:0.9375rem;margin-bottom:0.25rem}
+  .coach::before{content:"";position:absolute;top:-0.4375rem;width:0.875rem;height:0.875rem;background:#101585;transform:rotate(45deg);border-radius:0.125rem}
+  .coach::before{left:var(--ax,1.25rem)}
+  .coach-done{position:absolute;z-index:31;left:50%;transform:translate(-50%,-50%);top:45%;background:#fff;border-radius:var(--r-md);padding:1rem 1.25rem;max-width:26rem;width:calc(100% - 2rem);text-align:center;box-shadow:0 0.75rem 2rem rgba(20,24,40,.3)}
+  .coach-done p{margin:0 0 0.75rem;font-size:0.875rem;color:var(--ink-2)}
+  .coach-done .btn{margin:0 auto}
+  .lift{z-index:32}
+  .hbtn.lift{position:relative}
+  /* Spoken vs clicked choice groups */
+  .cgroup{margin:0 0 0.625rem}
+  /* Testing update: shorter options panel */
+  .sheet-body .choice{padding:0.5625rem 0.875rem;margin:0.3125rem 0;line-height:1.4}
+  .sheet-body .voice{padding:0.625rem 0.875rem;margin:0 0 0.5rem}
+  .sheet-body .voice-status{margin-top:0.375rem}
+  .top-tools{position:absolute;top:0;right:0;display:flex;align-items:center;gap:0.5rem;z-index:5}
+  .top-tools .fs-pill{position:static}
+  .sim-wrap:fullscreen .top-tools{top:0.75rem;right:0.75rem;z-index:20}
+  .info-pill{width:2.25rem;height:2.25rem;border-radius:50%;border:0;background:#fff;box-shadow:0 0.0625rem 0.25rem rgba(20,24,40,.14);font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:1rem;color:var(--ink);cursor:pointer}
+  .info-pill:hover{transform:scale(1.04)}
+  .info-body h4{font-size:0.8125rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0.875rem 0 0.25rem}
+  .info-body h4:first-child{margin-top:0}
+  dialog.modal:has(.info-body){max-width:44rem}
+  .info-body{max-height:70vh;overflow:auto}
+  .info-body h4{margin-bottom:0.5rem}
+  .info-body .demo-card{gap:0.375rem;padding:0.75rem 1rem}
+  .info-body .demo-card h3{font-size:0.9375rem}
+  .info-body .practice-note{padding:0.75rem 1rem}
+  .info-body p{font-size:0.875rem;color:var(--ink-2);margin:0 0 0.375rem;line-height:1.45}
+  .cgroup:last-child{margin-bottom:0}
+  .cgroup-head{display:flex;align-items:center;gap:0.5rem;margin:0.375rem 0 0.25rem}
+  .cgroup-head .demo-ico{width:1.5rem;height:1.5rem}
+  .cgroup-head .demo-ico svg{width:0.875rem;height:0.875rem}
+  .cgroup-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+  .cgroup-sub{font-size:0.75rem;color:var(--muted)}
+  .choice.say{border-left:0.25rem solid #116DFF}
+  .choice.say.say-only{cursor:default;background:#F7FAFF}
+  .choice.say.say-only:hover{border-color:var(--line-2);border-left-color:#116DFF;box-shadow:none;background:#F7FAFF}
+  .choice.say.say-only.matched{border-color:#116DFF}
+  .choice.act{border-left:0.25rem solid #E07A00;display:flex;align-items:center;gap:0.625rem}
+  .choice.act .act-ico{flex:0 0 auto;color:#B34700;display:inline-flex}
+  .choice.act .act-ico svg{width:1rem;height:1rem}
+  .choice.act .act-body{display:flex;flex-direction:column;gap:0.25rem;align-items:flex-start}
+  .task-tag{font-size:0.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#6B3FA0;background:#F2ECFA;border-radius:62rem;padding:0.0625rem 0.5rem}
+  .lock-hint{display:none;font-size:0.75rem;color:var(--muted)}
+  .choice.act.locked{background:#F7F7F8;border-left-color:#C9CDD4;cursor:not-allowed}
+  .choice.act.locked .act-ico{color:#9AA0A8}
+  .choice.act.locked .lock-hint{display:block}
+  .choice.act.locked:hover{box-shadow:none;border-color:var(--line-2);border-left-color:#C9CDD4}
+  .msg.system .screenshot.ref img{max-width:min(16rem,100%)}
+  .choice.act:hover:not(:disabled){border-color:#E07A00;border-left-color:#E07A00;box-shadow:0 0.125rem 0.625rem rgba(224,122,0,.14)}
+  .cbadge.act{color:#B34700;background:#FFF1E6;border-color:#FFD9B8}
+  .say-hint{font-size:0.75rem;color:#C81C0F;margin:0.25rem 0 0;display:none}
+  .say-hint.show{display:block}
+  .tap-fallback{background:none;border:0;padding:0;margin:0.375rem 0 0;font-family:var(--font-text);font-size:0.75rem;color:var(--muted);text-decoration:underline;cursor:pointer}
+  .tap-fallback:hover{color:var(--ink)}
+
+  /* MDN: honour users who prefer less motion */
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important}
+  }
+  @media (max-width:45rem){
+    .meet,.complete-hero{grid-template-columns:1fr}
+    .meet .portrait,.complete-hero .portrait{min-height:16.25rem}
+    .meet .body{padding:1.75rem 1.5rem 2rem}
+    .meet .body h1{font-size:2.125rem}
+    .complete-hero .body{padding:1.75rem 1.5rem}
+    .msg{max-width:88%}
+  }
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<!-- ============================ THE SCENARIO (edit this) ============================ -->
+<script id="scenario">
+window.SCENARIO = {
+  title: "Billing: Sticker Shock",
+
+  user: {
+    name: "Daniel",
+    image: "Daniel%20R/Daniel_Meet.png",
+    completeImage: "Daniel%20R/Daniel_Close.png",
+    bio: "Daniel is calling back about a $624 auto-renewal charge for a plan he doesn't use, after a previous agent declined his refund. In this activity, you'll simulate a call with him. Click **Check Resources** to view internal and external help documents at any point during the interaction. Let's begin!"
+  },
+
+  // Articles: `points` + `rating` (Y = correct, Partial, N) are scored by the engine.
+  // The best article opened 30+ seconds into the call sets the Use resources score.
+  // url "" = placeholder (no KB link yet); clicking it still counts as opening it.
+  resources: {
+    title: "Check Resources",
+    stage: "article", capIfUnchecked: 10,
+    note: "Open the resources below. Checking the right one before you answer is the skill, not remembering it.",
+    items: [
+      { label:"[Placeholder] Refunds: Renewals and Cancellations", url:"", rating:"correct", points:20, correct:true },
+      { label:"[Placeholder] Billing: Auto-Renewal Settings", url:"", rating:"partial", points:10 },
+      { label:"[Placeholder] Account: Change Account Email", url:"", rating:"incorrect", points:0 }
+    ]
+  },
+
+  stages: [
+    { id:"open", name:"Opening & closing", max:10, additive:true,
+      strength:"You greeted Daniel by name, acknowledged he was calling back, and closed with a clear recap and next steps.",
+      improvement:"Greet Daniel by name and acknowledge he has already contacted us, then close with a short recap and what happens next." },
+    { id:"acknowledge", name:"Acknowledge & validate", max:20,
+      strength:"You validated Daniel's frustration about the unexpected charge and the earlier conversation before moving to policy.",
+      improvement:"Before explaining anything, acknowledge the size of the charge and how the earlier conversation left Daniel feeling." },
+    { id:"ownership", name:"Take ownership", max:15,
+      strength:"You reviewed the history so Daniel didn't have to repeat himself, and gave a clear timeframe.",
+      improvement:"Review the previous notes and tell the user how long you need, rather than asking them to start over." },
+    { id:"clarify", name:"Clarify the goal", max:15,
+      strength:"You asked about Daniel's plans for the plan and site before discussing the refund.",
+      improvement:"Ask what the user planned to do with the plan and whether they will keep using it before explaining policy." },
+    { id:"policy", name:"Deliver the policy clearly", max:20,
+      strength:"You gave the news up front in plain language, with specific dates, and said what you could do instead.",
+      improvement:"State clearly what can't be done, with the specific dates, then move to what you can do. Avoid reading terms aloud or using old plan names." },
+    { id:"options", name:"Offer options & next steps", max:20,
+      strength:"You offered concrete next steps, set an honest timeframe, and did not over-promise the refund.",
+      improvement:"Offer specific next steps, explain what happens after, and avoid promising an outcome you can't guarantee." },
+    { id:"article", name:"Use resources", max:20,
+      strength:"",
+      improvement:"" },
+    { id:"solve", name:"Solve the issue", max:20, additive:true,
+      strength:"",
+      improvement:"" }
+  ],
+
+  start: "s_open",
+  screens: {
+
+    s_open: {
+      stage:"open",
+      speaker:"Yeah, hi. I'm calling back about a $624 charge I should not have been billed. I already spoke to someone and got nowhere, so I'm hoping you can actually help.",
+      prompt:"How do you open the conversation?",
+      choices:[
+        { id:"A", text:"Hi, thanks for calling Wix. Can I get your name and account email so we can get started?",
+          verdict:"incorrect", points:0, goTo:"s_open",
+          retry:true, capIfRetried:3,
+          consequence:"Daniel: I already gave all of that to the last person. Can we skip ahead?" },
+        { id:"B", text:"Hi Daniel, thanks for calling Wix. I'm [Name]. How can I help you today?",
+          verdict:"partial", points:3, goTo:"s_acknowledge",
+          consequence:"Daniel: Like I said, the charge. Did the last person not leave any notes?" },
+        { id:"C", text:"Hi Daniel, thanks for calling back. I'm [Name]. I can see you've already spoken with us about this charge, and I'd like to help get it sorted out today.",
+          verdict:"correct", points:5, goTo:"s_acknowledge",
+          consequence:"Daniel: Okay, I appreciate that. I'm just really frustrated." }
+      ]
+    },
+
+    s_acknowledge: {
+      stage:"acknowledge",
+      speaker:"I'm paying $624 for an e-commerce plan I don't even use! It auto-renewed and I never got a reminder. The last person was nice, but basically shut me down. How is that okay?",
+      prompt:"How do you respond to Daniel's frustration?",
+      choices:[
+        { id:"A", text:"I understand, but the renewal terms are in the Wix Terms of Use, which you agreed to when you purchased.",
+          verdict:"incorrect", points:0, goTo:"s_acknowledge",
+          retry:true, capIfRetried:10,
+          consequence:"Daniel: So that's it? That's exactly what the last person said." },
+        { id:"B", text:"I'm sorry about that. Let me look at your account and see what I can do.",
+          verdict:"partial", points:10, goTo:"s_ownership",
+          consequence:"Daniel: Okay, I guess. Just please actually look into it." },
+        { id:"C", text:"That's completely understandable. $624 is a big charge to see with no warning, especially for a plan you aren't using. I'm sorry the last conversation left you feeling shut down. Let's go through it together.",
+          verdict:"correct", points:20, goTo:"s_ownership",
+          consequence:"Daniel: Thank you. That's all I wanted, for someone to actually listen." }
+      ]
+    },
+
+    s_ownership: {
+      stage:"ownership",
+      speaker:"So what happens now? Am I going to have to explain all of this again?",
+      prompt:"How do you show Daniel you're taking ownership?",
+      choices:[
+        { id:"A", text:"I'll need you to walk me through the whole situation again so I can document it.",
+          verdict:"incorrect", points:0, goTo:"s_ownership",
+          retry:true, capIfRetried:7,
+          consequence:"Daniel: Seriously? I just went through all of this!" },
+        { id:"B", text:"Let me pull up your account and take a look.",
+          verdict:"partial", points:7, goTo:"s_clarify",
+          consequence:"Daniel: Fine. Go ahead." },
+        { id:"C", text:"You won't need to repeat yourself. I'm going to review the notes from your last chat and your plan details so we pick up where you left off. Please give me about two minutes.",
+          verdict:"correct", points:15, goTo:"s_clarify",
+          consequence:"Daniel: Okay, good. Thanks for not making me start over." }
+      ]
+    },
+
+    s_clarify: {
+      stage:"clarify",
+      speaker:"I just want my money back. I set that store up for a project that never launched.",
+      prompt:"What do you do next?",
+      choices:[
+        { id:"A", text:"Before we talk about a refund, let me explain our renewal policy.",
+          verdict:"incorrect", points:0, goTo:"s_clarify",
+          retry:true, capIfRetried:7,
+          consequence:"Daniel: I knew it. You're just going to read me the policy." },
+        { id:"B", text:"Can you confirm which site and plan the charge is for?",
+          verdict:"partial", points:7, goTo:"s_policy",
+          consequence:"Daniel: It's the e-commerce plan on my vineyard site. The $624 one." },
+        { id:"C", text:"I can see the charge is for the e-commerce plan on your site. What were you hoping to do with the store, and do you plan to use the plan going forward?",
+          verdict:"correct", points:15, goTo:"s_policy",
+          consequence:"Daniel: Honestly, I never launched it. I moved the shop elsewhere and only kept the site for my blog." }
+      ]
+    },
+
+    s_policy: {
+      stage:"policy",
+      speaker:"So can I get the refund or not?",
+      prompt:"How do you explain the refund policy?",
+      choices:[
+        { id:"A", text:"Unfortunately, auto-renewals are non-refundable per our Terms of Use, and there's nothing more I can do.",
+          verdict:"incorrect", points:0, goTo:"s_policy",
+          retry:true, capIfRetried:10,
+          consequence:"Daniel: Unbelievable. Let me speak to a supervisor." },
+        { id:"B", text:"The refund widget only covers the first 14 days after a plan renews, and your renewal is outside that window, so I'm unable to refund it that way. Is there anything else I can help with?",
+          verdict:"partial", points:10, goTo:"s_options",
+          consequence:"Daniel: That's it? So I'm just out $624?" },
+        { id:"C", text:"I want to be upfront with you. The refund widget only covers the first 14 days after a plan renews, and your renewal is outside that window, so I can't refund it that way. What I can do is submit a Special Circumstances Refund Request for you, and I'll walk you through what happens next.",
+          verdict:"correct", points:20, goTo:"s_options",
+          consequence:"Daniel: Okay. At least you're being straight with me. What are my options?" }
+      ]
+    },
+
+    s_options: {
+      stage:"options",
+      speaker:"Fine. What can you actually do for me?",
+      prompt:"Which next step do you offer?",
+      choices:[
+        { id:"A", text:"I can transfer you to billing.",
+          verdict:"incorrect", points:0, goTo:"s_options",
+          retry:true, capIfRetried:10,
+          consequence:"Daniel: Another transfer? No." },
+        { id:"B", text:"I can cancel the plan now so it doesn't renew again next year.",
+          verdict:"partial", points:10, goTo:"s_close",
+          consequence:"Daniel: I guess that stops it happening again. But what about this charge?" },
+        { id:"C", text:"I can cancel the plan now so it doesn't renew again, and I'll submit a Special Circumstances Refund Request with the full details so you won't have to repeat anything. The Premium & Policy team handles these within about 2 weeks and will email you the outcome. I can't guarantee the result, but I'll make sure your situation is clearly documented. Would you like me to do that now?",
+          verdict:"correct", points:20, goTo:"s_close",
+          consequence:"Daniel: Yes, please. Thanks for not just brushing me off." }
+      ]
+    },
+
+    s_close: {
+      stage:"open",
+      speaker:"Okay. Is there anything else I need to do?",
+      prompt:"How do you close the conversation?",
+      choices:[
+        { id:"A", text:"That's everything. Have a good day!",
+          verdict:"incorrect", points:0, goTo:"s_close",
+          retry:true, capIfRetried:2,
+          consequence:"Daniel: Wait, so what did you actually do?" },
+        { id:"B", text:"I've cancelled the plan and submitted the request. Is there anything else I can help with?",
+          verdict:"partial", points:2, goTo:"__end__",
+          consequence:"Daniel: No, that's it. Thanks." },
+        { id:"C", text:"To recap: I've cancelled the plan so it won't renew, and I've submitted a Special Circumstances Refund Request. The Premium & Policy team handles these within about 2 weeks and will email you the outcome. Is there anything else I can help you with today?",
+          verdict:"correct", points:5, goTo:"__end__",
+          consequence:"Daniel: No, that covers it. Thanks for your help today. I really appreciate it." }
+      ]
+    }
+
+  }
+};
+</script>
+
+<!-- ============================ THE ENGINE (do not edit) =========================== -->
+<script id="engine">
+(function(){
+  const S = window.SCENARIO;
+  const app = document.getElementById('app');
+  const U = S.user || { name:(S.userBio? "the user":"User"), image:null, bio:S.userBio||"" };
+
+  const earned = {};        // stageId -> best points (skips are recoverable)
+  const status = {};        // stageId -> 'todo' | 'partial' | 'done'
+  const decisivePick = {};  // stageId -> the response that set that stage's score
+  const transcript = [];    // ordered record of the whole conversation
+  const stageCfg = {};      // stageId -> stage config (for additive/max lookups)
+  S.stages.forEach(st => { earned[st.id]=0; status[st.id]='todo'; stageCfg[st.id]=st; });
+  const maxTotal = S.stages.reduce((a,st)=>a+st.max,0);
+  const visitedScreens = new Set();
+  const help = { used:false, checkedCorrectArticle:false, openedAnyResourceLink:false, openedLabels:new Set() };
+  // Article scoring: resources.items may carry `points` + `rating` (correct /
+  // partial / incorrect). The highest-points article opened at/after
+  // RESOURCE_CREDIT_MIN_SECONDS sets the resources stage score (capped at the
+  // stage max) in renderFinal. Items without `points` score nothing, so older
+  // scenarios behave exactly as before.
+  let bestArticle = null;   // { label, points, rating }
+  // Whether the CURRENT screen's speaker line actually played (passed its
+  // speakerIf gate) — read when the choice is recorded so the end-of-call
+  // transcript replay matches exactly what the learner saw live.
+  let currentSpeakerShown = false;
+  // TONY TEST: set when a voice-mode learner opts to tap spoken responses instead.
+  let tapFallback = false;
+
+  /* ---- learner name ----------------------------------------------------
+     Captured on the Meet screen (learners enter their FULL name). During the
+     simulation, the Expert is shown by FIRST NAME ONLY — this applies both to
+     (a) the label on the learner's own chat bubbles and (b) the [name] token
+     substituted anywhere in scenario text (e.g. "I'm [name]"). The full name
+     is still pushed to the Rise/Storyline "learner_name" variable and sent to
+     telemetry unchanged. */
+  let learner_name = "";
+  function firstName(){ return (learner_name || "").trim().split(/\s+/)[0] || ""; }
+  function px(s){ return String(s==null?'':s).replace(/\[name\]/gi, firstName() || "you"); }
+  function setLearnerName(v){
+    learner_name = (v||"").trim();
+    pushRiseVar("learner_name", learner_name);
+  }
+
+  /* ---- learner email ---------------------------------------------------
+     Also captured on the Meet screen (required, basic format check). Unlike
+     the name, it is NOT pushed to a Rise/Storyline variable — it is only
+     sent to the telemetry Form (see FIELD_IDS.learner_email below). */
+  let learner_email = "";
+  function setLearnerEmail(v){ learner_email = (v||"").trim(); }
+
+  // Best-effort write to the host course's variable. Storyline exposes
+  // GetPlayer(); Rise/other hosts can listen for the postMessage below.
+  function pushRiseVar(name, value){
+    try {
+      const p = (window.parent && window.parent.GetPlayer && window.parent.GetPlayer())
+             || (window.top && window.top.GetPlayer && window.top.GetPlayer());
+      if(p && p.SetVar) p.SetVar(name, value);
+    } catch(e){}
+    try { window.parent && window.parent.postMessage({ type:'setVar', name:name, value:value }, '*'); } catch(e){}
+    // SCORM package: scorm.js (only present in the LMS build) reports score + completion.
+    try { if(!IS_CALL_TAB && window.CDScorm) window.CDScorm.setVar(name, value); } catch(e){}
+    // Call tab: pass it back to the course copy, which forwards it to Rise.
+    try { if(IS_CALL_TAB && window.opener) window.opener.postMessage({ type:'cd-relay', payload:{ type:'setVar', name:name, value:value } }, '*'); } catch(e){}
+  }
+
+  // Stamp each screen with its own id so retry can re-open it.
+  Object.keys(S.screens).forEach(k => { S.screens[k].id = k; });
+
+  /* =========================== TELEMETRY ===========================
+     Posts one row per learner action to a Google Form, whose responses feed
+     the Sheet. A Google Form's formResponse endpoint accepts anonymous,
+     cross-origin POSTs with no auth, no deployment permissions, and no shared
+     key — which is why this works where the Apps Script Web App returned 401.
+     (This is the same mechanism proven in the working Rise POC.)
+
+     Each field is addressed by its Form `entry.NNN` id, not by column name.
+     Body is application/x-www-form-urlencoded (entry.123=value&...). If the
+     Form's questions ever change, refresh the ids in FIELD_IDS below by
+     opening the live form's prefilled-link tool or viewing its HTML source.
+
+     mode:'no-cors' makes the response opaque, so a rejected/misrouted write is
+     invisible here and fails silently. Verify the first run by watching rows
+     actually land in the Sheet.
+
+     learner_email IS collected on the Meet screen in this scenario and sent to
+     the Form's learner_email field (entry.1276253364). All other values are
+     derived dynamically from the scenario/screen, so every scenario self-labels
+     with no per-scenario editing here. */
+  // PLACEHOLDER: Sticker Shock has no tracking Form yet (it may get its own Sheet,
+  // or none at all). Blank = telemetry off. To turn it on, paste the new Form's
+  // .../formResponse URL here AND replace the entry ids below with that Form's ids
+  // (the ids below are left over from the Layers Form and won't match a new one).
+  const TELEMETRY_ENDPOINT = '';
+  const FIELD_IDS = {
+    learner_email:    'entry.1276253364',
+    learner_name:     'entry.2005409239',
+    attempt_id:       'entry.1673953677',
+    course:           'entry.2010105379',
+    scene:            'entry.1283761747',
+    interaction:      'entry.1781563601',
+    question:         'entry.786197073',
+    response:         'entry.2057562952',
+    correct:          'entry.1897805741',
+    points:           'entry.1780599104',
+    time_on_step_sec: 'entry.1327709145',
+    notes:            'entry.1963386753'
+  };
+  const TELEMETRY_COURSE = S.title;           // written to the `course` field
+
+  // One id per play-through, so a learner's rows can be grouped in the Sheet.
+  let attemptId = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // `time_on_step_sec` — seconds between a screen appearing and the learner acting.
+  let stepStartedAt = null;
+  function markStepStart(){ stepStartedAt = callSeconds; }
+  function secondsOnStep(){ return stepStartedAt==null ? '' : Math.max(0, callSeconds - stepStartedAt); }
+
+  // Same idea for the Check Resources modal: seconds since it was opened, not the call clock.
+  let resourcesOpenedAt = null;
+  function secondsOnResources(){ return resourcesOpenedAt==null ? '' : Math.max(0, callSeconds - resourcesOpenedAt); }
+
+  // verdict -> the `correct` field
+  function correctCol(verdict){
+    if(verdict==='correct')   return 'yes';
+    if(verdict==='partial')   return 'partial';
+    if(verdict==='incorrect') return 'no';
+    return '';
+  }
+
+  function logEvent(evt){
+    evt = evt || {};
+    // Map this event onto the Form fields.
+    const row = {
+      learner_email:    learner_email,
+      learner_name:     learner_name,
+      attempt_id:       attemptId,
+      course:           TELEMETRY_COURSE,
+      scene:            evt.screen   || '',
+      interaction:      evt.stage    || evt.helper || evt.type || '',
+      question:         evt.question || '',
+      response:         evt.text     || evt.action || '',
+      correct:          correctCol(evt.verdict),
+      points:           evt.points  == null ? '' : evt.points,
+      time_on_step_sec: evt.seconds == null ? '' : evt.seconds,
+      notes:            evt.notes    || ''
+    };
+    if(!TELEMETRY_ENDPOINT) return;            // tracking off (no Form set)
+    // Build the urlencoded body keyed by Form entry ids.
+    const body = [];
+    for(const k in row){
+      if(!FIELD_IDS[k]) continue;              // skip any field without an entry id
+      const v = row[k];
+      body.push(FIELD_IDS[k] + '=' + encodeURIComponent(v == null ? '' : v));
+    }
+    try{
+      fetch(TELEMETRY_ENDPOINT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body: body.join('&')
+      }).catch(()=>{});  // best-effort telemetry; never blocks the learner's flow
+    } catch(e){}
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* =================== CALL-RECORDING UPLOAD ===================
+     The per-action telemetry above rides a Google Form, which CANNOT accept a
+     file. So the call audio goes to a separate sink: a Google Apps Script Web
+     App that (1) saves the .webm to a Drive folder and (2) writes one row to a
+     "Recordings" tab — timestamp, attempt_id, email, name, course, recording_url
+     — keyed by the SAME attempt_id used in the Form rows, so the recording links
+     back to the learner's telemetry. Everything stays inside Google Workspace;
+     no third-party host.
+
+     DEPLOYMENT (must be done once, by the sheet/Drive owner):
+       • Paste the companion Apps Script (see "RECORDING WEB APP.gs") into the
+         Sheet's Apps Script editor and deploy as a Web App.
+       • Execute as: Me.  Who has access: ANYONE.
+         "Anyone" (not "Anyone within Wix") is required — external BPO learners
+         sign in with @wixcs.com, a different domain, and a domain-scoped Web App
+         would reject them (the 401 we hit before). "Execute as: Me" means the
+         file lands in the OWNER's Drive; learners need no Drive permissions.
+       • Paste the resulting /exec URL into RECORDING_ENDPOINT below.
+     Until a URL is set, recording silently no-ops and the sim runs unchanged. */
+  // !! The mic-test popup tells learners "We don't store recordings after the
+  // !! simulation is complete." That is only true while this stays EMPTY. If you
+  // !! ever paste a URL here, update that note in micStepMarkup() first.
+  const RECORDING_ENDPOINT = '';   // <-- paste the Apps Script Web App /exec URL here
+
+  function uploadRecording(blob){
+    if(!RECORDING_ENDPOINT || !blob || !blob.size) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      // reader.result is a data: URL — keep only the base64 payload.
+      const base64 = String(reader.result).split(',')[1] || '';
+      const body = new URLSearchParams({
+        attempt_id:    attemptId,
+        learner_email: learner_email,
+        learner_name:  learner_name,
+        course:        TELEMETRY_COURSE,
+        mime:          blob.type || 'audio/webm',
+        audio_b64:     base64
+      });
+      try{
+        // Same transport as the telemetry Form: urlencoded + no-cors, so it's
+        // fire-and-forget with no CORS preflight. The Web App parses e.parameter,
+        // writes the Recordings row + Drive link itself, so we never read a
+        // response back (which no-cors wouldn't let us do anyway).
+        fetch(RECORDING_ENDPOINT, {
+          method:'POST', mode:'no-cors',
+          headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+          body: body.toString()
+        }).catch(()=>{});
+      } catch(e){}
+    };
+    reader.readAsDataURL(blob);
+  }
+
+  /* Local, play-only playback of the learner's OWN call, shown in the results
+     "Voice and Projection" panel. Uses an in-memory object URL — nothing is
+     downloaded and no Drive access is needed; it lives only for this session and
+     is gone on refresh. The permanent copy is the one uploaded to L&D's Drive.
+     `controlsList="nodownload"` hides the browser's download button (Chrome/Edge,
+     which is also the required browser for speech-to-text). */
+  function mountPlayback(blob){
+    const wrap = document.getElementById('callPlayback');
+    const slot = document.getElementById('callPlaybackSlot');
+    if(!wrap || !slot) return;
+    if(!blob || !blob.size){ wrap.classList.add('is-empty'); return; }
+    try{
+      const url = URL.createObjectURL(blob);
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.preload = 'metadata';
+      audio.src = url;
+      audio.setAttribute('controlsList', 'nodownload noplaybackrate');
+      audio.oncontextmenu = () => false;   // no "save audio as" right-click
+      slot.innerHTML = '';
+      slot.appendChild(audio);
+      if(window.CallMode && window.CallMode.bindGraph) window.CallMode.bindGraph(audio);   // playhead follows playback
+    } catch(e){ wrap.classList.add('is-empty'); }
+  }
+
+
+  /* ---- call timer (authentic Communication-Panel touch) ---- */
+  let callSeconds = 0, timerHandle = null, callStartTs = null;
+  function mmss(t){ const m=Math.floor(t/60), s=t%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+  // Drive the clock from a real timestamp, NOT a tick counter. Background tabs
+  // throttle/pause setInterval (e.g. after opening Resources and switching tab),
+  // which makes a "callSeconds++" counter fall behind real time. Deriving the
+  // value from elapsed wall-clock time keeps it accurate: it snaps to the right
+  // value on the next tick, and immediately when the tab is re-focused.
+  function tickTimer(){
+    if(callStartTs==null) return;
+    callSeconds = Math.round((Date.now()-callStartTs)/1000);
+    const e=document.getElementById('timer'); if(e) e.textContent=mmss(callSeconds);
+  }
+  function startTimer(){
+    callStartTs = Date.now() - callSeconds*1000;   // resume-safe
+    tickTimer();
+    timerHandle = setInterval(tickTimer, 1000);
+  }
+  function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
+  // Correct the display the instant the tab becomes visible again.
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tickTimer(); });
+
+  let chatEl, composerEl;
+
+  /* =================== PHASE 1 — MEET THE USER =================== */
+  function renderMeet(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}"
+             onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'noimg\\'>[ ${escapeHtml(U.name)} ]<br><span style=&quot;font-size:0.75rem&quot;>character image not found</span></div>')">`
+      : `<div class="noimg">[ ${escapeHtml(U.name)} ]</div>`;
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Care Dojo · User Scenario</div>
+          <h1 class="display">Meet ${escapeHtml(U.name)}</h1>
+          <p>${escapeHtml(U.bio).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/\*([^*]+)\*/g,'<em>$1</em>')}</p>
+          <div class="namefield">
+            <label for="learnerName">Full Name</label>
+            <input class="nameinput" id="learnerName" type="text" autocomplete="name"
+                   placeholder="Enter your full name" value="${escapeHtml(learner_name)}">
+            <div class="nameerror" id="nameError">Please enter your name to continue.</div>
+          </div>
+          <div class="namefield">
+            <label for="learnerEmail">Wix Email</label>
+            <input class="nameinput" id="learnerEmail" type="email" autocomplete="email"
+                   placeholder="Enter your Wix email" value="${escapeHtml(learner_email)}">
+            <div class="nameerror" id="emailError">Please enter a valid email to continue.</div>
+          </div>
+          <div><button class="btn btn-dark" id="startBtn">Get Started<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button></div>
+        </div>
+      </section>`;
+    const nameInput  = document.getElementById('learnerName');
+    const nameError  = document.getElementById('nameError');
+    const emailInput = document.getElementById('learnerEmail');
+    const emailError = document.getElementById('emailError');
+    const emailOk = v => /^\S+@\S+\.\S+$/.test((v||'').trim());
+    nameInput.addEventListener('input', e => {
+      setLearnerName(e.target.value);
+      if(learner_name) { nameError.classList.remove('show'); nameInput.classList.remove('invalid'); }
+    });
+    emailInput.addEventListener('input', e => {
+      setLearnerEmail(e.target.value);
+      if(emailOk(learner_email)) { emailError.classList.remove('show'); emailInput.classList.remove('invalid'); }
+    });
+    document.getElementById('startBtn').onclick = () => {
+      setLearnerName(nameInput.value);
+      setLearnerEmail(emailInput.value);
+      let bad = false;
+      if(!learner_name){
+        nameError.classList.add('show'); nameInput.classList.add('invalid'); bad = true;
+      }
+      if(!emailOk(learner_email)){
+        emailError.classList.add('show'); emailInput.classList.add('invalid'); bad = true;
+      }
+      if(bad){ (!learner_name ? nameInput : emailInput).focus(); return; }
+      openConfirm();
+    };
+  }
+
+  /* =================== PHASE 1b — CONFIRM YOUR DETAILS (popup) ===================
+     A modal checkpoint over the Meet screen: the learner reviews the exact name
+     + email that will be attached to their results. Close/Back dismisses the
+     popup (Meet stays put); "These are correct" starts the call. */
+  function openConfirm(){
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>Are these correct?</h3><button class="mx" id="confirmClose" type="button" aria-label="Close">&times;</button></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">Make sure your first and last name and Wix email address are correct before we proceed. We'll attach these to your results.</p>
+        <div class="confirm-details">
+          <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${escapeHtml(learner_name)}</span></div>
+          <div class="confirm-row"><span class="confirm-label">Email</span><span class="confirm-value">${escapeHtml(learner_email)}</span></div>
+        </div>
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="confirmYes" type="button">These are correct<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span></button>
+          <button class="btn btn-ghost" id="confirmBack" type="button">Back</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    const close = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#confirmClose').onclick = close;
+    dlg.querySelector('#confirmBack').onclick = close;
+    dlg.querySelector('#confirmYes').onclick = ()=>{ close(); renderIntro(0); };
+  }
+
+  /* =================== PHASE 1c — BEFORE YOUR CALL (guided intro) ===================
+     TONY TEST: replaces the old mic-check pop-up with a full, stepped screen so
+     first-timers are walked through the call before it starts:
+       1  How this call works  — "Say it" (spoken) vs "Click it" (actions)
+       2  How you're scored    — the rubric + "what to expect"
+       3  Test your microphone — the same live mic check as before, inline
+     The mic logic is unchanged from openMicCheck(): Chrome/Edge note, Allow
+     prompt, recording note, the 0.22 volume gate, the embedded-page "Open the
+     call in a new tab" path, and "Continue without speaking". */
+  const MIC_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+  const CLICK_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 3.5v10.2l2.3-2.1 2 4.6 2.1-.9-2-4.5h3.1L9 3.5z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+  const ARROW_SVG = `<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span>`;
+  const INTRO_STEPS = ['How this call works', "How you're scored", 'Test your mic'];
+  let introMicCheck = null;
+
+  function renderIntro(step){
+    stopTimer();
+    if(introMicCheck){ introMicCheck.stop(); introMicCheck = null; }
+    step = Math.max(0, Math.min(INTRO_STEPS.length - 1, step|0));
+    const name = escapeHtml(U.name);
+    const pills = INTRO_STEPS.map((t,i)=>`<span class="intro-step${i===step?' on':''}${i<step?' past':''}"><b>${i<step?'✓':i+1}</b>${escapeHtml(t)}</span>`).join('');
+    let body = '';
+    if(step === 0){
+      body = `
+        <div class="intro-head">
+          <h1 class="display">How this call works</h1>
+          <button class="fs-pill intro-fs" id="introFs" type="button" title="Enter full screen">${MAXIMIZE_SVG}<span class="fs-label">Full screen</span></button>
+        </div>
+        <p class="intro-lead">On each turn, a question appears with two kinds of responses: things you <b>say</b> and things you <b>click</b>.</p>
+        <div class="demo-grid">
+          <div class="demo-card">
+            <h3><span class="demo-ico say">${MIC_SVG}</span>Say it</h3>
+            <p>Spoken responses are what you'd say to ${name}. Hold the blue mic button and read one aloud at your normal call volume. It's sent as soon as it's recognized.</p>
+            <div class="demo-mock" aria-hidden="true">
+              <div class="choice say say-only">Hi ${name}, thanks so much for calling today…</div>
+              <div class="voice"><div class="voice-row"><span class="mic-btn"><span class="mic-ico"></span>Hold &amp; say your answer</span><div class="meter"><div class="meter-fill" style="width:46%;background:#5BBE7E"></div><div class="meter-mark" style="left:22%"></div></div></div></div>
+            </div>
+          </div>
+          <div class="demo-card">
+            <h3><span class="demo-ico click">${CLICK_SVG}</span>Click it</h3>
+            <p>Actions are things you'd <b>do</b> in your tools, like looking someone up in User Manager. Don't say these out loud. Just click one.</p>
+            <div class="demo-mock" aria-hidden="true">
+              <div class="choice act"><span class="act-ico">${CLICK_SVG}</span><span>Look ${name} up in User Manager to verify the account.</span></div>
+            </div>
+          </div>
+        </div>`;
+    } else if(step === 1){
+      const rows = S.stages.map(st=>`<li><span>${escapeHtml(st.name)}</span><span class="pts">${st.max} pts</span></li>`).join('');
+      body = `
+        <h1 class="display">How you're scored</h1>
+        <div class="score-grid">
+          <div class="practice-note">
+            <h3>What to expect:</h3>
+            <p class="practice-tip">You'll see your score, what you did well, what to work on, and the full transcript at the end.</p>
+            <p class="practice-tip" style="margin-top:0.5rem">Time isn't scored. The timer is there so it feels like a real call.</p>
+          </div>
+          <div class="demo-card">
+            <h3>What you'll be scored on (${maxTotal} pts)</h3>
+            <ul class="score-list">${rows}</ul>
+          </div>
+        </div>`;
+    } else {
+      body = micStepMarkup();
+    }
+    const isMic = step === INTRO_STEPS.length - 1;
+    app.innerHTML = `
+      <section class="intro">
+        <div class="intro-top">
+          <div class="eyebrow" style="margin:0">Before your call · Step ${step+1} of ${INTRO_STEPS.length}</div>
+          <div class="intro-steps">${pills}</div>
+        </div>
+        <div class="intro-body">${body}</div>
+        <div class="intro-foot">
+          <div>${step>0 ? `<button class="btn btn-ghost btn-wide" id="introBack" type="button">Back</button>` : ''}</div>
+          <div class="actions" id="introActions">${isMic ? micStepActions() : `<button class="btn btn-dark" id="introNext" type="button">Next${ARROW_SVG}</button>`}</div>
+        </div>
+      </section>`;
+    const back = document.getElementById('introBack'); if(back) back.onclick = ()=>renderIntro(step-1);
+    const next = document.getElementById('introNext'); if(next) next.onclick = ()=>renderIntro(step+1);
+    bindIntroTools();
+    if(isMic) bindMicStep();
+    try{ app.scrollIntoView({block:'start'}); }catch(_){}
+  }
+
+  /* Intro Full screen toggle on step 1. It expands #app, so it carries into the call. */
+  function toggleAppFullscreen(){
+    if(document.fullscreenElement) document.exitFullscreen();
+    else if(document.fullscreenEnabled) app.requestFullscreen().catch(()=>{});
+  }
+  function bindIntroTools(){
+    const fs = document.getElementById('introFs');
+    if(fs){
+      if(!document.fullscreenEnabled) fs.style.display='none';
+      else fs.onclick = toggleAppFullscreen;
+    }
+  }
+
+  function micEnv(){
+    const CM = window.CallMode;
+    const ok = !!(CM && CM.supported);
+    const embedded = ok && CM.embeddedBlocked();
+    return { CM, ok, embedded, canTab: embedded && /^https?:$/.test(location.protocol) };
+  }
+  const RED = t => `<span style="color:#C81C0F;font-weight:700">${t}</span>`;
+  function micStepMarkup(){
+    const { ok, embedded, canTab } = micEnv();
+    return `
+      <h1 class="display">Test your microphone</h1>
+      <div class="mic-step">
+        <p class="mc-lead" style="font-size:1rem">This is a call, so you'll say your spoken responses out loud. Put on your headset, then test your mic before you start.</p>
+        <ul class="mc-notes">
+          <li><b>Use Google Chrome or Microsoft Edge.</b> Speaking your responses only works in these browsers.</li>
+          <li><b>Allow microphone access.</b> When your browser asks to use your microphone, click <b>Allow</b>.</li>
+          ${ok ? `<li><b>Your call is recorded only for your personal learning.</b> You can listen back to it on the results screen. We don't store recordings after the simulation is complete.</li>` : ''}
+        </ul>
+        ${!ok ? `<div class="voice-unsupported">This browser doesn't support speaking your responses. Switch to Chrome or Edge, or continue and tap your responses instead.</div>`
+          : embedded ? `<p class="voice-status" id="mcStatus">${RED("Speaking isn't available inside this course page.")} ${canTab
+                ? "Open the call in a new tab to speak your responses there, or continue here and tap them."
+                : "Continue without speaking to tap your responses."}</p>`
+          : `<div class="voice-row mc-row">
+          <button class="mic-btn" id="mcTest" type="button"><span class="mic-ico"></span>Test my mic</button>
+          <div class="meter"><div class="meter-fill" id="mcFill"></div><div class="meter-mark" style="left:22%"></div></div>
+        </div>
+        <p class="voice-status" id="mcStatus">Click Test my mic, then say a sentence at your normal call volume.</p>`}
+      </div>`;
+  }
+  function micStepActions(){
+    const { ok, embedded, canTab } = micEnv();
+    return `${ok && !embedded ? `<button class="btn btn-dark btn-wide" id="mcStart" type="button" disabled>Start the call</button>` : ''}
+            ${canTab ? `<button class="btn btn-dark btn-wide" id="mcTab" type="button">Open the call in a new tab</button>` : ''}
+            <button class="btn btn-ghost btn-wide" id="mcSkip" type="button">Continue without speaking</button>`;
+  }
+  function bindMicStep(){
+    const { CM, ok, embedded, canTab } = micEnv();
+    const stopCheck = ()=>{ if(introMicCheck){ introMicCheck.stop(); introMicCheck = null; } };
+    const done = (action, voice)=>{ stopCheck(); if(CM && CM.setVoiceMode) CM.setVoiceMode(!!voice); logEvent({ type:'helper', helper:'mic_check', action:action }); startCall(); };
+    document.getElementById('mcSkip').onclick = ()=>done('continued without speaking');
+    if(canTab){
+      document.getElementById('mcTab').onclick = ()=>{
+        if(openCallTab()){
+          stopCheck();
+          logEvent({ type:'helper', helper:'mic_check', action:'opened the call in a new tab' });
+          renderWaiting();
+        } else {
+          logEvent({ type:'helper', helper:'mic_check', action:'new tab was blocked' });
+          document.getElementById('mcStatus').innerHTML = RED("The new tab was blocked.")
+            + " Your browser or course stopped it from opening. Allow pop-ups for this course and try again, or continue without speaking.";
+        }
+      };
+    }
+    if(!ok || embedded) return;
+    const testB = document.getElementById('mcTest'), startB = document.getElementById('mcStart'), st = document.getElementById('mcStatus');
+    startB.onclick = ()=>done('passed mic check, started call', true);
+    testB.onclick = ()=>{
+      if(introMicCheck) return;
+      testB.disabled = true;
+      st.textContent = 'Waiting for microphone access… click Allow if your browser asks.';
+      const check = introMicCheck = CM.micCheck(document.getElementById('mcFill'), ()=>{
+        st.innerHTML = '<span style="color:#3E8A00;font-weight:700">We can hear you.</span> You\'re ready to start the call.';
+        startB.disabled = false;
+      });
+      check.ready.then(()=>{
+        if(startB.disabled) st.textContent = 'Listening… say a sentence at your normal call volume.';
+      }).catch(err=>{
+        if(introMicCheck === check) introMicCheck = null;
+        testB.disabled = false;
+        logEvent({ type:'helper', helper:'mic_check', action:'mic failed: ' + ((err && err.name) || 'Error') + (CM.embeddedBlocked() ? ' (embedded page blocks microphone)' : '') });
+        CM.micErrorMessage(err).then(h=>{
+          st.innerHTML = h;
+          // Some LMS frames (e.g. Wix Smart) block the mic without the up-front
+          // embedded check catching it. If we're in a frame, offer the new tab anyway.
+          let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
+          if(!inFrame || !/^https?:$/.test(location.protocol) || document.getElementById('mcTab')) return;
+          const tabB = document.createElement('button');
+          tabB.className = 'btn btn-dark btn-wide'; tabB.id = 'mcTab'; tabB.type = 'button';
+          tabB.textContent = 'Open the call in a new tab';
+          document.getElementById('introActions').prepend(tabB);
+          st.insertAdjacentHTML('beforeend', '<br>This course page may not allow microphone use. Open the call in a new tab to speak your responses there.');
+          tabB.onclick = ()=>{
+            if(openCallTab()){
+              stopCheck();
+              logEvent({ type:'helper', helper:'mic_check', action:'opened the call in a new tab (after mic error)' });
+              renderWaiting();
+            } else {
+              logEvent({ type:'helper', helper:'mic_check', action:'new tab was blocked' });
+              st.innerHTML = RED("The new tab was blocked.")
+                + " Your browser or course stopped it from opening. Allow pop-ups for this course and try again, or continue without speaking.";
+            }
+          };
+        });
+      });
+    };
+  }
+
+  /* =================== CALL TAB — take the call in a standalone tab ===================
+     The embedded copy (inside Rise/Smart) opens this same page in a new tab with
+     ?cdCallTab=1 and keeps a handle to it. The two talk by postMessage:
+       new tab  -> course : {type:'cd-call-ready'}           "I've loaded"
+       course   -> new tab: {type:'cd-call-details', ...}    name, email, attempt_id
+       new tab  -> course : {type:'cd-relay', payload}       every Rise variable push
+     Name and email travel by message, never in the URL. The course copy forwards
+     each relayed variable to Rise exactly as if it had set it itself, so the
+     activity_complete signal still reaches the course. If the tab loses its
+     link back (no window.opener), it simply starts at the Meet screen and the
+     learner can still take the call; only the completion relay is lost. */
+  const IS_CALL_TAB = new URLSearchParams(location.search).get('cdCallTab') === '1';
+  let callTabWin = null;
+  const msgTarget = (location.origin && location.origin !== 'null') ? location.origin : '*';
+
+  function openCallTab(){
+    try{
+      const url = new URL(location.href);
+      url.searchParams.set('cdCallTab', '1');
+      callTabWin = window.open(url.toString(), '_blank');
+    } catch(e){ callTabWin = null; }
+    return !!callTabWin;
+  }
+
+  // Course side: hand the details over, then forward whatever the tab relays.
+  window.addEventListener('message', e=>{
+    if(!callTabWin || e.source !== callTabWin || !e.data) return;
+    if(e.data.type === 'cd-call-ready'){
+      try{ callTabWin.postMessage({ type:'cd-call-details', name:learner_name, email:learner_email, attemptId:attemptId }, msgTarget); }catch(_){}
+    } else if(e.data.type === 'cd-relay' && e.data.payload && e.data.payload.type === 'setVar'){
+      const p = e.data.payload;
+      if(p.name === 'learner_name') return;   // the course copy already set this itself
+      pushRiseVar(p.name, p.value);
+      if(p.name === 'activity_complete' && String(p.value) === 'true') markWaitingDone();
+    }
+  });
+
+  function renderWaiting(){
+    stopTimer();
+    const portrait = U.image
+      ? `<img src="${escapeHtml(U.image)}" alt="Portrait of ${escapeHtml(U.name)}" onerror="this.style.display='none'">` : '';
+    app.innerHTML = `
+      <section class="meet">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <div class="eyebrow">Care Dojo · Call in progress</div>
+          <h1 class="display" id="wtTitle">Your call is open in a new tab</h1>
+          <p id="wtText">Take the call with ${escapeHtml(U.name)} in the new tab. When you click Finish on the results screen there, this activity is marked complete here.</p>
+          <div class="actions" id="wtActions">
+            <button class="btn btn-dark btn-wide" id="wtFocus" type="button">Go to the call tab</button>
+            <button class="btn btn-ghost btn-wide" id="wtHere" type="button">Take this as a chat here instead</button>
+          </div>
+        </div>
+      </section>`;
+    document.getElementById('wtFocus').onclick = ()=>{
+      if(callTabWin && !callTabWin.closed){ try{ callTabWin.focus(); }catch(_){} }
+      else if(!openCallTab()){
+        document.getElementById('wtText').textContent = "The new tab was blocked. Allow pop-ups for this course and try again, or take the call here instead.";
+      }
+    };
+    document.getElementById('wtHere').onclick = ()=>{
+      logEvent({ type:'helper', helper:'mic_check', action:'took it as a chat here instead of the new tab' });
+      startCall();
+    };
+  }
+  function markWaitingDone(){
+    const t = document.getElementById('wtTitle'); if(!t) return;
+    t.textContent = 'Call complete';
+    document.getElementById('wtText').textContent = "You finished the call in the other tab, so this activity is marked complete. You can close that tab.";
+    document.getElementById('wtActions').style.display = 'none';
+  }
+
+  // Tab side: ask the course copy for the learner's details; start at Meet if none arrive.
+  function bootCallTab(){
+    let settled = false;
+    const fallback = ()=>{ if(settled) return; settled = true; renderMeet(); };
+    window.addEventListener('message', e=>{
+      if(settled || e.source !== window.opener || !e.data || e.data.type !== 'cd-call-details') return;
+      settled = true;
+      if(e.data.attemptId) attemptId = e.data.attemptId;     // keep one attempt across both copies
+      setLearnerName(e.data.name); setLearnerEmail(e.data.email);
+      // They already walked through the intro in the course tab, so land on the
+      // mic step (Back still reaches the rest). Not embedded here, so Chrome
+      // shows its normal Allow prompt.
+      renderIntro(INTRO_STEPS.length - 1);
+    });
+    try{ window.opener.postMessage({ type:'cd-call-ready' }, '*'); }catch(_){ fallback(); return; }
+    setTimeout(fallback, 3000);
+  }
+
+  /* =================== PHASE 2 — THE LIVE CALL =================== */
+  // Fullscreen toggle icons (recreated inline — no image files). A circle with
+  // outward arrows = expand; inward arrows = collapse. Swapped on fullscreenchange.
+  const MAXIMIZE_SVG = `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="17.4462" stroke="#000624" stroke-width="1.10769"/><path d="M16.5893 18.8569C16.7609 19.0286 16.78 19.2951 16.6465 19.4878L16.5893 19.5563L12.4873 23.6571H15.7451V24.6462H10.8V19.7011H11.7891V22.9569L15.8899 18.8569C16.0831 18.6638 16.3962 18.6638 16.5893 18.8569ZM24.6462 10.8V15.7451H23.6572V12.4873L19.5563 16.5892C19.3632 16.7823 19.0501 16.7823 18.857 16.5892C18.6639 16.3961 18.6639 16.083 18.857 15.8899L22.957 11.789H19.7011V10.8H24.6462Z" fill="#000624"/></svg>`;
+  const MINIMIZE_SVG = `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="17.4462" stroke="#000624" stroke-width="1.10769"/><path d="M24.5012 11.6452C24.594 11.5523 24.6462 11.4264 24.6462 11.2951C24.6462 11.1638 24.594 11.0379 24.5012 10.945C24.4083 10.8522 24.2824 10.8 24.1511 10.8C24.0198 10.8 23.8939 10.8522 23.801 10.945L19.701 15.0461V11.7895H18.712V16.7342H23.6567V15.7452H20.4001L24.5012 11.6452ZM15.0461 19.7009H11.7896V18.712H16.7342V23.6566H15.7453V20.4001L11.6452 24.5012C11.5524 24.594 11.4264 24.6462 11.2951 24.6462C11.1638 24.6462 11.0379 24.594 10.9451 24.5012C10.8522 24.4083 10.8 24.2824 10.8 24.1511C10.8 24.0198 10.8522 23.8938 10.9451 23.801L15.0461 19.7009Z" fill="#000624"/></svg>`;
+  function startCall(){
+    const initial = (U.name||'?').trim().charAt(0).toUpperCase();
+    app.innerHTML = `
+      <div class="sim-wrap" id="simWrap">
+      <div class="top-tools">
+        <button class="info-pill" id="infoBtn" type="button" title="How this call works" aria-label="How this call works">i</button>
+        <button class="fs-pill" id="fsBtn" type="button" title="Enter full screen" aria-label="Enter full screen"><span id="fsIco">${MAXIMIZE_SVG}</span><span class="fs-label">Full screen</span></button>
+      </div>
+      <section class="panel" id="sim">
+        <div class="panel-head">
+          <div class="avatar">${escapeHtml(initial)}</div>
+          <div>
+            <div class="who-name">${escapeHtml(U.name)}</div>
+            <div class="who-sub"><span class="livedot"></span> Live call · <span class="timer" id="timer">00:00</span></div>
+          </div>
+          <div class="head-spacer"></div>
+          <div class="helperbar-head" id="helperbar"></div>
+          <button class="btn-end" id="endBtn">End</button>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="sheet min" id="sheet">
+          <button class="sheet-handle" id="sheetHandle" type="button" aria-expanded="false" aria-controls="composer">
+            <span class="sheet-grab"></span>
+            <span class="sheet-q" id="sheetQ"></span>
+            <span class="sheet-chev" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 15l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <div class="sheet-body"><div id="composer"></div></div>
+        </div>
+      </section>
+      </div>`;
+    chatEl = document.getElementById('chat');
+    lastBubbleKind = null;   // fresh chat — start a new speaker run
+    composerEl = document.getElementById('composer');
+    const sheetHandle = document.getElementById('sheetHandle');
+    if(sheetHandle) sheetHandle.onclick = toggleSheet;
+    // The sheet grows/shrinks as its choices render (they're appended after it
+    // opens). Re-sync the chat's reserved bottom space whenever its size changes,
+    // so the newest messages always sit just above the choices.
+    const sheetEl = document.getElementById('sheet');
+    if(sheetEl && 'ResizeObserver' in window){
+      new ResizeObserver(()=>syncChatBottom()).observe(sheetEl);
+    }
+    document.getElementById('endBtn').onclick = confirmEnd;
+    // Fullscreen toggle — expand the whole sim (wrapper incl. the floating icon)
+    // via the Fullscreen API, swapping the maximize/minimize icon on change.
+    const fsBtn = document.getElementById('fsBtn'), simWrap = document.getElementById('simWrap');
+    if(fsBtn && simWrap && document.fullscreenEnabled){
+      fsBtn.onclick = ()=>{
+        if(document.fullscreenElement) document.exitFullscreen();
+        else simWrap.requestFullscreen().catch(()=>{});
+      };
+      document.addEventListener('fullscreenchange', ()=>{
+        const on = document.fullscreenElement===simWrap;
+        document.getElementById('fsIco').innerHTML = on ? MINIMIZE_SVG : MAXIMIZE_SVG;
+        fsBtn.title = on ? 'Exit full screen' : 'Enter full screen';
+        fsBtn.setAttribute('aria-label', fsBtn.title);
+      });
+    } else if(fsBtn){ fsBtn.style.display='none'; }
+    renderHelpers();
+    const infoBtn = document.getElementById('infoBtn'); if(infoBtn) infoBtn.onclick = showCallInfo;
+    // TONY TEST: point out Check Resources + Full screen before the first line.
+    // The call (and its timer) starts when the learner clicks "Start the call".
+    showCoachMarks(()=>{
+      startTimer();
+      renderScreen(S.start, { animateSpeaker:false });  // first line appears immediately
+    });
+  }
+
+  /* First-call coach marks: a dimmed panel and a short guided tour, one callout
+     at a time, anchored to the REAL buttons (which stay lit and clickable):
+       1 Full screen → 2 Check Resources → "This is just practice" + Start.
+     (Replaces the old "Your tools" intro slide.)
+     Positions are measured from the live DOM so they track any width. */
+  function showCoachMarks(onDone){
+    const wrap = document.getElementById('simWrap');
+    if(!wrap){ onDone(); return; }
+    const resBtn = document.querySelector('#helperbar .hbtn');
+    const fsBtn = document.getElementById('fsBtn');
+    const steps = [];
+    if(fsBtn && fsBtn.style.display !== 'none') steps.push({ el:fsBtn, title:'Full screen', text:'Expand the call so the conversation and your responses have more room. We recommend turning it on now. Click again or press Esc to exit.' });
+    if(resBtn) steps.push({ el:resBtn, title:'Check Resources', text:'Your help docs live here. Each article opens in a new tab: read it, then come back. Only articles opened here count toward your score.' });
+    const layer = document.createElement('div');
+    layer.innerHTML = `<div class="coach-scrim"></div>`;
+    wrap.appendChild(layer);
+    let i = 0, lit = null;
+    const total = steps.length;
+    const show = ()=>{
+      [...layer.querySelectorAll('.coach,.coach-done')].forEach(n=>n.remove());
+      if(lit){ lit.classList.remove('lift'); lit = null; }
+      if(i >= total){
+        const card = document.createElement('div');
+        card.className = 'coach-done';
+        card.innerHTML = `<p><b>This is just practice.</b> Nothing is graded during the call. Your feedback comes at the end.</p>
+          <button class="btn btn-dark btn-wide" id="coachGo" type="button">Start the call${ARROW_SVG}</button>`;
+        layer.appendChild(card);
+        card.querySelector('#coachGo').onclick = ()=>{ layer.remove(); onDone(); };
+        card.querySelector('#coachGo').focus();
+        return;
+      }
+      const st = steps[i], box = wrap.getBoundingClientRect(), r = st.el.getBoundingClientRect();
+      lit = st.el; lit.classList.add('lift');
+      const t = document.createElement('div');
+      t.className = 'coach';
+      t.innerHTML = `<b>${i+1} of ${total} · ${st.title}</b>${st.text}
+        <div style="margin-top:0.625rem;text-align:right"><button class="btn btn-ghost" type="button" style="display:inline-flex;height:1.875rem">Next</button></div>`;
+      layer.appendChild(t);
+      const w = Math.min(280, box.width - 32);
+      t.style.width = w + 'px';
+      t.style.top  = (r.bottom - box.top + 12) + 'px';
+      const left = Math.max(16, Math.min(box.width - w - 16, r.left - box.left + r.width/2 - w + 28));
+      t.style.left = left + 'px';
+      // point the arrow at the button's centre
+      t.style.setProperty('--ax', Math.max(12, Math.min(w - 26, r.left - box.left + r.width/2 - left - 7)) + 'px');
+      const nb = t.querySelector('button'); nb.onclick = ()=>{ i++; show(); }; nb.focus();
+    };
+    show();
+  }
+
+  /* Info button: the intro's key points in one panel, available any time
+     during the call without leaving it (testing: instructions should stay reachable). */
+  function showCallInfo(){
+    const name = escapeHtml(U.name);
+    const rows = S.stages.map(st=>`<li><span>${escapeHtml(st.name)}</span><span class="pts">${st.max} pts</span></li>`).join('');
+    const wrap = document.createElement('div'); wrap.className = 'info-body';
+    // Same cards as the "Before your call" intro, so the panel reads the same way.
+    wrap.innerHTML = `
+      <h4>Responses</h4>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <h3><span class="demo-ico say">${MIC_SVG}</span>Say it</h3>
+          <p>What you'd say to ${name}. Hold the blue mic button and read one aloud.</p>
+        </div>
+        <div class="demo-card">
+          <h3><span class="demo-ico click">${CLICK_SVG}</span>Click it</h3>
+          <p>Something you'd <b>do</b> in your tools. Don't say it, just click it.</p>
+        </div>
+      </div>
+      <h4>Tools</h4>
+      <div class="demo-card">
+        <p><b>Full screen</b> gives the call more room.</p>
+        <p><b>Check Resources</b> opens your help articles in a new tab. Only articles opened there count.</p>
+      </div>
+      <h4>Scoring (${maxTotal} pts)</h4>
+      <div class="score-grid">
+        <div class="practice-note">
+          <h3>What to expect:</h3>
+          <p class="practice-tip">Nothing is graded during the call, and time isn't scored. You'll see your score, what you did well, what to work on, and the full transcript at the end.</p>
+        </div>
+        <div class="demo-card"><ul class="score-list">${rows}</ul></div>
+      </div>`;
+    openModal('How this call works', wrap);
+  }
+
+  function confirmEnd(){
+    // Ending early is allowed — skips are recoverable, unreached stages simply score 0.
+    const dlg = document.createElement('dialog'); dlg.className='modal';
+    dlg.innerHTML = `<div class="modal-inner">
+        <div class="mhead"><h3>End the call?</h3></div>
+        <p style="font-size:0.875rem;color:var(--ink-2);margin:0 0 1rem">You'll go straight to your results. Anything you haven't done yet won't score.</p>
+        <div class="actions" style="margin:0">
+          <button class="btn btn-dark" id="endYes">End &amp; see results</button>
+          <button class="btn btn-ghost" id="endNo">Keep going</button>
+        </div></div>`;
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.querySelector('#endNo').onclick = ()=>{ dlg.close(); dlg.remove(); };
+    dlg.querySelector('#endYes').onclick = ()=>{ dlg.close(); dlg.remove(); renderFinal(); };
+  }
+
+  /* ---- Bubble markup (shared by the LIVE chat and the END transcript) ----
+     'system' bubbles are inline notes (pill), used for both tool/observation
+     lines and action notes — anything that isn't a direct spoken quote. */
+  function bubbleMarkup(kind, text, metaText, reaction){
+    const meta = metaText ? `<div class="meta">${escapeHtml(metaText)}</div>` : '';
+    const cls  = 'bubble' + (kind==='system' ? ' action' : '');
+    const msgCls = 'msg ' + kind + (reaction ? ' reaction' : '');
+    const body = escapeHtml(px(text)).replace(/\n/g,'<br>');
+    return `<div class="${msgCls}">${meta}<div class="${cls}">${body}</div></div>`;
+  }
+  function appendNode(html){
+    const tmp = document.createElement('div'); tmp.innerHTML = html;
+    const node = tmp.firstElementChild;
+    chatEl.appendChild(node); chatEl.scrollTop = chatEl.scrollHeight;
+    return node;
+  }
+  /* Group consecutive messages from the SAME speaker: the name label is shown
+     only on the FIRST bubble of a run, not repeated on back-to-back messages
+     from the same person. System notes are centered and never labeled; they
+     also break a run so the next spoken bubble re-shows its name. */
+  let lastBubbleKind = null;
+  function appendBubble(kind, text, reaction){
+    const sameSpeaker = (kind !== 'system' && kind === lastBubbleKind);
+    const meta = (kind==='system' || sameSpeaker) ? '' :
+      `${kind==='you' ? (firstName()||'You') : U.name} · ${mmss(callSeconds)}`;
+    lastBubbleKind = kind;
+    return appendNode(bubbleMarkup(kind, text, meta, reaction));
+  }
+  /* Inline action note: an "[Action]" choice is something the Expert DOES, shown
+     as a centered system note in the stream (e.g. "You open User Manager."). */
+  function actionNoteText(raw){
+    const t = stripAction(px(raw)).trim().replace(/\s+/g,' ');
+    const note = 'You ' + t.charAt(0).toLowerCase() + t.slice(1);
+    return /[.!?]$/.test(note) ? note : note + '.';
+  }
+  function appendActionNote(text){ return appendBubble('system', text, true); }
+
+  /* Inline screen image: a screenshot shown in the stream for a given screen
+     (e.g. the Layers panel or the Accessibility Wizard). `img` is {src, alt,
+     caption}. Rendered as a full-width figure so learners see the same thing
+     the Expert would be looking at. Broken/absent sources hide gracefully. */
+  function appendImage(img, autoOpen, fromExpert){
+    if(!img || !img.src) return null;
+    // Expert-sent screenshot: shown on the Expert's side of the chat, in the
+    // flow of the conversation (no auto-opened lightbox; click still zooms).
+    if(fromExpert){
+      const meta = lastBubbleKind==='you' ? '' : `<div class="meta">${escapeHtml(firstName()||'You')} · ${mmss(callSeconds)}</div>`;
+      lastBubbleKind = 'you';
+      return appendNode(
+        `<div class="msg you">${meta}<figure class="screenshot">`+
+        `<img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt||'')}" tabindex="0" role="button" `+
+        `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
+        `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}">`+
+        `</figure></div>`);
+    }
+    lastBubbleKind = 'system';   // an image breaks a same-speaker run
+    const alt = escapeHtml(img.alt || '');
+    // No caption — learners read the screenshot and locate the info themselves.
+    // Click (or Enter/Space) opens the image in a full-screen zoom lightbox.
+    const node = appendNode(
+      `<div class="msg system"><figure class="screenshot ref">`+
+      `<img src="${escapeHtml(img.src)}" alt="${alt}" loading="lazy" tabindex="0" role="button" `+
+      `aria-label="View larger image" onclick="window.__openLightbox(this.src,this.alt)" `+
+      `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.__openLightbox(this.src,this.alt);}" `+
+      `onerror="this.closest('figure').innerHTML='<div class=\\'noimg\\'>[ screenshot not found ]</div>'">`+
+      `<figcaption>For your reference · click to enlarge</figcaption></figure></div>`);
+    // Engine rule: a screenshot revealed by an ACTION (e.g. "You impersonate…and
+    // find the element in the Layers panel") pops straight into the full-screen
+    // lightbox so the learner sees the detail immediately; they close it (X / Esc /
+    // click-outside) to continue. It stays inline in the chat afterward too.
+    // Short label only (text before the dash) so the caption names the view without giving away the answer.
+    // Testing update: reference images no longer pop open by themselves; they
+    // sit inline as a small labeled thumbnail the learner can click to enlarge.
+    return node;
+  }
+
+  /* ---- Lightbox: click any inline screenshot to view it enlarged ---- */
+  function openLightbox(src, alt, caption){
+    const dlg = document.createElement('dialog'); dlg.className='lightbox';
+    // Testing update: action-opened images get a caption so learners know what
+    // they're looking at.
+    dlg.innerHTML = `<button class="lightbox-close" type="button" aria-label="Close">&times;</button>`+
+      `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt||caption||'')}">`+
+      (caption ? `<div class="lightbox-caption">${escapeHtml(caption)}</div>` : '');
+    // Testing update: mount inside the fullscreen element (when there is one) so
+    // closing the image doesn't knock the whole sim out of fullscreen.
+    (document.fullscreenElement || document.body).appendChild(dlg); dlg.showModal();
+    const close = ()=>{ try{dlg.close();}catch(e){} dlg.remove(); };
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) close(); });
+    dlg.querySelector('.lightbox-close').onclick = close;
+  }
+  window.__openLightbox = openLightbox;
+
+  // setComposer also drives the slide-up sheet: any real content (the choices)
+  // auto-opens it; clearing it (transitions/retries) slides it back down so the
+  // learner can read the chat. The learner can also toggle it via the handle.
+  function setComposer(html){
+    composerEl.innerHTML = html;
+    const s = document.getElementById('sheet');
+    if(s){
+      const open = !!(html && html.trim());
+      s.classList.toggle('min', !open);
+      const h = document.getElementById('sheetHandle');
+      if(h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    syncChatBottom();
+  }
+  function setSheetQuestion(t){ const q=document.getElementById('sheetQ'); if(q) q.textContent = t; }
+  function toggleSheet(){
+    const s=document.getElementById('sheet'); if(!s) return;
+    const willOpen = s.classList.contains('min');
+    s.classList.toggle('min');
+    const h=document.getElementById('sheetHandle');
+    if(h) h.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    syncChatBottom();
+  }
+
+  /* ---- Slide-up sheet ⇄ chat spacing (engine rule — applies to every scenario) ----
+     The decision sheet is an overlay pinned to the panel's bottom edge, so on its
+     own it would COVER the newest chat messages. Rather than resize the chat
+     viewport, we reserve empty space INSIDE the chat equal to the sheet's currently
+     visible height: the last messages slide UP above the choices, and when the
+     sheet is minimized that reserved space shrinks so they slide back DOWN. The
+     newest message is always pinned into view. (Viewport height never changes.) */
+  function syncChatBottom(){
+    if(!chatEl) return;
+    const s = document.getElementById('sheet');
+    let cover = 0;
+    if(s){
+      // The sheet is pinned to the panel's bottom edge (its bottom == the chat's
+      // bottom), so the strip it covers equals its own height. Use offsetHeight,
+      // NOT getBoundingClientRect: offsetHeight ignores the slide-in transform, so
+      // it's correct even mid-animation. Minimized → only the ~3.25rem handle shows.
+      const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      cover = s.classList.contains('min') ? (3.25 * rootPx) : s.offsetHeight;
+    }
+    chatEl.style.paddingBottom = cover + 'px';   // reserve exactly the covered strip
+    chatEl.scrollTop = chatEl.scrollHeight;      // pin to newest (sits just above the sheet)
+    // Testing update: if the newest message is taller than the visible strip,
+    // anchor its TOP instead so the start of the caller's reply is never hidden.
+    const msgs = chatEl.querySelectorAll('.msg:not(.typing)');
+    const last = msgs[msgs.length-1];
+    if(last){
+      const visible = chatEl.clientHeight - cover;
+      const top = last.offsetTop - chatEl.offsetTop;
+      if(top < chatEl.scrollTop) chatEl.scrollTop = Math.max(0, top - 8);
+      else if(last.offsetHeight > visible) chatEl.scrollTop = Math.max(0, top - 8);
+    }
+  }
+  // The sheet's open height is a % of the panel, so re-sync when the panel resizes
+  // (window resize or entering/leaving fullscreen).
+  window.addEventListener('resize', syncChatBottom);
+  document.addEventListener('fullscreenchange', syncChatBottom);
+
+  /* "[Action] ..." choices are actions, not spoken replies. */
+  const ACTION_RE = /^\s*\[Action\]\s*/i;
+  function isAction(text){ return ACTION_RE.test(text||''); }
+  function stripAction(text){ return (text||'').replace(ACTION_RE, ''); }
+
+  /* ---- Split a scripted line (speaker OR consequence) into ordered segments,
+     one bubble per speaker. Segments break ONLY at a speaker label at the start
+     of a line — NOT at blank lines — so a single message that contains its own
+     paragraph break (e.g. the "Set to Advanced" upgrade steps) stays one bubble.
+       "Expert:"            -> your blue bubble (right)
+       "Sarah:"/name/caller -> gray caller bubble (left)
+       "(...)"              -> inline system note (tool result / stage direction)
+       unlabeled            -> caller (spoken) by default
+     Speaker labels, wrapping quotes, and the ( ) around system notes are
+     stripped so bubbles read as clean chat. ---- */
+  const YOU_LABEL = /^\s*expert\s*[:：]\s*/i;
+  function callerLabelRe(){
+    const nm = (U.name||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return new RegExp('^\\s*(?:' + (nm?nm+'|':'') + 'sarah|caller|customer)\\s*[:：]\\s*','i');
+  }
+  function stripQuotes(s){ return s.replace(/^\s*["'“”‘’]+/,'').replace(/["'“”‘’]+\s*$/,'').trim(); }
+  function splitDialogue(text){
+    if(!text) return [];
+    const clr = callerLabelRe(); const segs=[]; let cur=null;
+    String(text).split('\n').forEach(line=>{
+      // A line of just [image] = the Expert sends the choice/screen screenshot here.
+      if(/^\s*\[image\]\s*$/i.test(line)){ cur={kind:'image', text:''}; segs.push(cur); return; }
+      if(YOU_LABEL.test(line)){ cur={kind:'you',    text:line.replace(YOU_LABEL,'')}; segs.push(cur); }
+      else if(clr.test(line)){  cur={kind:'caller', text:line.replace(clr,'')};        segs.push(cur); }
+      else if(!cur && /^\s*\(/.test(line)){ cur={kind:'system', text:line};            segs.push(cur); }
+      else if(!cur){            cur={kind:'caller', text:line};                         segs.push(cur); }
+      else cur.text += '\n' + line;
+    });
+    return segs.map(s=>{
+      let t = s.kind==='system' ? s.text.replace(/^\s*\(/,'').replace(/\)\s*$/,'') : s.text;
+      return { kind:s.kind, text:stripQuotes(t) };
+    }).filter(s=>s.kind==='image' || s.text.length);
+  }
+  /* transcript bubbles: same markup, name label only (no live timer) */
+  function segMarkup(kind, text){
+    const who = kind==='system' ? '' : (kind==='you' ? (firstName()||'You') : U.name);
+    return bubbleMarkup(kind, text, who);
+  }
+
+  /* ---- Typing indicator + auto-advance reveal ----
+     Sarah's "typing…" dots show before her first reply to a pick; follow-on
+     caller lines in the same beat use a shorter delay; your/system lines appear
+     after a short beat. animate=false reveals everything at once (first load). */
+  const TAI_MS = 5000, TAI_FOLLOW_MS = 1500, YOU_MS = 700, SYS_MS = 500;
+  // Consequence beats:
+  //  • inline notes (centered system bubbles) reveal 2s apart;
+  //  • spoken consequence lines (Samantha OR the Expert) show a 5s typing
+  //    indicator before landing.
+  const REACT_INLINE_MS = 2000, REACT_TYPING_MS = 5000;
+  const CHOICES_DELAY_MS = 2000;   // pause between the caller's line and the new choices
+  function typingBubble(kind){
+    const you = kind==='you';
+    const side = you ? 'you' : 'caller';
+    const who  = you ? (firstName()||'You') : U.name;
+    return appendNode(
+      `<div class="msg typing ${side}"><div class="meta">${escapeHtml(who)} · typing…</div>`+
+      `<div class="bubble"><span class="tai-dot"></span><span class="tai-dot"></span><span class="tai-dot"></span></div></div>`);
+  }
+  function revealSegments(segs, animate, done, opts){
+    opts = opts || {};
+    const reaction = !!opts.reaction;
+    let i=0, sawCaller=false;
+    (function next(){
+      if(i>=segs.length){ if(done) done(); return; }
+      const s=segs[i++];
+      if(s.kind==='image'){
+        const go=()=>{ appendImage(opts.image, false, true); next(); };
+        return animate ? setTimeout(go, YOU_MS) : go();
+      }
+      // In a consequence (reaction) reveal:
+      //  • centered inline notes (system) turn green and reveal 2s apart;
+      //  • spoken lines — Samantha (caller) OR the Expert (you) — show a 5s
+      //    typing indicator, then land.
+      const inlineNote = reaction && s.kind==='system';
+      if(!animate){ appendBubble(s.kind, s.text, inlineNote); return next(); }
+      if(inlineNote){
+        setTimeout(()=>{ appendBubble('system', s.text, true); next(); }, REACT_INLINE_MS);
+      } else if(reaction && s.kind==='you' && window.CallMode && window.CallMode.shouldSpeak && window.CallMode.shouldSpeak()){
+        promptSayLine(s.text, ()=>{ appendBubble('you', s.text); next(); });
+      } else if(reaction && (s.kind==='caller' || s.kind==='you')){
+        const dots=typingBubble(s.kind);
+        setTimeout(()=>{ dots.remove(); appendBubble(s.kind, s.text); next(); }, REACT_TYPING_MS);
+      } else if(s.kind==='caller'){
+        const t = sawCaller ? TAI_FOLLOW_MS : TAI_MS; sawCaller=true;
+        const dots=typingBubble();
+        setTimeout(()=>{ dots.remove(); appendBubble('caller', s.text); next(); }, t);
+      } else {
+        setTimeout(()=>{ appendBubble(s.kind, s.text); next(); }, s.kind==='you'?YOU_MS:SYS_MS);
+      }
+    })();
+  }
+
+  /* CALL MODE: an Expert follow-up line inside a consequence. The learner is the
+     Expert, so on a voice call they say it; it appears in the chat once sent. */
+  function promptSayLine(text, done){
+    setComposer(`<div class="choices-label" id="choicesLabel">Say this aloud to ${escapeHtml(U.name)}</div>`
+              + `<div class="say-line">${escapeHtml(px(text))}</div><div id="voicepanel"></div>`);
+    setSheetQuestion('Say your next line');
+    window.CallMode.sayLine(document.getElementById('voicepanel'), px(text), ()=>{ setComposer(''); done(); });
+    syncChatBottom();
+  }
+
+  /* ---- Helper buttons (native <dialog>) ---- */
+  function openModal(title, node){
+    const dlg = document.createElement('dialog'); dlg.className='modal'; dlg.id='modal';
+    const inner = document.createElement('div'); inner.className='modal-inner';
+    const head = document.createElement('div'); head.className='mhead';
+    head.innerHTML = `<h3>${escapeHtml(title)}</h3>`;
+    const x = document.createElement('button'); x.className='mx'; x.innerHTML='&times;'; x.setAttribute('aria-label','Close');
+    x.onclick = closeModal; head.appendChild(x);
+    inner.appendChild(head); inner.appendChild(node); dlg.appendChild(inner);
+    document.body.appendChild(dlg); dlg.showModal();
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) closeModal(); });  // backdrop click
+  }
+  function closeModal(){ const m=document.getElementById('modal'); if(m){ try{m.close();}catch(e){} m.remove(); } }
+
+  function renderHelpers(){
+    const bar = document.getElementById('helperbar');
+    if(!S.resources){ bar.style.display='none'; return; }
+    bar.innerHTML='';
+    const b=document.createElement('button');
+    b.className='hbtn';
+    b.textContent = S.resources.title || 'Check Resources';
+    b.onclick = ()=>{ help.used = true; openResources(); };
+    bar.appendChild(b);
+  }
+  /* Opens the scenario's dynamic links in a modal. Opening the resource
+     marked correct:true is what lifts the article-stage cap in renderFinal —
+     but only if it happens at/after RESOURCE_CREDIT_MIN_SECONDS into the call.
+     Opening it earlier doesn't count; the learner can still open it again
+     later (any time before ending the chat) to earn credit. */
+  const RESOURCE_CREDIT_MIN_SECONDS = 30;
+  function openResources(){
+    const r=S.resources, wrap=document.createElement('div');
+    resourcesOpenedAt = callSeconds;   // start the clock for this modal's dwell time
+    logEvent({type:'helper', helper:'resources', action:'opened Check Resources', seconds:0});
+    if(r.note) wrap.innerHTML='<div class="mnote" style="margin:0 0 0.625rem">'+escapeHtml(r.note)+'</div>';
+    (r.items||[]).forEach(it=>{
+      const a=document.createElement('a');
+      a.className='mopt'; a.href=it.url||'#'; a.target='_blank'; a.rel='noopener noreferrer';
+      a.textContent=it.label + '  ↗';
+      a.onclick=(e)=>{
+        // Placeholder article (no KB link yet): don't open a blank/self tab,
+        // but still count the click as opening it.
+        if(!it.url) e.preventDefault();
+        // Article scoring: keep the best-scoring article opened in time.
+        if(typeof it.points === 'number' && callSeconds >= RESOURCE_CREDIT_MIN_SECONDS
+           && (!bestArticle || it.points > bestArticle.points)){
+          bestArticle = { label:it.label, points:it.points,
+                          rating: it.rating || (it.correct ? 'correct' : 'incorrect') };
+        }
+        // Any resource link click (correct or distractor) counts as "opened a
+        // resource" — this gates speaker lines like "(You open CSI.)" that
+        // should only appear if the learner actually looked something up.
+        help.openedAnyResourceLink = true;
+        if(document.fullscreenElement) fsLostToResource = true;
+        help.openedLabels.add((it.label||'').trim().toLowerCase());
+        refreshLocks();
+        if(it.correct){
+          if(callSeconds >= RESOURCE_CREDIT_MIN_SECONDS){
+            help.checkedCorrectArticle=true;
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      verdict:'correct', seconds:secondsOnResources(), notes:'opened the correct resource'});
+          } else {
+            logEvent({type:'helper', helper:'resources', action:it.label,
+                      seconds:secondsOnResources(), notes:'opened the correct resource too early to earn credit (before '+RESOURCE_CREDIT_MIN_SECONDS+'s)'});
+          }
+        } else logEvent({type:'helper', helper:'resources', action:it.label,
+                         verdict:'incorrect', seconds:secondsOnResources(), notes:'opened a distractor resource'});
+      };
+      wrap.appendChild(a);
+    });
+    openModal(r.title||'Check Resources', wrap);
+    document.getElementById('modal').addEventListener('close', ()=>{
+      logEvent({type:'helper', helper:'resources', action:'closed Check Resources', seconds:secondsOnResources()});
+    }, {once:true});
+  }
+
+  /* End screen for the call tab: tells the learner to go back to the course tab
+     (until the sim is embedded in the course). "Back to my course" focuses the
+     opener tab when the browser allows it, then tries to close this one. */
+  function showReturnToCourse(){
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<p style="margin:0 0 1rem">Your results are saved and this activity is marked complete. Go back to your course tab to keep going.</p>'+
+      '<button class="btn btn-dark" type="button" id="backToCourse">Back to my course</button>';
+    openModal("You're all done", wrap);
+    document.getElementById('backToCourse').onclick=()=>{
+      try{ if(window.opener && !window.opener.closed) window.opener.focus(); }catch(_){}
+      window.close();
+    };
+  }
+
+  /* Re-entering full screen needs a click, so when an article tab knocks the sim
+     out of full screen, offer a one-click way back when the learner returns. */
+  let fsLostToResource = false;
+  function offerFullscreenReturn(){
+    if(!fsLostToResource || document.fullscreenElement || document.getElementById('fsReturn')) return;
+    const simWrap=document.getElementById('simWrap');
+    if(!simWrap) return;
+    const b=document.createElement('button');
+    b.id='fsReturn'; b.type='button'; b.className='btn btn-dark';
+    b.style.cssText='position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:50';
+    b.textContent='Go back to full screen';
+    b.onclick=()=>{ fsLostToResource=false; b.remove(); simWrap.requestFullscreen().catch(()=>{}); };
+    document.body.appendChild(b);
+    setTimeout(()=>{ if(b.isConnected){ b.remove(); fsLostToResource=false; } }, 10000);
+  }
+  window.addEventListener('focus', offerFullscreenReturn);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) offerFullscreenReturn(); });
+
+  /* Centered in-sim notice (styled like the Check Resources panel) shown when a
+     learner tries to reply from an article they never opened in Check Resources —
+     replaces the old browser alert(). */
+  /* "Reply using …" choices need their quoted article(s) opened in Check
+     Resources. Returns null for other choices, else { need, have } counts.
+     Matching is normalized (case/punctuation/&-and, plus a prefix-tolerant
+     subset test) so labels and quotes don't have to match exactly. */
+  function resourceProgress(text){
+    text = px(text) || '';
+    if(!/\b(?:reply using|provide a response using)\b/i.test(text)) return null;
+    const toks = s => new Set((s||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean));
+    const subset = (a,b) => [...a].every(t => b.has(t));   // a ⊆ b
+    const opened = [...help.openedLabels].map(toks).filter(s => s.size);
+    const needed = (text.match(/["“”'‘’]([^"“”'‘’]+)["“”'‘’]/g)||[])
+                     .map(q => toks(q.replace(/["“”'‘’]/g,''))).filter(s => s.size);
+    const have = needed.filter(n => opened.some(o => subset(n,o) || subset(o,n))).length;
+    return { need: needed.length, have };
+  }
+  // Locked "Task" choices: greyed with a hint until every article is opened.
+  function lockLabel(prog){
+    if(prog.have >= prog.need) return 'Ready';
+    return prog.need > 1 ? `${prog.have} of ${prog.need} opened. Open them in Check Resources to unlock`
+                         : 'Open this resource in Check Resources to unlock';
+  }
+  function refreshLocks(){
+    if(!composerEl) return;
+    composerEl.querySelectorAll('.choice-action[data-res]').forEach(b=>{
+      const prog = resourceProgress(b.dataset.res); if(!prog) return;
+      const done = prog.need > 0 && prog.have >= prog.need;
+      b.classList.toggle('locked', !done);
+      b.setAttribute('aria-disabled', done ? 'false' : 'true');
+      const h = b.querySelector('.lock-hint'); if(h) h.textContent = lockLabel(prog);
+    });
+  }
+
+  function notifyResourceNotOpened(){
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<div class="mnote" style="margin:0;font-size:0.875rem;color:var(--ink-2)">'
+      + 'It looks like you didn’t open this article using Check Resources. '
+      + 'Remember to always check the resource before answering from memory.</div>';
+    openModal('Check the resource first', wrap);
+  }
+
+  /* Progress bar removed — kept as a no-op so existing call sites are harmless. */
+  function paintProgress(){}
+
+  function applyCredit(stg, pts, verdict, pickText){
+    if(!(stg in earned)) return;
+    const cfg = stageCfg[stg] || {};
+    if(cfg.additive){
+      // Stage spans more than one screen (e.g. solve = s_solve + s_solve2):
+      // sum contributions, capped at the stage max, rather than taking the best.
+      const next = Math.min(cfg.max==null ? Infinity : cfg.max, earned[stg] + Math.max(0, pts));
+      if(pts > 0 || !(stg in decisivePick)) decisivePick[stg] = {text:pickText, verdict:verdict, points:next};
+      earned[stg] = next;
+      if(verdict==='correct') status[stg]='done';
+      else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+      return;
+    }
+    if(!(stg in decisivePick) || pts > earned[stg]) decisivePick[stg] = {text:pickText, verdict:verdict, points:pts};
+    if(pts > earned[stg]) earned[stg] = pts;
+    if(verdict==='correct') status[stg]='done';
+    else if(verdict==='partial' && status[stg]!=='done') status[stg]='partial';
+  }
+  function recordChoice(screen, ch, cappedPoints){
+    const primary = ch.stageOverride || screen.stage;
+    applyCredit(primary, cappedPoints, ch.verdict, ch.text);
+    (ch.credits||[]).forEach(c => applyCredit(c.stage, c.points, c.verdict||'correct', ch.text));
+  }
+
+  function renderScreen(id, opts){
+    opts = opts || {};
+    const retriedIds = opts.retriedIds || [];
+    if(id==='__end__') return renderFinal();
+    const scr = S.screens[id];
+    visitedScreens.add(scr.id);
+    paintProgress();
+    setComposer('');   // choices appear only AFTER the caller's line has landed
+
+    const showChoices = ()=>{
+      // (Screen screenshots are no longer shown automatically — they now reveal
+      //  only when the learner picks the choice flagged with caption:"Samantha's Layers panel…".)
+      // CALL MODE: all response options stay visible; the learner reads one aloud
+      // (or taps it). The voice panel + meter sit below. See the CALL MODE module.
+      // TONY TEST: spoken responses and click actions are separate groups.
+      //   • "Say it"   — what the Expert says. In voice mode these are read aloud,
+      //                  not clicked (a "Mic not working?" link unlocks tapping).
+      //   • "Click it" — [Action] choices: things the Expert DOES. Click only;
+      //                  voice matching never selects one.
+      // A choice with `say` is the Expert SPEAKING, so it's a spoken response
+      // even if its label reads "[Action]".
+      const visible = scr.choices.filter(ch => !(ch.retryOnly && !retriedIds.length));
+      const isAct = ch => isAction(ch.text) && !ch.say;
+      const spoken = visible.filter(ch => !isAct(ch)), acts = visible.filter(isAct);
+      const voiceOn = !!(window.CallMode && window.CallMode.shouldSpeak && window.CallMode.shouldSpeak()) && !tapFallback;
+      const both = spoken.length && acts.length;
+      const sayHead = `<div class="cgroup-head"><span class="demo-ico say">${MIC_SVG}</span><span class="cgroup-title">Say it</span>`
+        + `<span class="cgroup-sub">${voiceOn ? 'Hold the mic and read one aloud' : 'Tap what you would say'}</span></div>`;
+      const actHead = `<div class="cgroup-head"><span class="demo-ico click">${CLICK_SVG}</span><span class="cgroup-title">${both ? 'Or click it' : 'Click it'}</span>`
+        + `<span class="cgroup-sub">${spoken.length ? "An action you'd take. Don't say it" : "This step is an action. Nothing to say aloud"}</span></div>`;
+      setComposer((both ? `<div class="choices-label" id="choicesLabel">Choose one: say a response or click an action</div>` : '')
+                + (spoken.length ? `<div class="cgroup">${sayHead}<div id="choices"></div><div id="voicepanel"></div>`
+                    + (voiceOn ? `<p class="say-hint" id="sayHint">This is a spoken response. Hold the mic button and say it aloud.</p><button class="tap-fallback" id="tapFallback" type="button">Mic not working? Tap responses instead</button>` : '')
+                    + `</div>` : '')
+                + (acts.length ? `<div class="cgroup">${actHead}<div id="actChoices"></div></div>` : ''));
+      setSheetQuestion(px(scr.prompt));   // the question shows in the sheet handle
+      const cWrap = document.getElementById('choices'), aWrap = document.getElementById('actChoices');
+      const choiceBtns = [];
+      const makeBtn = (ch, act)=>{
+        const b=document.createElement('button');
+        b.type = 'button';
+        b._choose = ()=>choose(scr,ch,retriedIds,opts.cap);
+        if(act){
+          b.className = 'choice act choice-action';
+          const prog = resourceProgress(ch.text);
+          if(prog){
+            // Real task (needs Check Resources), not a stage direction: tag + lock.
+            b.dataset.res = ch.text;
+            b.innerHTML = `<span class="act-ico">${CLICK_SVG}</span><span class="act-body"><span class="task-tag">Task</span>`
+              + `${escapeHtml(stripAction(px(ch.text)))}<span class="lock-hint"></span></span>`;
+          } else {
+            b.innerHTML = `<span class="act-ico">${CLICK_SVG}</span><span>${escapeHtml(stripAction(px(ch.text)))}</span>`;
+          }
+          b.onclick = b._choose;
+        } else {
+          b.className = 'choice say' + (voiceOn ? ' say-only' : '');
+          b.innerHTML = escapeHtml(stripAction(px(ch.text)));
+          b.onclick = ()=>{
+            if(b.classList.contains('say-only')){
+              const h = document.getElementById('sayHint'); if(h){ h.classList.remove('show'); void h.offsetWidth; h.classList.add('show'); }
+              return;
+            }
+            b._choose();
+          };
+        }
+        if(retriedIds.includes(ch.id)) b.disabled=true;
+        return b;
+      };
+      spoken.forEach(ch=>{ const b = makeBtn(ch, false); cWrap.appendChild(b); choiceBtns.push({ btn:b, choice:ch, disabled:!!b.disabled }); });
+      acts.forEach(ch=>{ aWrap.appendChild(makeBtn(ch, true)); });
+      refreshLocks();
+      const tf = document.getElementById('tapFallback');
+      if(tf) tf.onclick = ()=>{
+        tapFallback = true;
+        logEvent({ type:'helper', helper:'voice', action:'switched to tapping spoken responses', seconds:callSeconds });
+        composerEl.querySelectorAll('.choice.say-only').forEach(x=>x.classList.remove('say-only'));
+        const h = document.getElementById('sayHint'); if(h) h.remove();
+        tf.remove();
+        const sub = composerEl.querySelector('.cgroup .cgroup-sub'); if(sub) sub.textContent = 'Say one aloud, or tap it';
+      };
+      markStepStart();   // start the clock for this screen's time_on_step_sec
+      // CALL MODE: attach the speak-aloud panel to the SPOKEN responses only.
+      if(window.CallMode && choiceBtns.length) window.CallMode.attach(scr, choiceBtns);
+      syncChatBottom();  // choices are now in the DOM — slide the chat up above them
+    };
+
+    // The caller line (which may itself contain Expert:/Sarah: parts) is split
+    // into its own bubbles. On auto-advance it animates in with typing dots.
+    currentSpeakerShown = !!(scr.speaker && !opts.skipSpeaker && speakerGateMet(scr));
+    if(currentSpeakerShown){
+      // Testing update: a short beat after the caller's line lands, so learners
+      // read it before the choices slide up and shift the view.
+      revealSegments(splitDialogue(scr.speaker), !!opts.animateSpeaker,
+        opts.animateSpeaker ? ()=>setTimeout(showChoices, CHOICES_DELAY_MS) : showChoices);
+    } else {
+      showChoices();
+    }
+  }
+
+  /* Some speaker lines only make sense if the learner actually did something
+     first. `speakerIf:"resourceOpened"` on a screen gates its speaker line so
+     it's skipped entirely unless the learner clicked a resource link in Check
+     Resources at some point in the call. Add more gate keys here as needed. */
+  function speakerGateMet(scr){
+    if(!scr.speakerIf) return true;
+    if(scr.speakerIf === 'resourceOpened') return !!help.openedAnyResourceLink;
+    return true;
+  }
+
+  function choose(scr, ch, retriedIds, cap){
+    // Stage lock: a choice phrased "Reply using …" / "Provide a response using …"
+    // requires the learner to have opened the quoted article(s) in Check
+    // Resources first. Matching is normalized (case/punctuation/&-and, plus a
+    // prefix-tolerant substring test) and ALL quoted articles must be opened.
+    // Stage lock: "Reply using …" needs ALL quoted article(s) opened first.
+    const prog = resourceProgress(ch.text);
+    if(prog && (!prog.need || prog.have < prog.need)){
+      notifyResourceNotOpened();
+      return;
+    }
+    [...composerEl.querySelectorAll('.choice')].forEach(x=>x.disabled=true);
+    // The learner's pick renders as:
+    //   • `say` present  -> a blue Expert bubble of the spoken words ("Tell Sarah…")
+    //   • an [Action]    -> an inline "You …" note (a tool action)
+    //   • otherwise      -> a blue reply bubble of the choice text
+    if(ch.say) appendBubble('you', ch.say);
+    else if(isAction(ch.text)) appendActionNote(actionNoteText(ch.text));
+    else appendBubble('you', ch.text);
+
+    // Choice-gated screenshot: shows immediately on selection, before the reply.
+    // Action-revealed screenshots auto-open the full-screen lightbox (2nd arg).
+    if(ch.showsImage && (ch.image||scr.image)) appendImage(ch.image||scr.image, true);
+    // Deferred screenshot: shown AFTER the consequence (reply) finishes revealing.
+    const showImageAfter = ()=>{ if(ch.showsImageAfter && (ch.image||scr.image)) appendImage(ch.image||scr.image, true); };
+    const segs = splitDialogue(ch.consequence);
+
+    if(ch.retry && !retriedIds.includes(ch.id)){
+      transcript.push({ speaker:currentSpeakerShown ? scr.speaker : null, picked:ch.text, say:ch.say, consequence:ch.consequence });
+      logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+                 text:stripAction(px(ch.text)), verdict:ch.verdict, points:0, seconds:secondsOnStep(),
+                 notes:'first attempt — caller pushed back, screen re-opened for a retry (capped at '+ch.capIfRetried+')' });
+      setComposer('');
+      // Auto-advance: once the pushback lands, re-open the same screen (no button).
+      revealSegments(segs, true, ()=>renderScreen(scr.id,
+        { retriedIds:retriedIds.concat(ch.id), cap:ch.capIfRetried, skipSpeaker:true }), { reaction:true, image:ch.image||scr.image });
+      return;
+    }
+
+    let pts = ch.points;
+    if(typeof cap === 'number') pts = Math.min(pts, cap);
+    recordChoice(scr, ch, pts);
+    logEvent({ type:'choice', stage:scr.stage, screen:scr.id, question:px(scr.prompt),
+               text:stripAction(px(ch.text)), verdict:ch.verdict, points:pts, seconds:secondsOnStep(),
+               notes:(isAction(ch.text) ? 'action' : 'reply')
+                     + (typeof cap==='number' ? '; retry attempt, capped at '+cap : '') });
+    transcript.push({ speaker:(typeof cap==='number'?null:scr.speaker), picked:ch.text, say:ch.say, consequence:ch.consequence });
+
+    setComposer('');
+    // Auto-advance to the next screen — NO Continue button. The next caller line
+    // arrives via its own typing indicator, straight into the next choices.
+    revealSegments(segs, true, ()=>{
+      showImageAfter();
+      if(ch.goTo==='__end__') renderFinal();
+      else renderScreen(ch.goTo, { animateSpeaker:true });
+    }, { reaction:true, image:ch.image||scr.image });
+  }
+
+  /* =================== PHASE 3 — COMPLETE =================== */
+  function renderFinal(){
+    stopTimer();
+    // The call is over: stop the recorder and ship the audio to Drive (keyed by
+    // attempt_id). Best-effort — never blocks rendering the results.
+    try{
+      if(window.CallMode && window.CallMode.stopRecording){
+        window.CallMode.stopRecording().then(blob => {
+          uploadRecording(blob);   // permanent copy → L&D Drive
+          mountPlayback(blob);     // play-only copy → learner, in the results panel
+        }).catch(()=>{});
+      }
+    } catch(e){}
+
+    // Apply the Check-Resources penalty before tallying (same rule the old
+    // "Check the Articles" used: no verify of the correct resource → capped).
+    const helpNotes = [];
+    const res = S.resources;
+    // Article scoring: the best article opened in time credits the resources stage.
+    if(res && bestArticle){
+      applyCredit(res.stage, bestArticle.points, bestArticle.rating, 'Opened ' + bestArticle.label);
+      logEvent({ type:'helper', helper:'resources', stage:res.stage, action:bestArticle.label,
+                 verdict:bestArticle.rating, points:bestArticle.points, notes:'best article opened (scored)' });
+    }
+    if(res && !help.checkedCorrectArticle && (res.stage in earned) && earned[res.stage] > res.capIfUnchecked){
+      earned[res.stage] = res.capIfUnchecked;
+      helpNotes.push("You reached the right answer, but didn't verify it in the source resource — checking the resource is the skill, not remembering.");
+    }
+    S.stages.forEach(st=>{ if(earned[st.id] >= st.max) status[st.id]='done'; else if(earned[st.id] > 0 && status[st.id]==='done') status[st.id]='partial'; });
+
+    const sum = Object.values(earned).reduce((a,b)=>a+b,0);
+
+    // One summary row per attempt: the total score only.
+    logEvent({ type:'final', points:sum, seconds:callSeconds,
+               notes:'final score ' + sum + ' / ' + maxTotal });
+
+    const rows = S.stages.map(st=>{
+      const cls = status[st.id]==='done'?'done':status[st.id]==='partial'?'partial':'miss';
+      return `<div class="srow"><span><span class="sdot ${cls}"></span>${st.name}</span>
+              <span class="sval">${earned[st.id]} / ${st.max}</span></div>`;
+    }).join('');
+
+    const pickLine = st => {
+      const p = decisivePick[st.id];
+      return p ? `<div class="pick">Your response: “${escapeHtml(p.text)}”</div>`
+               : `<div class="pick miss">You didn't reach this step.</div>`;
+    };
+    // A stage counts as "reached" only if the learner actually answered or was
+    // credited for it (decisivePick set). Stages skipped by ending the chat
+    // early get no coaching feedback — just a "didn't reach this step" note.
+    const reached = st => (st.id in decisivePick);
+    const strengths = S.stages.filter(st=>status[st.id]==='done' && st.strength)
+        .map(st=>`<li><b>${st.name}</b> — ${st.strength}${pickLine(st)}</li>`).join('');
+    const areas = S.stages.filter(st=>status[st.id]!=='done' && st.improvement)
+        .map(st=> reached(st)
+            ? `<li><b>${st.name}</b> — ${st.improvement}${pickLine(st)}</li>`
+            : `<li><b>${st.name}</b> — You didn't reach this step.</li>`).join('');
+
+    // One collapsible row, styled like the wix.com "Website builder FAQs".
+    const accItem = (id, title, inner) => `
+      <div class="acc-item" data-acc="${id}">
+        <button class="acc-head" type="button" aria-expanded="false" aria-controls="accp-${id}">
+          <span>${title}</span><span class="acc-icon" aria-hidden="true"></span>
+        </button>
+        <div class="acc-panel" id="accp-${id}" role="region">
+          <div class="acc-clip"><div class="acc-inner">${inner}</div></div>
+        </div>
+      </div>`;
+
+    // CALL MODE: voice summary for the results panel + one telemetry row.
+    const dv = (window.CallMode && window.CallMode.delivery) ? window.CallMode.delivery() : null;
+    if(dv && dv.spoken) logEvent({ type:'helper', helper:'voice', action:dv.rating, seconds:callSeconds,
+      notes: dv.spoken + ' spoken responses, ' + dv.events + ' volume events (' + dv.quiet + ' too quiet, ' + dv.loud + ' too loud)' });
+
+    const completeImg = U.completeImage || U.image;
+    const portrait = completeImg
+      ? `<img src="${escapeHtml(completeImg)}" alt="" onerror="this.style.display='none'">` : '';
+
+    app.innerHTML = `
+      <section class="complete-hero">
+        <div class="portrait">${portrait}</div>
+        <div class="body">
+          <h1 class="display">Complete!</h1>
+          <p class="lead">Here's how the chat went, stage by stage — with the exact response that set each score.</p>
+          <div class="scorenum">${sum}<small> / ${maxTotal}</small></div>
+        </div>
+      </section>
+
+      <div class="acc">
+        ${accItem('scorecard','Scorecard', rows)}
+        ${accItem('strengths','Top strengths', `<ul class="list str">${strengths || '<li>No stage was completed to full marks this time.</li>'}</ul>`)}
+        ${accItem('areas','Areas for improvement', `<ul class="list imp">${areas || '<li>Nothing flagged — a clean run.</li>'}</ul>`)}
+        ${dv ? accItem('delivery','Voice and Projection', dv.html) : ''}
+      </div>
+
+      ${helpNotes.length ? `<div class="card"><h3>Notes</h3><ul class="list imp">${helpNotes.map(n=>`<li>${n}</li>`).join('')}</ul></div>` : ''}
+
+      <div class="gate">
+        <button class="btn btn-dark" id="finishBtn" type="button" disabled>Finish</button>
+        <span class="hint" id="gateHint">Open all ${dv ? 'four' : 'three'} sections to finish.</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="txBtn">View conversation transcript</button>
+        <button class="btn btn-dark" onclick="location.reload()">Restart</button>
+      </div>
+      <div id="tx" class="card" style="display:none"></div>`;
+
+    if(window.CallMode && window.CallMode.mountGraph) window.CallMode.mountGraph();   // draw the volume waveform
+
+    // ---- Accordion toggle + completion gate ----------------------------------
+    // Each row opens independently (mirrors the Wix FAQ). The Finish button
+    // unlocks only once every row (three, or four with Voice and Projection) has
+    // been opened at least once; re-collapsing a row does not re-lock it.
+    // Finishing pushes the Rise/Storyline variable that marks the activity complete.
+    const needIds = ['scorecard','strengths','areas'].concat(dv ? ['delivery'] : []);
+    const opened  = new Set();
+    const finishBtn = document.getElementById('finishBtn');
+    const gateHint  = document.getElementById('gateHint');
+    let finished = false;
+
+    app.querySelectorAll('.acc-head').forEach(head=>{
+      head.onclick = () => {
+        const item = head.closest('.acc-item');
+        const isOpen = item.classList.toggle('open');
+        head.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if(isOpen){
+          opened.add(item.getAttribute('data-acc'));
+          if(!finished && needIds.every(id=>opened.has(id))){
+            finishBtn.disabled = false;
+            gateHint.textContent = 'All sections reviewed — you can finish.';
+            gateHint.classList.add('ready');
+          }
+        }
+      };
+    });
+
+    finishBtn.onclick = () => {
+      if(finishBtn.disabled || finished) return;
+      finished = true;
+      pushRiseVar('activity_score', String(Math.round(sum / maxTotal * 100)));   // percent, read by the SCORM wrapper
+      pushRiseVar('activity_complete', 'true');
+      logEvent({ type:'complete', points:sum, seconds:callSeconds,
+                 notes:'learner reviewed all end-screen sections and finished — ' + sum + ' / ' + maxTotal });
+      finishBtn.classList.remove('btn-dark');
+      finishBtn.classList.add('done');
+      finishBtn.textContent = 'Completed';
+      gateHint.textContent = IS_CALL_TAB ? 'Marked complete. You can close this tab and go back to your course.' : 'Marked complete.';
+      gateHint.classList.add('ready');
+      // Return-to-course end screen: the call tab doesn't take learners back by itself.
+      if(IS_CALL_TAB) showReturnToCourse();
+    };
+
+    document.getElementById('txBtn').onclick = () => {
+      const tx = document.getElementById('tx'), btn = document.getElementById('txBtn');
+      if(tx.style.display==='none'){
+        // Mirror the live chat: split speaker/consequence into speaker bubbles,
+        // render the pick as an action note or a blue reply bubble.
+        // Same back-to-back grouping as the live chat: name label only on the
+        // first bubble of a same-speaker run (txSeg tracks the previous kind).
+        let txLast = null;
+        const txSeg = (kind, text, actionNote) => {
+          if(kind==='image') return '';   // screenshots aren't repeated in the transcript
+          const same = (kind !== 'system' && kind === txLast);
+          txLast = kind;
+          if(actionNote) return bubbleMarkup('system', text, '');
+          const who = (kind==='system' || same) ? '' : (kind==='you' ? (firstName()||'You') : U.name);
+          return bubbleMarkup(kind, text, who);
+        };
+        tx.innerHTML = `<h3 style="margin-bottom:0.375rem">Conversation transcript</h3>` +
+          `<div class="chat txchat">` +
+          transcript.map(t=>{
+            let h='';
+            if(t.speaker) splitDialogue(t.speaker).forEach(s=> h+=txSeg(s.kind, s.text));
+            h += t.say ? txSeg('you', t.say)
+               : isAction(t.picked) ? txSeg('system', actionNoteText(t.picked), true)
+               : txSeg('you', t.picked);
+            if(t.consequence) splitDialogue(t.consequence).forEach(s=> h+=txSeg(s.kind, s.text));
+            return h;
+          }).join('') + `</div>`;
+        tx.style.display='block'; btn.textContent='Hide conversation transcript';
+      } else { tx.style.display='none'; btn.textContent='View conversation transcript'; }
+    };
+  }
+
+  /* ---- boot ---- */
+  if(IS_CALL_TAB && window.opener) bootCallTab(); else renderMeet();
+
+  /* Signal the Rise 360 code block that the project has loaded and can display. */
+  try { window.parent.postMessage({ type: 'complete' }, '*'); } catch(e){}
+})();
+</script>
+<script id="callmode">
+(function(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const cm = { audio:null, analyser:null, data:null, meterFill:null, rafId:null,
+               peak:0, recognizing:false,
+               volLog:[],     // one entry per SPOKEN response: level, zone, when, what
+               curFrames:[], t0:0, t1:0,   // loudness frames for the response being spoken now
+               timeline:[],   // [seconds into recording, loudest level in that 0.1s, speaking?]
+               recStart:0, recEnd:0,       // performance.now() when capture started / call ended
+               voiceMode:false,            // true once the learner is taking the call by voice
+               stream:null, recorder:null, chunks:[] };  // call-recording capture
+
+  /* ---- The "good volume" zone ----
+     Matches the green band of the live meter (0.30 to 0.88 on the same 0..1
+     scale). Each spoken response is scored by its typical speaking level (the
+     80th percentile of its voiced frames), so a whisper, a normal voice and a
+     shout land in different places instead of averaging out. Tune these two
+     numbers if real headset tests read consistently high or low. */
+  const ZONE_LOW = 0.25, ZONE_HIGH = 0.88;   // LOW matches where the meter/graph turns yellow-green
+  function relNow(){ return cm.recStart ? (performance.now() - cm.recStart) / 1000 : 0; }
+
+  // Words too common to help distinguish one choice from another.
+  const STOP = new Set(("a an the and or but so to of in on at for with your you "+
+    "i we they it is are be do does can could would should how what that this "+
+    "them then just let me my our their his her him she he as if into about "+
+    "okay ok hi hey please thanks thank got get go going want need see look "+
+    "us up out now here there yes no not").split(/\s+/));
+
+  function norm(s){ return String(s||'').toLowerCase()
+      .replace(/\[action\]/gi,' ').replace(/[^a-z0-9\s]/g,' ')
+      .replace(/\s+/g,' ').trim(); }
+  function tokens(s){ return norm(s).split(' ')
+      .map(w=>w.replace(/(ing|ed|es|s)$/,''))          // crude stemming
+      .filter(w=>w.length>2 && !STOP.has(w)); }
+
+  // Build the text we match each spoken answer AGAINST. Prefer `say` (the exact
+  // words the Expert would speak); fall back to the button label.
+  function targetText(ch){ return (ch.say ? ch.say + ' ' : '') + (ch.text||''); }
+
+  // Score how well the transcript matches a choice: count of shared content
+  // words, each weighted by how DISTINCTIVE it is across the visible choices
+  // (a word appearing in only one choice is worth more than a shared one).
+  function scoreChoices(transcript, choiceBtns){
+    const heard = new Set(tokens(transcript));
+    const sets = choiceBtns.map(c=>new Set(tokens(targetText(c.choice))));
+    const df = {}; sets.forEach(set=>set.forEach(w=>{ df[w]=(df[w]||0)+1; }));
+    return choiceBtns.map((c,idx)=>{
+      let score=0;
+      sets[idx].forEach(w=>{ if(heard.has(w)) score += 1/(df[w]||1); });
+      return { ...c, score, idx };
+    }).sort((a,b)=>b.score-a.score);
+  }
+
+  /* ---- Live volume meter (Web Audio) — initialised once, on first mic use ---- */
+  async function ensureAudio(){
+    if(cm.audio) return true;
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      cm.stream = stream;
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      const src = ctx.createMediaStreamSource(stream);
+      const an = ctx.createAnalyser(); an.fftSize = 1024;
+      src.connect(an);
+      cm.audio = ctx; cm.analyser = an; cm.data = new Uint8Array(an.fftSize);
+      cm.recStart = performance.now();   // time zero for the graph and the recording
+      startRecording(stream);   // begin capturing the call from the first mic use
+      loopMeter();
+      return true;
+    } catch(e){ cm.lastError = e; return false; }
+  }
+
+  /* ---- Call recording (MediaRecorder) — one continuous file per attempt ----
+     Starts on the first mic use and runs through the whole call; stopRecording()
+     (called at end-of-call) returns the finished audio Blob for upload. Records
+     the learner's side only — the caller's lines are scripted text, not audio.
+     If MediaRecorder or a supported codec is missing, it silently no-ops. */
+  function pickMime(){
+    const cands = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
+    if(typeof MediaRecorder==='undefined' || !MediaRecorder.isTypeSupported) return '';
+    for(const m of cands){ if(MediaRecorder.isTypeSupported(m)) return m; }
+    return '';
+  }
+  function startRecording(stream){
+    if(cm.recorder || typeof MediaRecorder==='undefined') return;
+    try{
+      const mime = pickMime();
+      cm.recorder = mime ? new MediaRecorder(stream, { mimeType:mime })
+                         : new MediaRecorder(stream);
+      cm.chunks = [];
+      cm.recorder.ondataavailable = e => { if(e.data && e.data.size) cm.chunks.push(e.data); };
+      cm.recorder.start();   // one blob at stop; simplest and reliable for a POC
+    } catch(e){ cm.recorder = null; }
+  }
+  function stopRecording(){
+    if(cm.recStart && !cm.recEnd) cm.recEnd = performance.now();   // the call is over: freeze the timeline
+    return new Promise(resolve => {
+      const rec = cm.recorder;
+      // Always release the mic when the call ends, recorder or not.
+      const releaseMic = ()=>{ try{ (cm.stream && cm.stream.getTracks()||[]).forEach(t=>t.stop()); }catch(_){} };
+      if(!rec || rec.state === 'inactive'){ releaseMic(); resolve(null); return; }
+      rec.onstop = () => {
+        const type = (cm.chunks[0] && cm.chunks[0].type) || rec.mimeType || 'audio/webm';
+        const blob = cm.chunks.length ? new Blob(cm.chunks, { type }) : null;
+        cm.recorder = null; cm.chunks = [];
+        releaseMic();
+        resolve(blob);
+      };
+      try{ rec.stop(); }catch(e){ releaseMic(); resolve(null); }
+    });
+  }
+
+  function level(){ // RMS -> 0..1, lightly boosted so normal speech reads mid-scale
+    if(!cm.analyser) return 0;
+    cm.analyser.getByteTimeDomainData(cm.data);
+    let sum=0; for(let i=0;i<cm.data.length;i++){ const v=(cm.data[i]-128)/128; sum+=v*v; }
+    return Math.min(1, Math.sqrt(sum/cm.data.length) * 3.2);
+  }
+  /* Whole-bar color for the CURRENT loudness. Only "too quiet" gets a warning
+     color, and it's yellow, not red, so the meter never reads as failing.
+     Average through loud is green (testing: red/amber at normal volume caused stress). */
+  const METER_STOPS = [
+    [0.00, [232,195,  0 ]],   // yellow      — too quiet
+    [0.20, [232,195,  0 ]],   // yellow      — just under the projection threshold mark
+    [0.30, [143,203,  0 ]],   // yellow-green — entering the good zone
+    [0.42, [ 95,178,  0 ]],   // green       — good projection
+    [1.00, [ 62,138,  0 ]]    // deeper green — loud is fine
+  ];
+  function meterColor(L){
+    L = Math.max(0, Math.min(1, L));
+    for(let i=1;i<METER_STOPS.length;i++){
+      const [p1,c1]=METER_STOPS[i-1], [p2,c2]=METER_STOPS[i];
+      if(L<=p2){
+        const t=(L-p1)/(p2-p1||1);
+        const r=Math.round(c1[0]+(c2[0]-c1[0])*t);
+        const g=Math.round(c1[1]+(c2[1]-c1[1])*t);
+        const b=Math.round(c1[2]+(c2[2]-c1[2])*t);
+        return `rgb(${r},${g},${b})`;
+      }
+    }
+    return `rgb(79,163,0)`;
+  }
+  function loopMeter(){
+    // Calm the meter for EVERYONE by default: (1) exponential smoothing damps
+    // spikes, (2) the width is quantized to steps so it doesn't twitch, (3)
+    // repaints are throttled. Low-motion is the baseline — not gated behind the
+    // OS setting. When the OS "reduce motion" setting is on, it's calmer still.
+    const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const EMA      = reduce ? 0.07 : 0.12;   // lower = smoother / slower to react
+    const STEP_PCT = reduce ? 12   : 8;      // quantize width to whole % steps
+    const INTERVAL = reduce ? 260  : 150;    // ms between DOM repaints
+    let smoothed = 0, lastPaint = 0, lastPct = -1, lastBucket = -1;
+    let lastSample = 0, winMax = 0, winSpk = false;
+    const step = (ts)=>{
+      const L = level();
+      if(cm.recognizing){ cm.peak = Math.max(cm.peak, L); cm.curFrames.push(L); }
+      if(cm.recStart && !cm.recEnd){         // timeline for the results graph
+        winMax = Math.max(winMax, L); if(cm.recognizing) winSpk = true;
+        if(ts - lastSample >= 100){ cm.timeline.push([relNow(), winMax, winSpk ? 1 : 0]); winMax = 0; winSpk = false; lastSample = ts; }
+      }
+      smoothed += (L - smoothed) * EMA;      // low-pass filter
+      if(cm.meterFill && (ts - lastPaint) >= INTERVAL){
+        lastPaint = ts;
+        const pct = Math.round(smoothed*100 / STEP_PCT) * STEP_PCT;
+        if(pct !== lastPct){ cm.meterFill.style.width = pct + '%'; lastPct = pct; }
+        const bucket = Math.round(smoothed / 0.05);           // recolor per 5% band
+        // Grey while the learner isn't holding the mic, so pauses never look like a warning.
+        const b2 = cm.recognizing ? bucket : -2;
+        if(b2 !== lastBucket){ cm.meterFill.style.background = cm.recognizing ? meterColor(smoothed) : '#D5DBE3'; lastBucket = b2; }
+      }
+      cm.rafId = requestAnimationFrame(step);
+    };
+    cm.rafId = requestAnimationFrame(step);
+  }
+
+  /* ---- Attach the voice panel to the current screen's composer ---- */
+  function attach(scr, choiceBtns){
+    const panel = document.getElementById('voicepanel');
+    const choicesWrap = document.getElementById('choices');
+    const label = document.getElementById('choicesLabel');
+    if(!panel) return;
+
+    // ACTION-ONLY step (every option is an [Action], i.e. something the Expert
+    // DOES, not says): nothing to say aloud, so the mic is shown switched off.
+    const actionOnly = choiceBtns.length && choiceBtns.every(c => /^\s*\[Action\]/i.test(c.choice.text||'') && !c.choice.say);
+    if(actionOnly){
+      cm.meterFill = null;
+      panel.innerHTML = `
+        <div class="voice voice-off">
+          <div class="voice-row"><button class="mic-btn" type="button" disabled><span class="mic-ico"></span>Hold &amp; say your answer</button></div>
+          <p class="voice-status">This step is an action, not something you say. Tap the action you'd take.</p>
+        </div>`;
+      if(label) label.textContent = "Tap the action you'd take";
+      return;
+    }
+
+    // All response options stay VISIBLE — the learner reads one aloud (or taps it).
+    if(!SR){
+      panel.innerHTML = `<div class="voice-unsupported">Speak-aloud isn't supported in this browser
+        (use Chrome or Edge). You can still tap a response above.</div>`;
+      return;
+    }
+
+    panel.innerHTML = `
+      <div class="voice">
+        <div class="voice-row">
+          <button class="mic-btn" id="micBtn" type="button"><span class="mic-ico"></span>Hold &amp; say your answer</button>
+          <div class="meter"><div class="meter-fill" id="meterFill"></div><div class="meter-mark" style="left:22%"></div></div>
+        </div>
+        <p class="voice-status" id="vStatus">Hold the button and read your chosen response aloud, as you would on a real call.</p>
+        <div class="voice-confirm" id="vConfirm" style="display:none"></div>
+      </div>`;
+    cm.meterFill = document.getElementById('meterFill');
+    const micBtn = document.getElementById('micBtn');
+    const vStatus = document.getElementById('vStatus');
+    const vConfirm = document.getElementById('vConfirm');
+
+    let rec=null, finalText='', listening=false, finished=false, committed=false;
+
+    function say(html){ vStatus.innerHTML = html; }
+    function resetBtn(){ micBtn.classList.remove('listening');
+      micBtn.innerHTML = `<span class="mic-ico"></span>Hold &amp; say your answer`; }
+
+    async function start(){
+      if(listening) return;
+      const ok = await ensureAudio();
+      if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' You can still tap a response above.')); return; }
+      finalText=''; cm.peak=0; cm.curFrames=[]; cm.t0=relNow(); cm.recognizing=true;
+      listening=true; finished=false; committed=false;
+      vConfirm.style.display='none'; vConfirm.innerHTML='';
+      choiceBtns.forEach(c=>c.btn.classList.remove('matched'));
+      rec = new SR(); rec.lang='en-US'; rec.interimResults=true; rec.continuous=true; rec.maxAlternatives=1;
+      rec.onresult = (e)=>{
+        let interim='';
+        for(let i=e.resultIndex;i<e.results.length;i++){
+          const r=e.results[i];
+          if(r.isFinal) finalText += r[0].transcript + ' ';
+          else interim += r[0].transcript;
+        }
+        say(`<span class="heard">“${escapeText((finalText+interim).trim())}”</span>`);
+      };
+      rec.onerror = (e)=>{ say(`<span style="color:#C81C0F">Didn't catch that (${e.error}). Try again.</span>`); };
+      // finish() runs whenever recognition ENDS — whether the learner released
+      // the button or the recogniser stopped on its own. (This is the fix: the
+      // old code gated finish behind a flag we had already cleared on release.)
+      rec.onend = ()=>{ finish(); };
+      try{ rec.start(); }catch(_){}
+      micBtn.classList.add('listening');
+      micBtn.innerHTML = `<span class="mic-ico"></span>Listening… release to submit`;
+    }
+
+    function stop(){ if(!listening) return; listening=false; cm.recognizing=false; cm.t1=relNow();
+      resetBtn();
+      if(rec){ try{ rec.stop(); }catch(_){} } }
+
+    // Fraction of the option's own content-words that were actually heard —
+    // ~1.0 when the learner reads an option (nearly) verbatim.
+    function coverage(said, ch){
+      const heard = new Set(tokens(said));
+      const t = tokens(targetText(ch));
+      if(!t.length) return 0;
+      let hit=0; t.forEach(w=>{ if(heard.has(w)) hit++; });
+      return hit / t.length;
+    }
+
+    function finish(){
+      if(finished) return; finished=true; listening=false; cm.recognizing=false;
+      resetBtn();
+      const said = finalText.trim();
+      if(!said){ say(`I didn't hear anything — hold the button and speak up.`); return; }
+
+      const pool = choiceBtns.filter(c=>!c.disabled);
+      const ranked = scoreChoices(said, pool);
+      const top = ranked[0], second = ranked[1];
+      choiceBtns.forEach(c=>c.btn.classList.remove('matched'));
+
+      if(!top || top.score <= 0){
+        say(`<span class="heard">“${escapeText(said)}”</span><br>I couldn't match that to a response — read one of the options aloud, or tap it.`);
+        return;
+      }
+
+      const cov = coverage(said, top.choice);
+      const gap = second ? (top.score - second.score) : top.score;
+      // STRONG / VERBATIM MATCH → auto-select, no click. True when the learner
+      // read most of an option's words, or the top choice clearly wins.
+      const strong = cov >= 0.5 || gap >= 0.4 || (!second) || top.score >= 1.2;
+
+      if(strong){
+        top.btn.classList.add('matched');
+        say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;Matched. Sending…`);
+        committed = true;
+        setTimeout(()=>commit(top), 600);   // brief beat so the learner sees the match
+        return;
+      }
+
+      // Ambiguous → show the top two to choose between (fallback only).
+      say(`<span class="heard">“${escapeText(said)}”</span><br>Not sure which one — tap the closest:`);
+      vConfirm.style.display='flex'; vConfirm.innerHTML='';
+      ranked.slice(0,2).forEach(r=>{
+        r.btn.classList.add('matched');
+        const b=document.createElement('button'); b.className='vc-yes'; b.style.background='#116DFF';
+        b.textContent = shortLabel(r.choice); b.onclick=()=>commit(r); vConfirm.appendChild(b);
+      });
+      const again=document.createElement('button'); again.className='vc-no'; again.textContent='Try again';
+      again.onclick=()=>{ vConfirm.style.display='none'; choiceBtns.forEach(c=>c.btn.classList.remove('matched')); say('Hold the button and read a response aloud.'); };
+      vConfirm.appendChild(again);
+    }
+
+    function commit(match){ if(!match) return;
+      // Record THIS spoken response's peak loudness for the end-of-call
+      // projection summary (only voice-driven selections land here; tapping a
+      // choice directly doesn't, which is correct — no voice to measure).
+      logSpoken('response', scr.prompt, match.btn.textContent.replace(/^\s*Action\s*/, ''));
+      if(match.btn._choose) match.btn._choose(); else match.btn.click(); }  // reuse the engine's real scoring path
+
+    // Press-and-hold interaction.
+    micBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); start(); });
+    micBtn.addEventListener('mouseup', stop);
+    micBtn.addEventListener('mouseleave', stop);
+    micBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); start(); }, {passive:false});
+    micBtn.addEventListener('touchend',  (e)=>{ e.preventDefault(); stop(); });
+  }
+
+  /* ---- Score one spoken response ---- */
+  function speakingLevel(frames){
+    const voiced = frames.filter(v => v >= 0.10).sort((a,b)=>a-b);   // ignore pauses/breaths between words
+    if(!voiced.length) return frames.length ? Math.max(...frames) : 0;
+    return voiced[Math.min(voiced.length - 1, Math.floor(voiced.length * 0.9))];
+  }
+  // Only quiet is flagged. Loud counts as good (testing: "a bit loud" felt wrong at normal volume).
+  function zoneOf(L){ return L < ZONE_LOW ? 'quiet' : 'good'; }
+  function logSpoken(kind, prompt, text){
+    const lvl = speakingLevel(cm.curFrames);
+    cm.volLog.push({ kind, prompt:String(prompt||''), text:String(text||''), level:lvl, peak:cm.peak,
+                     zone:zoneOf(lvl), t0:cm.t0, t1:cm.t1 || relNow() });
+    cm.voiceMode = true;   // they're taking the call by voice
+  }
+
+  /* ---- Expert follow-up line: the learner says it aloud ----
+     When a pick triggers another Expert line (e.g. "Expert: Love it, I'll keep
+     this efficient then."), the engine pauses and shows that line here. The
+     learner holds the mic and says it; any reasonable attempt is accepted (it
+     isn't graded), and it counts toward Voice and Projection like any response.
+     "Send without saying it" always lets them move on. */
+  function shouldSpeak(){ return !!SR && cm.voiceMode === true && !embeddedBlocked(); }
+  function setVoiceMode(v){ cm.voiceMode = !!v; }
+  function sayLine(panel, line, onDone){
+    if(!panel){ onDone(); return; }
+    panel.innerHTML = `
+      <div class="voice">
+        <div class="voice-row">
+          <button class="mic-btn" id="micBtn" type="button"><span class="mic-ico"></span>Hold &amp; say this line</button>
+          <div class="meter"><div class="meter-fill" id="meterFill"></div><div class="meter-mark" style="left:22%"></div></div>
+        </div>
+        <p class="voice-status" id="vStatus">Hold the button and say the line above, as you would on a real call.</p>
+        <div class="voice-confirm"><button class="vc-no" id="vSkip" type="button">Send without saying it</button></div>
+      </div>`;
+    cm.meterFill = document.getElementById('meterFill');
+    const micBtn = document.getElementById('micBtn'), vStatus = document.getElementById('vStatus');
+    let rec = null, finalText = '', listening = false, finished = false, sent = false;
+    const say = h => { vStatus.innerHTML = h; };
+    const resetBtn = ()=>{ micBtn.classList.remove('listening'); micBtn.innerHTML = `<span class="mic-ico"></span>Hold &amp; say this line`; };
+    const send = (spoken)=>{ if(sent) return; sent = true; if(spoken) logSpoken('line', 'Your follow-up line', line); onDone(); };
+    document.getElementById('vSkip').onclick = ()=>send(false);
+    async function start(){
+      if(listening || sent) return;
+      const ok = await ensureAudio();
+      if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' Use Send without saying it to continue.')); return; }
+      finalText = ''; cm.peak = 0; cm.curFrames = []; cm.t0 = relNow(); cm.recognizing = true;
+      listening = true; finished = false;
+      rec = new SR(); rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = true;
+      rec.onresult = (e)=>{ let interim = '';
+        for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) finalText += r[0].transcript + ' '; else interim += r[0].transcript; }
+        say(`<span class="heard">“${escapeText((finalText+interim).trim())}”</span>`); };
+      rec.onerror = (e)=>{ say(`<span style="color:#C81C0F">Didn't catch that (${e.error}). Try again.</span>`); };
+      rec.onend = ()=>finish();
+      try{ rec.start(); }catch(_){}
+      micBtn.classList.add('listening'); micBtn.innerHTML = `<span class="mic-ico"></span>Listening… release to send`;
+    }
+    function stop(){ if(!listening) return; listening = false; cm.recognizing = false; cm.t1 = relNow(); resetBtn(); if(rec){ try{ rec.stop(); }catch(_){} } }
+    function finish(){
+      if(finished) return; finished = true; listening = false; cm.recognizing = false; resetBtn();
+      const said = finalText.trim();
+      if(!said){ say(`I didn't hear anything. Hold the button and speak up.`); return; }
+      const want = tokens(line), heard = new Set(tokens(said));
+      const cov = want.length ? want.filter(w=>heard.has(w)).length / want.length : 1;
+      if(cov < 0.3){ say(`<span class="heard">“${escapeText(said)}”</span><br>That didn't sound like the line. Try again, reading it as written.`); return; }
+      say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;Sending…`);
+      setTimeout(()=>send(true), 500);
+    }
+    micBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); start(); });
+    micBtn.addEventListener('mouseup', stop);
+    micBtn.addEventListener('mouseleave', stop);
+    micBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); start(); }, {passive:false});
+    micBtn.addEventListener('touchend',  (e)=>{ e.preventDefault(); stop(); });
+  }
+
+  function fmtTime(s){ s = Math.max(0, Math.round(s||0)); const m = Math.floor(s/60), r = s%60; return m + ':' + (r<10?'0':'') + r; }
+
+  /* ---- Volume through the call (results graph) ----
+     A waveform: thin rounded bars mirrored around a centre line, evenly spaced
+     at a fixed ~7px pitch (3px bar + gap) however wide the panel is, so the bars
+     never squash together; the bar count adapts to the width and redraws on
+     resize. Each bar = the loudest moment in its slice of the call, colored with
+     the SAME scale as the live meter; grey dots = not speaking. The faint band is
+     the good zone (mirrored) and red/amber tints mark each volume event.
+     bindGraph() adds a playhead that follows playback; clicking jumps there. */
+  const BAR_W = 3, BAR_PITCH = 7;
+  let graphState = null;
+  function graphHTML(log){
+    const tl = cm.timeline;
+    const total = cm.recEnd ? (cm.recEnd - cm.recStart) / 1000 : (tl.length ? tl[tl.length-1][0] : 0);
+    if(tl.length < 2 || total <= 0){ graphState = null; return ''; }
+    graphState = { total, log };
+    return `
+      <div class="dv-section">Your volume through the call</div>
+      <div class="dv-graph static" id="dvGraph" data-total="${total.toFixed(2)}" tabindex="-1" role="img"
+           aria-label="Waveform of your speaking volume across the call">
+        <div class="dv-plot" id="dvPlot">
+          <svg id="dvSvg" aria-hidden="true"></svg>
+          <div class="dv-dim" id="dvDim"></div>
+          <div class="dv-head" id="dvHead"></div>
+        </div>
+      </div>
+      <div class="dv-times"><span>0:00</span><span id="dvTime"><b>0:00</b> / ${fmtTime(total)}</span><span>${fmtTime(total)}</span></div>
+      <div class="dv-legend">
+        <span><i style="background:${meterColor(0.12)}"></i>Quiet</span>
+        <span><i style="background:${meterColor(0.6)}"></i>Good</span>
+        <span><i style="background:${meterColor(1)}"></i>Loud</span>
+        <span><i style="background:rgba(79,163,0,.25)"></i>Good zone</span>
+      </div>`;
+  }
+  function drawGraph(){
+    const plot = document.getElementById('dvPlot'), svg = document.getElementById('dvSvg');
+    if(!plot || !svg || !graphState) return;
+    const W = Math.round(plot.clientWidth), H = Math.round(plot.clientHeight);
+    if(!W || !H) return;
+    const { total, log } = graphState;
+    const N = Math.max(20, Math.floor(W / BAR_PITCH)), pitch = W / N;
+    const b = Array.from({ length:N }, ()=>({ max:0, spk:false }));
+    cm.timeline.forEach(([t, L, s])=>{ const i = Math.min(N-1, Math.floor(t / total * N)); if(L > b[i].max) b[i].max = L; if(s) b[i].spk = true; });
+    const mid = H / 2, amp = mid - 2;                 // bar half-height for level 1.0
+    const zoneTop = amp * ZONE_HIGH, zoneBot = amp * ZONE_LOW;
+    let out = `<rect x="0" y="${(mid-zoneTop).toFixed(1)}" width="${W}" height="${(zoneTop-zoneBot).toFixed(1)}" fill="rgba(79,163,0,.09)"/>`
+            + `<rect x="0" y="${(mid+zoneBot).toFixed(1)}" width="${W}" height="${(zoneTop-zoneBot).toFixed(1)}" fill="rgba(79,163,0,.09)"/>`;
+    log.filter(e=>e.zone !== 'good').forEach(e=>{
+      const x0 = e.t0 / total * W, x1 = Math.max(x0 + pitch, e.t1 / total * W);
+      if(e.zone !== 'quiet') return;   // only quiet stretches are tinted; loud is fine
+      out += `<rect x="${x0.toFixed(1)}" y="0" width="${(x1-x0).toFixed(1)}" height="${H}" rx="4" fill="rgba(232,195,0,.14)"/>`;
+    });
+    out += `<line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="#E6EAF0" stroke-width="1"/>`;
+    b.forEach((k, i)=>{
+      const h = k.spk ? Math.max(BAR_W, Math.min(1, k.max) * amp * 2) : BAR_W;
+      const x = i * pitch + (pitch - BAR_W) / 2;
+      out += `<rect x="${x.toFixed(1)}" y="${(mid - h/2).toFixed(1)}" width="${BAR_W}" height="${h.toFixed(1)}" rx="${BAR_W/2}" fill="${k.spk ? meterColor(k.max) : '#D5DBE3'}"/>`;
+    });
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    svg.innerHTML = out;
+  }
+  // Called by the engine once the results are on screen; redraws on resize
+  // (window, fullscreen, or the accordion opening).
+  function mountGraph(){
+    const plot = document.getElementById('dvPlot'); if(!plot) return;
+    drawGraph();
+    if('ResizeObserver' in window) new ResizeObserver(()=>drawGraph()).observe(plot);
+    else window.addEventListener('resize', drawGraph);
+  }
+  function bindGraph(audio){
+    const g = document.getElementById('dvGraph'), plot = document.getElementById('dvPlot'); if(!g || !plot || !audio) return;
+    const total = parseFloat(g.dataset.total) || 0; if(!total) return;
+    const head = document.getElementById('dvHead'), dim = document.getElementById('dvDim'), tl = document.getElementById('dvTime');
+    g.classList.remove('static');
+    g.setAttribute('tabindex', '0'); g.setAttribute('role', 'slider');
+    g.setAttribute('aria-label', 'Call recording position. Click, or use the arrow keys, to move through your call.');
+    g.setAttribute('aria-valuemin', '0'); g.setAttribute('aria-valuemax', String(Math.round(total)));
+    const paint = ()=>{
+      const t = Math.min(total, Math.max(0, audio.currentTime || 0)), x = t / total * 100;
+      head.style.left = x.toFixed(2) + '%'; dim.style.left = x.toFixed(2) + '%';
+      if(tl) tl.innerHTML = `<b>${fmtTime(t)}</b> / ${fmtTime(total)}`;
+      g.setAttribute('aria-valuenow', String(Math.round(t))); g.setAttribute('aria-valuetext', fmtTime(t));
+    };
+    let raf = null;
+    const loop = ()=>{ paint(); if(!audio.paused && !audio.ended) raf = requestAnimationFrame(loop); };
+    audio.addEventListener('play', ()=>{ cancelAnimationFrame(raf); loop(); });
+    ['pause','seeked','timeupdate','ended'].forEach(ev => audio.addEventListener(ev, paint));
+    const seekTo = t => { try{ audio.currentTime = Math.max(0, Math.min(total, t)); }catch(_){} paint(); };
+    g.addEventListener('click', e => { const r = plot.getBoundingClientRect(); if(e.clientX >= r.left) seekTo((e.clientX - r.left) / r.width * total); });
+    g.addEventListener('keydown', e => {
+      if(e.key === 'ArrowRight'){ e.preventDefault(); seekTo((audio.currentTime||0) + 5); }
+      else if(e.key === 'ArrowLeft'){ e.preventDefault(); seekTo((audio.currentTime||0) - 5); }
+      else if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); audio.paused ? audio.play().catch(()=>{}) : audio.pause(); }
+    });
+    document.querySelectorAll('.dv-ev[data-t]').forEach(btn => {
+      btn.classList.remove('static'); btn.disabled = false;
+      btn.onclick = ()=>{ seekTo(Math.max(0, parseFloat(btn.dataset.t) - 0.3)); audio.play().catch(()=>{}); };
+    });
+    // Chrome's recorder files report no length until played through; force it so
+    // seeking (clicks on the graph / events) works right away.
+    const fixDuration = ()=>{
+      if(audio.duration !== Infinity) return;
+      const back = ()=>{ audio.removeEventListener('durationchange', back); audio.currentTime = 0; paint(); };
+      audio.addEventListener('durationchange', back);
+      audio.currentTime = 1e101;
+    };
+    if(audio.readyState >= 1) fixDuration(); else audio.addEventListener('loadedmetadata', fixDuration, { once:true });
+    paint();
+  }
+
+  /* ---- Why the mic didn't start, in plain words ----
+     getUserMedia fails the same way (NotAllowedError, no prompt) whether the
+     learner said no, Chrome's site setting blocks it, or the page this activity
+     is EMBEDDED in (e.g. a course iframe) doesn't grant microphone access. That
+     last case can't be fixed from Chrome settings, so we check it first. The
+     small code line lets L&D see exactly what the browser reported. */
+  function embeddedBlocked(){
+    try{
+      const fp = document.permissionsPolicy || document.featurePolicy;
+      return !!(fp && fp.allowsFeature && !fp.allowsFeature('microphone'));
+    }catch(_){ return false; }
+  }
+  async function micErrorMessage(err){
+    const name = (err && err.name) || 'Error';
+    const red = t => `<span style="color:#C81C0F;font-weight:700">${t}</span>`;
+    const embedded = embeddedBlocked();
+    let msg;
+    if(!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      msg = red("This page can't use a microphone.") + " Browsers only allow microphones on secure (https) pages.";
+    } else if(embedded){
+      msg = red("The course page this activity is in doesn't allow microphone use.") + " Your browser blocks it without asking, so your Chrome settings aren't the cause.";
+    } else if(name==='NotFoundError' || name==='OverconstrainedError'){
+      msg = red("No microphone found.") + " Plug in your headset, then try again.";
+    } else if(name==='NotReadableError' || name==='AbortError' || name==='TrackStartError'){
+      msg = red("Your microphone is busy.") + " Another app may be using it (for example Zoom or Teams). Close it, then try again.";
+    } else if((name==='NotAllowedError' || name==='SecurityError') && /system/i.test((err && err.message) || '')){
+      // macOS/Windows privacy settings block Chrome itself, so Chrome never asks.
+      msg = red("Your computer is blocking Chrome from using the microphone.") + " On a Mac, go to <b>System Settings › Privacy &amp; Security › Microphone</b> and turn on Google Chrome, then quit and reopen Chrome. On Windows, go to <b>Settings › Privacy › Microphone</b>.";
+    } else if((name==='NotAllowedError' || name==='SecurityError') && (location.origin === 'null' || !location.origin)){
+      // Opaque origin: the host serves this page sandboxed, which blocks the mic without a prompt.
+      msg = red("The site hosting this activity blocks microphone use.") + " Your Chrome settings aren't the cause.";
+    } else if(name==='NotAllowedError' || name==='SecurityError' || name==='PermissionDeniedError'){
+      let state = '';
+      try{ state = (await navigator.permissions.query({ name:'microphone' })).state; }catch(_){}
+      msg = state==='denied'
+        ? red("Chrome is blocking the microphone for this page.") + " In Chrome, go to <b>Settings › Privacy and security › Site settings › Microphone</b>, remove this page from the blocked list, then reload."
+        : red("Microphone permission wasn't given.") + " Try again and choose <b>Allow</b> when your browser asks.";
+    } else {
+      msg = red("The microphone couldn't start.");
+    }
+    // Extra detail for L&D troubleshooting: Chrome's own message, the permission
+    // state, and the page's origin ("null" = sandboxed by the host).
+    let perm = '';
+    try{ perm = (await navigator.permissions.query({ name:'microphone' })).state; }catch(_){ perm = 'n/a'; }
+    let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
+    const detail = [err && err.message ? '"' + err.message + '"' : '', 'permission: ' + perm, 'origin: ' + (location.origin || 'none'), inFrame ? 'in a frame' : 'own tab'].filter(Boolean).join(' · ');
+    return msg + `<span class="mc-code">Browser reported: ${escapeText(name)}${embedded ? ' (embedded page blocks microphone)' : ''}<br>${escapeText(detail)}</span>`;
+  }
+
+  function shortLabel(ch){
+    const t = String(ch.text||'').replace(/\[action\]/gi,'').trim();
+    return t.length>48 ? t.slice(0,46)+'…' : t;
+  }
+  function escapeText(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---- End-of-call projection summary (feeds the results "Voice and Projection" panel) ----
+     Every spoken response (and every Expert line said aloud) is placed in a
+     zone: too quiet, good, or too loud. Each one outside the good zone is a
+     VOLUME EVENT, listed with the screen it happened on, so a learner who
+     whispered half the time and shouted the other half sees exactly where, and
+     isn't told "well projected" because the two averaged out. The overall
+     rating comes from those events, not from one call-wide average. */
+  function delivery(){
+    const log = cm.volLog.slice();
+    const spoken = log.length;
+    if(!spoken){
+      return { spoken:0, events:0, quiet:0, loud:0, rating:'', html:
+        `<p class="dv-none">No spoken responses were captured this time. `+
+        `Try it again with your headset microphone on to get projection feedback.</p>` };
+    }
+    const quiet = log.filter(e=>e.zone==='quiet').length, loud = log.filter(e=>e.zone==='loud').length;
+    const events = quiet + loud;
+    let rating, cls, note;
+    if(!events){ rating='Well projected'; cls='good';
+      note='Every spoken response stayed in the good volume zone. Your voice carried clearly across the call. Great job!'; }
+    else if(quiet && loud){ rating='Inconsistent volume'; cls='low';
+      note='Your volume swung between too quiet and too loud. Aim for the same steady, clear volume on every response.'; }
+    else if(quiet){ const most = quiet/spoken >= 0.5; rating = most ? 'Too quiet overall' : 'A bit quiet in places'; cls = most ? 'low' : 'mid';
+      note = most ? 'Most of your responses were too quiet. Speak up so the user hears you clearly.'
+                  : 'Some of your responses dropped below the good volume zone. Keep your volume up on every response.'; }
+    else { const most = loud/spoken >= 0.5; rating = most ? 'Too loud overall' : 'A bit loud in places'; cls = most ? 'low' : 'mid';
+      note = most ? 'Most of your responses were louder than they needed to be. Ease off a little so you sound calm and in control.'
+                  : 'Some of your responses went above the good volume zone. Ease off a little on those.'; }
+    const clip = (s, n) => { s = String(s||'').replace(/\s+/g,' ').trim(); return s.length > n ? s.slice(0, n-1) + '…' : s; };
+    const evItems = log.map((e, i)=>({ e, n:i+1 })).filter(x=>x.e.zone !== 'good').map(({ e, n })=>`
+        <li><button class="dv-ev static" type="button" data-t="${e.t0.toFixed(2)}" disabled
+              aria-label="Response ${n}, ${e.zone==='quiet'?'too quiet':'too loud'}, at ${fmtTime(e.t0)}. Play this moment.">
+          <span class="dv-ev-tag ${e.zone}">${e.zone==='quiet' ? 'Too quiet' : 'Too loud'}</span>
+          <span class="dv-ev-where">Response ${n} · ${escapeText(clip(e.prompt, 60))}</span>
+          <span class="dv-ev-time">${fmtTime(e.t0)}</span>
+          <span class="dv-ev-said">“${escapeText(clip(e.text, 110))}”</span>
+        </button></li>`).join('');
+    return { spoken, events, quiet, loud, rating, html:
+      `<div class="dv-wrap">
+         <div class="dv-top"><span class="dv-pill ${cls}">${rating}</span>
+           <span class="dv-meta">${spoken} spoken response${spoken>1?'s':''} · ${events} volume event${events===1?'':'s'}</span></div>
+         <p class="dv-note">${note}</p>
+         <div class="dv-section">Volume events<span class="dv-ev-count">${events}</span></div>
+         ${events
+           ? `<p class="dv-ev-sub">Each time you spoke too quietly (${quiet}). Click one to hear that moment.</p><ol class="dv-ev-list">${evItems}</ol>`
+           : `<p class="dv-ev-sub">None. Every response stayed in the good volume zone.</p>`}
+         ${graphHTML(log)}
+         <div class="dv-playback" id="callPlayback">
+           <div class="dv-pb-label">Listen back to your call</div>
+           <div class="dv-pb-slot" id="callPlaybackSlot">
+             <span class="dv-pb-prep">Preparing your recording…</span>
+           </div>
+         </div>
+       </div>` };
+  }
+
+  /* ---- Pre-call mic test ----
+     A separate, short-lived stream used only for the check before the call. It
+     drives a meter and reports once the learner's voice clears the minimum-
+     projection mark (0.22). It is NOT recorded, and stop() releases the mic.
+     Permission granted here carries over, so the in-call mic won't prompt again. */
+  function micCheck(fillEl, onHeard){
+    let stream=null, ctx=null, raf=null, stopped=false, heard=false;
+    const stop = ()=>{
+      stopped = true; if(raf) cancelAnimationFrame(raf);
+      try{ (stream && stream.getTracks() || []).forEach(t=>t.stop()); }catch(_){}
+      try{ if(ctx) ctx.close(); }catch(_){}
+    };
+    const ready = (async ()=>{
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('unavailable');
+      stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      if(stopped){ stop(); return; }
+      const Ctx = window.AudioContext || window.webkitAudioContext; ctx = new Ctx();
+      const an = ctx.createAnalyser(); an.fftSize = 1024;
+      ctx.createMediaStreamSource(stream).connect(an);
+      const data = new Uint8Array(an.fftSize);
+      let smoothed = 0, framesAbove = 0;
+      const step = ()=>{
+        an.getByteTimeDomainData(data);
+        let sum=0; for(let i=0;i<data.length;i++){ const v=(data[i]-128)/128; sum+=v*v; }
+        const L = Math.min(1, Math.sqrt(sum/data.length) * 3.2);   // same scale as the in-call meter
+        smoothed += (L - smoothed) * 0.2;
+        fillEl.style.width = Math.round(smoothed*100) + '%';
+        fillEl.style.background = meterColor(smoothed);
+        if(smoothed >= 0.22 && ++framesAbove >= 8 && !heard){ heard = true; onHeard(); }
+        raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    })();
+    return { ready, stop };
+  }
+
+  window.CallMode = { attach, delivery, stopRecording, micCheck, micErrorMessage, embeddedBlocked,
+                      sayLine, shouldSpeak, setVoiceMode, bindGraph, mountGraph, supported: !!SR };
+})();
+</script>
+</body>
+</html>
