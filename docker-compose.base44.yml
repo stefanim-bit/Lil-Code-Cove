@@ -25,6 +25,8 @@ services:
   # Stores reviewer comments (JSON file in a named volume, so it survives restarts and is never committed).
   comments:
     image: node:22-alpine
+    env_file:
+      - /run/base44/app.env
     volumes:
       - ./.base44/comments-server.js:/app/server.js:ro
       - comments-data:/data

@@ -272,9 +272,7 @@
     if (dt.checked) {
       var rs = el('button', 'b sm', c.resolved ? 'Reopen' : 'Resolve');
       rs.onclick = function () { api('PATCH', '/' + c.id, { resolved: !c.resolved }).then(refresh); };
-      var del = el('button', 'b sm danger', 'Delete');
-      del.onclick = function () { if (confirm('Delete this comment for everyone?')) api('DELETE', '/' + c.id).then(refresh); };
-      a.appendChild(rs); a.appendChild(del);
+      a.appendChild(rs);
     }
     d.appendChild(a); return d;
   }

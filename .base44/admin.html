@@ -29,6 +29,14 @@
   .actions { position: sticky; bottom: 0; background:#fff; padding: 14px 0; border-top:1px solid #eee; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   .count { font-size:14px; color:#4b5270; }
   .loading { color:#4b5270; }
+  .tabs { display:flex; gap:8px; margin-bottom:14px; }
+  select { padding:8px 10px; border:1px solid var(--b2); border-radius:8px; font-size:14px; }
+  .cm { border:1px solid var(--b2); border-radius:10px; padding:12px 14px; margin-bottom:10px; background:#f7f6ff; }
+  .cm.done { opacity:.6; }
+  .cm .m { font-size:12px; color:#3b3a6b; margin-bottom:6px; overflow-wrap:anywhere; }
+  .cm .t { font-size:15px; white-space:pre-wrap; overflow-wrap:anywhere; margin-bottom:10px; }
+  .cm button { padding:7px 12px; font-size:13px; margin-right:6px; }
+  .cm button.danger { background:#ffd9d9; }
 </style>
 </head>
 <body>
@@ -43,6 +51,12 @@
   </div>
 
   <div id="panel">
+    <div class="tabs"><button id="tab-docs">Documents</button> <button id="tab-com" class="ghost">Comments</button></div>
+    <div id="comments" style="display:none">
+      <div class="bar"><select id="cf"><option value="open">Open</option><option value="all">All</option><option value="resolved">Resolved</option></select><span class="sp"></span><span id="cc" class="count"></span><button id="cx" class="ghost">Refresh</button></div>
+      <div id="clist"></div>
+    </div>
+    <div id="docs">
     <div id="status"></div>
     <div id="list"><p class="loading">Loading documents&hellip;</p></div>
     <div class="actions">
@@ -50,6 +64,7 @@
       <button id="all" class="ghost">Select all</button>
       <button id="none" class="ghost">Clear</button>
       <span class="count" id="count"></span>
+    </div>
     </div>
   </div>
 
@@ -116,7 +131,7 @@
   }
 
   function loadState() {
-    return fetch('/_b44_api/documents', { headers: authHeader() }).then(function (r) { return r.json(); });
+    return fetch('/_b44_api/documents', { headers: authHeader() }).then(function (r) { if (!r.ok) throw new Error('unauthorized'); return r.json(); });
   }
 
   function enterPanel() {
@@ -164,6 +179,45 @@
   $('all').addEventListener('click', function () { document.querySelectorAll('input[data-path]').forEach(function (c) { c.checked = true; }); updateCount(); });
   $('none').addEventListener('click', function () { document.querySelectorAll('input[data-path]').forEach(function (c) { c.checked = false; }); updateCount(); });
   document.addEventListener('change', function (e) { if (e.target.matches('input[data-path]')) updateCount(); });
+
+  // --- comments dashboard ---
+  var comments = [];
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  function showTab(t) {
+    $('docs').style.display = t === 'docs' ? '' : 'none';
+    $('comments').style.display = t === 'com' ? '' : 'none';
+    $('tab-docs').className = t === 'docs' ? '' : 'ghost';
+    $('tab-com').className = t === 'com' ? '' : 'ghost';
+    if (t === 'com') loadComments();
+  }
+  function renderComments() {
+    var f = $('cf').value;
+    var list = comments.filter(function (c) { return f === 'all' || (f === 'open' ? !c.resolved : c.resolved); }).slice().reverse();
+    $('cc').textContent = list.length + ' shown / ' + comments.length + ' total';
+    $('clist').innerHTML = list.length ? list.map(function (c) {
+      var link = c.file ? '<a class="home" target="_blank" href="' + encodeURI(c.file) + '">' + esc(c.file.split('/').pop()) + '</a>' : '';
+      return '<div class="cm' + (c.resolved ? ' done' : '') + '"><div class="m"><b>' + esc(c.author) + '</b> &middot; ' + new Date(c.createdAt).toLocaleString() + ' &middot; ' + link + ' &middot; ' + esc(c.element) + '</div><div class="t">' + esc(c.text) + '</div>' +
+        '<button class="ghost" data-act="res" data-id="' + c.id + '">' + (c.resolved ? 'Reopen' : 'Resolve') + '</button><button class="danger" data-act="del" data-id="' + c.id + '">Delete</button></div>';
+    }).join('') : '<p class="loading">No comments.</p>';
+  }
+  function loadComments() {
+    return fetch('/_b44_api/comments').then(function (r) { return r.json(); }).then(function (d) { comments = d; renderComments(); });
+  }
+  $('tab-docs').addEventListener('click', function () { showTab('docs'); });
+  $('tab-com').addEventListener('click', function () { showTab('com'); });
+  $('cf').addEventListener('change', renderComments);
+  $('cx').addEventListener('click', loadComments);
+  $('clist').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-act]'); if (!b) return;
+    var id = b.getAttribute('data-id');
+    if (b.getAttribute('data-act') === 'del') {
+      if (!confirm('Delete this comment for everyone?')) return;
+      fetch('/_b44_api/comments/' + id, { method: 'DELETE', headers: authHeader() }).then(function (r) { if (r.status === 401) alert('Not authorized'); loadComments(); });
+    } else {
+      var c = comments.filter(function (x) { return x.id === id; })[0];
+      fetch('/_b44_api/comments/' + id, { method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, authHeader()), body: JSON.stringify({ resolved: !c.resolved }) }).then(loadComments);
+    }
+  });
 
   // If a saved session exists, try to resume silently.
   if (token) {
