@@ -26,6 +26,7 @@
 | `resources` | Opened, closed, or clicked something in Check Resources. `correct = yes` means they opened the right article (only counts after the minimum time). `no` means they opened a distractor. |
 | `mic_check` | Call builds only: the result of the mic setup (voice on, text only, new tab, blocked, error). |
 | `voice` | Call builds only: a summary of how the learner's voice came across (spoken responses, too quiet/too loud counts). |
+| `guided_retries` | Guided builds only. One per attempt, right before `final`. `response` lists the screens that were retried and the screens still wrong after the retry (partial or incorrect), e.g. `retried: s_open, s_ownership \| still wrong: s_open`. `notes` gives the counts. `points` is blank. |
 | `final` | One per attempt, when results show. `points` = total score. |
 | `complete` | The learner went through the end screen and finished. |
 
@@ -36,6 +37,8 @@
 | Choice | `reply` / `action` | The learner picked something to say (reply) or something to do (action). |
 | Choice | `reply; retry attempt, capped at 5` | Second try after a pushback. Points can't go above the cap. |
 | Choice | `first attempt — caller pushed back, screen re-opened for a retry (capped at 5)` | A wrong first pick. It scores 0 and the screen opens again. |
+| Choice | `reply; retry attempt, capped at 3; coaching shown; still wrong after retry` | Guided builds: the second try was still partial or incorrect. |
+| Resources | `opened a resource (not scored)` | The scenario's Check Resources isn't scored, so there's no verdict. |
 | Resources | `opened the correct resource` | They opened the right article and got credit for it. |
 | Resources | `opened the correct resource too early to earn credit (before 20s)` | They opened the right article but too early in the call, so no credit. |
 | Resources | `opened a distractor resource` | They opened the wrong article. |

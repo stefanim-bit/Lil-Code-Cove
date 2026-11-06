@@ -216,6 +216,17 @@
      would sit on top of the End button. Pad the header right so the buttons
      shift left and clear the icon. */
   .sim-wrap:fullscreen .panel-head{padding-right:3.5rem}
+  /* One fullscreen element for the whole activity (#app), so fullscreen turned on
+     in the intro carries into the call instead of fighting the call's own button. */
+  .app:fullscreen:has(.sim-wrap){padding:0;display:flex;flex-direction:column}
+  .app:fullscreen .sim-wrap{flex:1;min-height:0;padding-top:0;background:var(--bg);display:flex;flex-direction:column}
+  .app:fullscreen .sim-wrap .panel{flex:1;height:auto;border-radius:0;display:flex;flex-direction:column;overflow:auto}
+  .app:fullscreen .sim-wrap .chat{min-height:0;flex:1}
+  .app:fullscreen .sim-wrap .panel-head{padding-right:3.5rem}
+  .app:fullscreen .fs-pill .fs-label{display:none}
+  .app:fullscreen .intro-fs .fs-label{display:inline}
+  .app:fullscreen .sim-wrap .fs-pill{padding:0 0.25rem}
+  .app:fullscreen .sim-wrap .top-tools{top:0.75rem;right:0.75rem;z-index:20}
 
   /* "Action" badge on choices — distinguishes actions (things the Expert DOES)
      from spoken replies, right inside the choice button. */
@@ -271,6 +282,13 @@
   .mc-notes li{margin:0 0 0.375rem}
   .mc-row{margin:0 0 0.25rem}
   .mc-code{display:block;font-size:0.75rem;color:var(--muted);margin-top:0.25rem}
+  /* Mic picker + troubleshooting readout on the mic test (screenshot-friendly). */
+  .mc-pick{display:flex;align-items:center;gap:0.5rem;margin:0.75rem 0 0;font-size:0.8125rem;color:var(--ink-2)}
+  .mc-pick label{font-weight:700;flex:0 0 auto}
+  .mc-pick select{flex:1 1 auto;min-width:0;max-width:100%;font:inherit;padding:0.375rem 0.5rem;border:1px solid #C9CDD4;border-radius:0.375rem;background:#fff;color:var(--ink)}
+  .mc-hint{font-size:0.8125rem;line-height:1.4;margin:0.5rem 0 0;padding:0.5rem 0.75rem;border-radius:0.375rem;background:#FFF4E5;color:#7A4100}
+  .mc-diag{font-size:0.75rem;color:var(--muted);margin:0.5rem 0 0;line-height:1.5;word-break:break-word}
+  .mc-diag b{color:var(--ink-2);font-weight:600}
   /* Action-only step: mic shown but switched off */
   .voice-off{background:#F5F5F5;border-color:var(--line)}
   /* Expert follow-up line the learner says aloud */
@@ -1108,7 +1126,7 @@ window.SCENARIO = {
           <button class="btn btn-ghost" id="confirmBack" type="button">Back</button>
         </div>
       </div>`;
-    document.body.appendChild(dlg); dlg.showModal();
+    (document.fullscreenElement || document.body).appendChild(dlg); dlg.showModal();
     const close = ()=>{ dlg.close(); dlg.remove(); };
     dlg.querySelector('#confirmClose').onclick = close;
     dlg.querySelector('#confirmBack').onclick = close;
@@ -1127,8 +1145,14 @@ window.SCENARIO = {
   const MIC_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
   const CLICK_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 3.5v10.2l2.3-2.1 2 4.6 2.1-.9-2-4.5h3.1L9 3.5z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
   const ARROW_SVG = `<span class="btn-arrow"><svg viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L11 4L7 8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="4" x2="10" y2="4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span>`;
-  const INTRO_STEPS = ['How this call works', "How you're scored", 'Test your mic'];
+  /* Testing update: the mic test comes FIRST, then the demo. Inside a course page
+     (Wix Smart, Moodle, Rise) the learner never speaks in the page: the first
+     screen's only way to speak is "Test your microphone", which opens the call
+     in its own tab, where the mic test runs and the demo continues. */
+  const INTRO_STEPS = ['Test your mic', 'How this call works', "How you're scored"];
+  const MIC_STEP = 0;
   let introMicCheck = null;
+  let introVoice = false;   // set on the mic step: true once the mic test hears them
 
   function renderIntro(step){
     stopTimer();
@@ -1137,7 +1161,9 @@ window.SCENARIO = {
     const name = escapeHtml(U.name);
     const pills = INTRO_STEPS.map((t,i)=>`<span class="intro-step${i===step?' on':''}${i<step?' past':''}"><b>${i<step?'✓':i+1}</b>${escapeHtml(t)}</span>`).join('');
     let body = '';
-    if(step === 0){
+    if(step === MIC_STEP){
+      body = micStepMarkup();
+    } else if(step === 1){
       body = `
         <div class="intro-head">
           <h1 class="display">How this call works</h1>
@@ -1147,10 +1173,10 @@ window.SCENARIO = {
         <div class="demo-grid">
           <div class="demo-card">
             <h3><span class="demo-ico say">${MIC_SVG}</span>Say it</h3>
-            <p>Spoken responses are what you'd say to ${name}. Hold the blue mic button and read one aloud at your normal call volume. It's sent as soon as it's recognized.</p>
+            <p>Spoken responses are what you'd say to ${name}. Click the blue mic button, read one aloud at your normal call volume, then click it again to stop. It's sent once you stop.</p>
             <div class="demo-mock" aria-hidden="true">
               <div class="choice say say-only">Hi ${name}, thanks so much for calling today…</div>
-              <div class="voice"><div class="voice-row"><span class="mic-btn"><span class="mic-ico"></span>Hold &amp; say your answer</span><div class="meter"><div class="meter-fill" style="width:46%;background:#5BBE7E"></div><div class="meter-mark" style="left:22%"></div></div></div></div>
+              <div class="voice"><div class="voice-row"><span class="mic-btn"><span class="mic-ico"></span>Click to start speaking</span><div class="meter"><div class="meter-fill" style="width:46%;background:#5BBE7E"></div><div class="meter-mark" style="left:22%"></div></div></div></div>
             </div>
           </div>
           <div class="demo-card">
@@ -1161,7 +1187,7 @@ window.SCENARIO = {
             </div>
           </div>
         </div>`;
-    } else if(step === 1){
+    } else {
       const rows = S.stages.map(st=>`<li><span>${escapeHtml(st.name)}</span><span class="pts">${st.max} pts</span></li>`).join('');
       body = `
         <h1 class="display">How you're scored</h1>
@@ -1176,10 +1202,8 @@ window.SCENARIO = {
             <ul class="score-list">${rows}</ul>
           </div>
         </div>`;
-    } else {
-      body = micStepMarkup();
     }
-    const isMic = step === INTRO_STEPS.length - 1;
+    const isMic = step === MIC_STEP, isLast = step === INTRO_STEPS.length - 1;
     app.innerHTML = `
       <section class="intro">
         <div class="intro-top">
@@ -1189,11 +1213,20 @@ window.SCENARIO = {
         <div class="intro-body">${body}</div>
         <div class="intro-foot">
           <div>${step>0 ? `<button class="btn btn-ghost btn-wide" id="introBack" type="button">Back</button>` : ''}</div>
-          <div class="actions" id="introActions">${isMic ? micStepActions() : `<button class="btn btn-dark" id="introNext" type="button">Next${ARROW_SVG}</button>`}</div>
+          <div class="actions" id="introActions">${isMic ? micStepActions()
+            : isLast ? `<button class="btn btn-dark btn-wide" id="introStart" type="button">Start the call${ARROW_SVG}</button>`
+            : `<button class="btn btn-dark" id="introNext" type="button">Next${ARROW_SVG}</button>`}</div>
         </div>
       </section>`;
     const back = document.getElementById('introBack'); if(back) back.onclick = ()=>renderIntro(step-1);
     const next = document.getElementById('introNext'); if(next) next.onclick = ()=>renderIntro(step+1);
+    const go = document.getElementById('introStart');
+    if(go) go.onclick = ()=>{
+      const CM = window.CallMode;
+      if(CM && CM.setVoiceMode) CM.setVoiceMode(introVoice);
+      logEvent({ type:'helper', helper:'mic_check', action: introVoice ? 'started call speaking' : 'started call tapping responses' });
+      startCall();
+    };
     bindIntroTools();
     if(isMic) bindMicStep();
     try{ app.scrollIntoView({block:'start'}); }catch(_){}
@@ -1208,103 +1241,163 @@ window.SCENARIO = {
     const fs = document.getElementById('introFs');
     if(fs){
       if(!document.fullscreenEnabled) fs.style.display='none';
-      else fs.onclick = toggleAppFullscreen;
+      else { fs.onclick = toggleAppFullscreen; syncFsButtons(); }
     }
   }
+  /* Every Full screen button shows the real state: any fullscreen counts as on. */
+  function syncFsButtons(){
+    const on = !!document.fullscreenElement;
+    [['introFs', null], ['fsBtn', 'fsIco']].forEach(([id, icoId])=>{
+      const b = document.getElementById(id); if(!b) return;
+      const ico = icoId ? document.getElementById(icoId) : b.querySelector('svg');
+      if(ico){ if(icoId) ico.innerHTML = on ? MINIMIZE_SVG : MAXIMIZE_SVG; else ico.outerHTML = on ? MINIMIZE_SVG : MAXIMIZE_SVG; }
+      const lbl = b.querySelector('.fs-label'); if(lbl) lbl.textContent = on ? 'Exit full screen' : 'Full screen';
+      b.title = on ? 'Exit full screen' : 'Enter full screen';
+      b.setAttribute('aria-label', b.title);
+    });
+  }
+  document.addEventListener('fullscreenchange', ()=>syncFsButtons());
 
   function micEnv(){
     const CM = window.CallMode;
     const ok = !!(CM && CM.supported);
-    const embedded = ok && CM.embeddedBlocked();
-    return { CM, ok, embedded, canTab: embedded && /^https?:$/.test(location.protocol) };
+    let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
+    // Inside a course page: always take the call in its own tab (the failsafe).
+    // The call tab itself is a top-level page, so it runs the mic test normally.
+    const framed = ok && inFrame && !IS_CALL_TAB;
+    const canTab = framed && /^https?:$/.test(location.protocol);
+    return { CM, ok, framed, canTab };
   }
   const RED = t => `<span style="color:#C81C0F;font-weight:700">${t}</span>`;
   function micStepMarkup(){
-    const { ok, embedded, canTab } = micEnv();
+    const { ok, framed, canTab } = micEnv();
     return `
       <h1 class="display">Test your microphone</h1>
       <div class="mic-step">
         <p class="mc-lead" style="font-size:1rem">This is a call, so you'll say your spoken responses out loud. Put on your headset, then test your mic before you start.</p>
         <ul class="mc-notes">
           <li><b>Use Google Chrome or Microsoft Edge.</b> Speaking your responses only works in these browsers.</li>
+          ${canTab ? `<li><b>The call opens in a new tab.</b> Click <b>Test your microphone</b> to open it. You'll test your mic there, then continue.</li>` : ''}
           <li><b>Allow microphone access.</b> When your browser asks to use your microphone, click <b>Allow</b>.</li>
           ${ok ? `<li><b>Your call is recorded only for your personal learning.</b> You can listen back to it on the results screen. We don't store recordings after the simulation is complete.</li>` : ''}
         </ul>
         ${!ok ? `<div class="voice-unsupported">This browser doesn't support speaking your responses. Switch to Chrome or Edge, or continue and tap your responses instead.</div>`
-          : embedded ? `<p class="voice-status" id="mcStatus">${RED("Speaking isn't available inside this course page.")} ${canTab
-                ? "Open the call in a new tab to speak your responses there, or continue here and tap them."
-                : "Continue without speaking to tap your responses."}</p>`
+          : canTab ? `<p class="voice-status" id="mcStatus">Can't use a mic right now? Click <b>Continue without speaking</b> to tap your responses here instead.</p>`
+          : framed ? `<p class="voice-status" id="mcStatus">${RED("Speaking isn't available inside this course page.")} Continue without speaking to tap your responses.</p>`
           : `<div class="voice-row mc-row">
           <button class="mic-btn" id="mcTest" type="button"><span class="mic-ico"></span>Test my mic</button>
           <div class="meter"><div class="meter-fill" id="mcFill"></div><div class="meter-mark" style="left:22%"></div></div>
         </div>
-        <p class="voice-status" id="mcStatus">Click Test my mic, then say a sentence at your normal call volume.</p>`}
+        <p class="voice-status" id="mcStatus">Click Test my mic, then say a sentence at your normal call volume.</p>
+        <div class="mc-pick" id="mcPickRow" hidden>
+          <label for="mcDevice">Microphone</label>
+          <select id="mcDevice"></select>
+        </div>
+        <p class="mc-hint" id="mcHint" hidden></p>
+        <div class="mc-diag" id="mcDiag" hidden></div>`}
       </div>`;
   }
   function micStepActions(){
-    const { ok, embedded, canTab } = micEnv();
-    return `${ok && !embedded ? `<button class="btn btn-dark btn-wide" id="mcStart" type="button" disabled>Start the call</button>` : ''}
-            ${canTab ? `<button class="btn btn-dark btn-wide" id="mcTab" type="button">Open the call in a new tab</button>` : ''}
+    const { ok, framed, canTab } = micEnv();
+    return `${ok && !framed ? `<button class="btn btn-dark btn-wide" id="mcNext" type="button" disabled>Next${ARROW_SVG}</button>` : ''}
+            ${canTab ? `<button class="btn btn-dark btn-wide" id="mcTab" type="button">Test your microphone</button>` : ''}
             <button class="btn btn-ghost btn-wide" id="mcSkip" type="button">Continue without speaking</button>`;
   }
   function bindMicStep(){
-    const { CM, ok, embedded, canTab } = micEnv();
+    const { CM, ok, framed, canTab } = micEnv();
     const stopCheck = ()=>{ if(introMicCheck){ introMicCheck.stop(); introMicCheck = null; } };
-    const done = (action, voice)=>{ stopCheck(); if(CM && CM.setVoiceMode) CM.setVoiceMode(!!voice); logEvent({ type:'helper', helper:'mic_check', action:action }); startCall(); };
-    document.getElementById('mcSkip').onclick = ()=>done('continued without speaking');
+    const proceed = (voice, action)=>{ stopCheck(); introVoice = !!voice;
+      logEvent({ type:'helper', helper:'mic_check', action:action }); renderIntro(MIC_STEP + 1); };
+    document.getElementById('mcSkip').onclick = ()=>proceed(false, 'continued without speaking');
     if(canTab){
       document.getElementById('mcTab').onclick = ()=>{
         if(openCallTab()){
-          stopCheck();
           logEvent({ type:'helper', helper:'mic_check', action:'opened the call in a new tab' });
           renderWaiting();
         } else {
           logEvent({ type:'helper', helper:'mic_check', action:'new tab was blocked' });
           document.getElementById('mcStatus').innerHTML = RED("The new tab was blocked.")
-            + " Your browser or course stopped it from opening. Allow pop-ups for this course and try again, or continue without speaking.";
+            + " Your browser or course stopped it from opening. Allow pop-ups for this course and try again, or continue without speaking to tap your responses here.";
         }
       };
     }
-    if(!ok || embedded) return;
-    const testB = document.getElementById('mcTest'), startB = document.getElementById('mcStart'), st = document.getElementById('mcStatus');
-    startB.onclick = ()=>done('passed mic check, started call', true);
+    if(!ok || framed) return;
+    const testB = document.getElementById('mcTest'), nextB = document.getElementById('mcNext'), st = document.getElementById('mcStatus');
+    const pickRow = document.getElementById('mcPickRow'), pick = document.getElementById('mcDevice');
+    const hintEl = document.getElementById('mcHint'), diagEl = document.getElementById('mcDiag');
+    nextB.onclick = ()=>proceed(true, 'passed mic check');
+
+    // Troubleshooting readout. Plain hint for the learner; the grey lines are
+    // for L&D (ask testers to screenshot them).
+    let lastHint = '';
+    const showHint = h=>{ hintEl.hidden = !h; if(h !== lastHint){ lastHint = h; hintEl.innerHTML = h; } };
+    // Virtual mics (Zoom, Teams, Meet, BlackHole…) carry app audio, not the
+    // learner's voice. Chrome can open one as the "default" mic while a meeting
+    // app is running, so the meter stays flat.
+    const VIRTUAL_MIC = /virtual|zoom|teams|blackhole|loopback|soundflower|krisp|obs|cable|aggregate/i;
+    let inUse = { deviceId:'', label:'' };
+    const onDiag = d=>{
+      if(d.deviceId !== inUse.deviceId){ inUse = { deviceId:d.deviceId, label:d.label }; syncPicker(); }
+      const heardIt = !nextB.disabled;
+      let hint = '';
+      if(d.live && VIRTUAL_MIC.test(d.label) && !heardIt) hint = "<b>This is a virtual mic from another app (like Zoom or Teams), not your headset.</b> Pick your headset in the Microphone list above.";
+      else if(!d.live) hint = "This microphone stopped. It may have been unplugged. Pick a mic above or plug your headset back in.";
+      else if(d.muted) hint = "<b>Your computer or headset isn't sending any sound.</b> Check your headset's mute switch, and that your computer's input volume isn't at zero.";
+      else if(d.ctx === 'suspended') hint = "<b>Click anywhere on this page</b> to start listening, then speak again.";
+      else if(!heardIt && d.secs >= 6 && d.peak < 0.03) hint = "<b>We can't hear anything from this mic.</b> Pick your headset in the Microphone list above. If it's already picked, check its mute switch and your computer's input volume.";
+      else if(!heardIt && d.secs >= 8) hint = "We hear you, but quietly. Move the mic closer to your mouth or speak a little louder.";
+      showHint(hint);
+      diagEl.hidden = false;
+      diagEl.innerHTML = `<b>Mic in use:</b> ${escapeHtml(d.label)}<br>`
+        + `<b>Sending sound:</b> ${!d.live ? 'no (stopped)' : d.muted ? 'no (muted)' : 'yes'}`
+        + ` · <b>Audio:</b> ${escapeHtml(d.ctx)}`
+        + ` · <b>Loudest:</b> ${Math.round(d.peak*100)}% (needs 16%)`
+        + ` · ${Math.round(d.secs)}s`;
+    };
+    // Shown once the browser has given access (before that, mic names are blank).
+    // The list always shows the mic that's actually open (not just the first
+    // entry). If that mic isn't in the list, a "Pick your microphone" line sits
+    // on top, so choosing any real mic counts as a change and re-tests.
+    let mics = [];
+    function syncPicker(){
+      if(!mics.length) return;
+      const want = inUse.deviceId || CM.getMicDevice() || 'default';
+      const match = mics.some(m=>m.deviceId === want) && !VIRTUAL_MIC.test(inUse.label);
+      pick.innerHTML = (match ? '' : `<option value="" selected disabled>Pick your microphone…</option>`)
+        + mics.map((m,i)=>`<option value="${escapeHtml(m.deviceId)}"${match && m.deviceId===want?' selected':''}>${escapeHtml(m.label || ('Microphone ' + (i+1)))}</option>`).join('');
+    }
+    async function fillPicker(){
+      mics = await CM.listMics();
+      if(!mics.length) return;
+      syncPicker();
+      pickRow.hidden = false;
+    }
+    pick.onchange = ()=>{
+      if(!pick.value) return;
+      CM.setMicDevice(pick.value);
+      logEvent({ type:'helper', helper:'mic_check', action:'picked mic: ' + (pick.selectedOptions[0] ? pick.selectedOptions[0].textContent : pick.value) });
+      stopCheck(); nextB.disabled = true; showHint('');
+      testB.disabled = false; testB.click();   // re-test with the new mic
+    };
+
     testB.onclick = ()=>{
       if(introMicCheck) return;
       testB.disabled = true;
       st.textContent = 'Waiting for microphone access… click Allow if your browser asks.';
       const check = introMicCheck = CM.micCheck(document.getElementById('mcFill'), ()=>{
-        st.innerHTML = '<span style="color:#3E8A00;font-weight:700">We can hear you.</span> You\'re ready to start the call.';
-        startB.disabled = false;
-      });
+        st.innerHTML = '<span style="color:#3E8A00;font-weight:700">We can hear you.</span> Click Next to continue.';
+        nextB.disabled = false;
+        showHint('');
+      }, onDiag);
       check.ready.then(()=>{
-        if(startB.disabled) st.textContent = 'Listening… say a sentence at your normal call volume.';
+        if(nextB.disabled) st.textContent = 'Listening… say a sentence at your normal call volume.';
+        fillPicker();
       }).catch(err=>{
+        fillPicker();
         if(introMicCheck === check) introMicCheck = null;
         testB.disabled = false;
-        logEvent({ type:'helper', helper:'mic_check', action:'mic failed: ' + ((err && err.name) || 'Error') + (CM.embeddedBlocked() ? ' (embedded page blocks microphone)' : '') });
-        CM.micErrorMessage(err).then(h=>{
-          st.innerHTML = h;
-          // Some LMS frames (e.g. Wix Smart) block the mic without the up-front
-          // embedded check catching it. If we're in a frame, offer the new tab anyway.
-          let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
-          if(!inFrame || !/^https?:$/.test(location.protocol) || document.getElementById('mcTab')) return;
-          const tabB = document.createElement('button');
-          tabB.className = 'btn btn-dark btn-wide'; tabB.id = 'mcTab'; tabB.type = 'button';
-          tabB.textContent = 'Open the call in a new tab';
-          document.getElementById('introActions').prepend(tabB);
-          st.insertAdjacentHTML('beforeend', '<br>This course page may not allow microphone use. Open the call in a new tab to speak your responses there.');
-          tabB.onclick = ()=>{
-            if(openCallTab()){
-              stopCheck();
-              logEvent({ type:'helper', helper:'mic_check', action:'opened the call in a new tab (after mic error)' });
-              renderWaiting();
-            } else {
-              logEvent({ type:'helper', helper:'mic_check', action:'new tab was blocked' });
-              st.innerHTML = RED("The new tab was blocked.")
-                + " Your browser or course stopped it from opening. Allow pop-ups for this course and try again, or continue without speaking.";
-            }
-          };
-        });
+        logEvent({ type:'helper', helper:'mic_check', action:'mic failed: ' + ((err && err.name) || 'Error') });
+        CM.micErrorMessage(err).then(h=>{ st.innerHTML = h + ' You can also continue without speaking and tap your responses.'; });
       });
     };
   }
@@ -1390,10 +1483,9 @@ window.SCENARIO = {
       settled = true;
       if(e.data.attemptId) attemptId = e.data.attemptId;     // keep one attempt across both copies
       setLearnerName(e.data.name); setLearnerEmail(e.data.email);
-      // They already walked through the intro in the course tab, so land on the
-      // mic step (Back still reaches the rest). Not embedded here, so Chrome
-      // shows its normal Allow prompt.
-      renderIntro(INTRO_STEPS.length - 1);
+      // Start at the mic test (step 1), then the demo continues here. This tab is
+      // a top-level page, so Chrome shows its normal Allow prompt.
+      renderIntro(MIC_STEP);
     });
     try{ window.opener.postMessage({ type:'cd-call-ready' }, '*'); }catch(_){ fallback(); return; }
     setTimeout(fallback, 3000);
@@ -1451,16 +1543,8 @@ window.SCENARIO = {
     // via the Fullscreen API, swapping the maximize/minimize icon on change.
     const fsBtn = document.getElementById('fsBtn'), simWrap = document.getElementById('simWrap');
     if(fsBtn && simWrap && document.fullscreenEnabled){
-      fsBtn.onclick = ()=>{
-        if(document.fullscreenElement) document.exitFullscreen();
-        else simWrap.requestFullscreen().catch(()=>{});
-      };
-      document.addEventListener('fullscreenchange', ()=>{
-        const on = document.fullscreenElement===simWrap;
-        document.getElementById('fsIco').innerHTML = on ? MINIMIZE_SVG : MAXIMIZE_SVG;
-        fsBtn.title = on ? 'Exit full screen' : 'Enter full screen';
-        fsBtn.setAttribute('aria-label', fsBtn.title);
-      });
+      fsBtn.onclick = toggleAppFullscreen;
+      syncFsButtons();
     } else if(fsBtn){ fsBtn.style.display='none'; }
     renderHelpers();
     const infoBtn = document.getElementById('infoBtn'); if(infoBtn) infoBtn.onclick = showCallInfo;
@@ -1483,7 +1567,9 @@ window.SCENARIO = {
     const resBtn = document.querySelector('#helperbar .hbtn');
     const fsBtn = document.getElementById('fsBtn');
     const steps = [];
-    if(fsBtn && fsBtn.style.display !== 'none') steps.push({ el:fsBtn, title:'Full screen', text:'Expand the call so the conversation and your responses have more room. We recommend turning it on now. Click again or press Esc to exit.' });
+    if(fsBtn && fsBtn.style.display !== 'none') steps.push({ el:fsBtn, title:'Full screen', text: document.fullscreenElement
+      ? "You're in full screen, so the conversation and your responses have more room. Click this button or press Esc to exit."
+      : 'Expand the call so the conversation and your responses have more room. We recommend turning it on now. Click again or press Esc to exit.' });
     if(resBtn) steps.push({ el:resBtn, title:'Check Resources', text:'Your help docs live here. Each article opens in a new tab: read it, then come back. Only articles opened here count toward your score.' });
     const layer = document.createElement('div');
     layer.innerHTML = `<div class="coach-scrim"></div>`;
@@ -1534,7 +1620,7 @@ window.SCENARIO = {
       <div class="demo-grid">
         <div class="demo-card">
           <h3><span class="demo-ico say">${MIC_SVG}</span>Say it</h3>
-          <p>What you'd say to ${name}. Hold the blue mic button and read one aloud.</p>
+          <p>What you'd say to ${name}. Click the blue mic button, read one aloud, then click it again to stop.</p>
         </div>
         <div class="demo-card">
           <h3><span class="demo-ico click">${CLICK_SVG}</span>Click it</h3>
@@ -1567,7 +1653,7 @@ window.SCENARIO = {
           <button class="btn btn-dark" id="endYes">End &amp; see results</button>
           <button class="btn btn-ghost" id="endNo">Keep going</button>
         </div></div>`;
-    document.body.appendChild(dlg); dlg.showModal();
+    (document.fullscreenElement || document.body).appendChild(dlg); dlg.showModal();
     dlg.querySelector('#endNo').onclick = ()=>{ dlg.close(); dlg.remove(); };
     dlg.querySelector('#endYes').onclick = ()=>{ dlg.close(); dlg.remove(); renderFinal(); };
   }
@@ -1842,7 +1928,7 @@ window.SCENARIO = {
     const x = document.createElement('button'); x.className='mx'; x.innerHTML='&times;'; x.setAttribute('aria-label','Close');
     x.onclick = closeModal; head.appendChild(x);
     inner.appendChild(head); inner.appendChild(node); dlg.appendChild(inner);
-    document.body.appendChild(dlg); dlg.showModal();
+    (document.fullscreenElement || document.body).appendChild(dlg); dlg.showModal();
     dlg.addEventListener('click', e=>{ if(e.target===dlg) closeModal(); });  // backdrop click
   }
   function closeModal(){ const m=document.getElementById('modal'); if(m){ try{m.close();}catch(e){} m.remove(); } }
@@ -1928,13 +2014,12 @@ window.SCENARIO = {
   let fsLostToResource = false;
   function offerFullscreenReturn(){
     if(!fsLostToResource || document.fullscreenElement || document.getElementById('fsReturn')) return;
-    const simWrap=document.getElementById('simWrap');
-    if(!simWrap) return;
+    if(!document.getElementById('simWrap')) return;
     const b=document.createElement('button');
     b.id='fsReturn'; b.type='button'; b.className='btn btn-dark';
     b.style.cssText='position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:50';
     b.textContent='Go back to full screen';
-    b.onclick=()=>{ fsLostToResource=false; b.remove(); simWrap.requestFullscreen().catch(()=>{}); };
+    b.onclick=()=>{ fsLostToResource=false; b.remove(); app.requestFullscreen().catch(()=>{}); };
     document.body.appendChild(b);
     setTimeout(()=>{ if(b.isConnected){ b.remove(); fsLostToResource=false; } }, 10000);
   }
@@ -2038,12 +2123,12 @@ window.SCENARIO = {
       const voiceOn = !!(window.CallMode && window.CallMode.shouldSpeak && window.CallMode.shouldSpeak()) && !tapFallback;
       const both = spoken.length && acts.length;
       const sayHead = `<div class="cgroup-head"><span class="demo-ico say">${MIC_SVG}</span><span class="cgroup-title">Say it</span>`
-        + `<span class="cgroup-sub">${voiceOn ? 'Hold the mic and read one aloud' : 'Tap what you would say'}</span></div>`;
+        + `<span class="cgroup-sub">${voiceOn ? 'Click the mic, read one aloud, click to stop' : 'Tap what you would say'}</span></div>`;
       const actHead = `<div class="cgroup-head"><span class="demo-ico click">${CLICK_SVG}</span><span class="cgroup-title">${both ? 'Or click it' : 'Click it'}</span>`
         + `<span class="cgroup-sub">${spoken.length ? "An action you'd take. Don't say it" : "This step is an action. Nothing to say aloud"}</span></div>`;
       setComposer((both ? `<div class="choices-label" id="choicesLabel">Choose one: say a response or click an action</div>` : '')
                 + (spoken.length ? `<div class="cgroup">${sayHead}<div id="choices"></div><div id="voicepanel"></div>`
-                    + (voiceOn ? `<p class="say-hint" id="sayHint">This is a spoken response. Hold the mic button and say it aloud.</p><button class="tap-fallback" id="tapFallback" type="button">Mic not working? Tap responses instead</button>` : '')
+                    + (voiceOn ? `<p class="say-hint" id="sayHint">This is a spoken response. Click the mic button, say it aloud, then click it again to stop.</p><button class="tap-fallback" id="tapFallback" type="button">Mic not working? Tap responses instead</button>` : '')
                     + `</div>` : '')
                 + (acts.length ? `<div class="cgroup">${actHead}<div id="actChoices"></div></div>` : ''));
       setSheetQuestion(px(scr.prompt));   // the question shows in the sheet handle
@@ -2093,7 +2178,9 @@ window.SCENARIO = {
       };
       markStepStart();   // start the clock for this screen's time_on_step_sec
       // CALL MODE: attach the speak-aloud panel to the SPOKEN responses only.
-      if(window.CallMode && choiceBtns.length) window.CallMode.attach(scr, choiceBtns);
+      // Only when speaking: a learner who chose "Continue without speaking" (or
+      // "Mic not working?") taps responses, so no mic panel is shown.
+      if(window.CallMode && choiceBtns.length && voiceOn) window.CallMode.attach(scr, choiceBtns);
       syncChatBottom();  // choices are now in the DOM — slide the chat up above them
     };
 
@@ -2121,6 +2208,8 @@ window.SCENARIO = {
   }
 
   function choose(scr, ch, retriedIds, cap){
+    // A response was picked (tapped or matched): turn off a mic left on, without sending what it heard.
+    if(window.CallMode && window.CallMode.stopMic) window.CallMode.stopMic();
     // Stage lock: a choice phrased "Reply using …" / "Provide a response using …"
     // requires the learner to have opened the quoted article(s) in Check
     // Resources first. Matching is normalized (case/punctuation/&-and, plus a
@@ -2378,7 +2467,9 @@ window.SCENARIO = {
                volLog:[],     // one entry per SPOKEN response: level, zone, when, what
                curFrames:[], t0:0, t1:0,   // loudness frames for the response being spoken now
                timeline:[],   // [seconds into recording, loudest level in that 0.1s, speaking?]
-               recStart:0, recEnd:0,       // performance.now() when capture started / call ended
+               recStart:0, recEnd:0,       // first capture happened / call ended (performance.now())
+               recAccum:0, segStart:0,     // seconds recorded so far / start of the turn being spoken now
+               src:null, dest:null,        // this turn's mic source / the recorder's input
                voiceMode:false,            // true once the learner is taking the call by voice
                stream:null, recorder:null, chunks:[] };  // call-recording capture
 
@@ -2389,7 +2480,10 @@ window.SCENARIO = {
      shout land in different places instead of averaging out. Tune these two
      numbers if real headset tests read consistently high or low. */
   const ZONE_LOW = 0.25, ZONE_HIGH = 0.88;   // LOW matches where the meter/graph turns yellow-green
-  function relNow(){ return cm.recStart ? (performance.now() - cm.recStart) / 1000 : 0; }
+  /* Seconds into the RECORDING. The clock only runs while the learner is
+     speaking (mic button on), matching the recording, which is paused between
+     turns, so graph, volume events and playback all line up. */
+  function relNow(){ return cm.recAccum + (cm.segStart ? (performance.now() - cm.segStart) / 1000 : 0); }
 
   // Words too common to help distinguish one choice from another.
   const STOP = new Set(("a an the and or but so to of in on at for with your you "+
@@ -2423,29 +2517,90 @@ window.SCENARIO = {
     }).sort((a,b)=>b.score-a.score);
   }
 
-  /* ---- Live volume meter (Web Audio) — initialised once, on first mic use ---- */
-  async function ensureAudio(){
-    if(cm.audio) return true;
-    try{
-      const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-      cm.stream = stream;
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      const ctx = new Ctx();
-      const src = ctx.createMediaStreamSource(stream);
-      const an = ctx.createAnalyser(); an.fftSize = 1024;
-      src.connect(an);
-      cm.audio = ctx; cm.analyser = an; cm.data = new Uint8Array(an.fftSize);
-      cm.recStart = performance.now();   // time zero for the graph and the recording
-      startRecording(stream);   // begin capturing the call from the first mic use
-      loopMeter();
-      return true;
-    } catch(e){ cm.lastError = e; return false; }
+  /* Chrome can start an AudioContext paused ("suspended"), especially inside a
+     course frame or when the Allow prompt took a few seconds. A paused context
+     reads pure silence even while the mic records (testing: Wix Smart showed the
+     red recording dot but the meter never moved). Resume it now, and again on
+     the learner's next click or key press if the browser refused. */
+  function wakeAudio(ctx){
+    if(!ctx || ctx.state !== 'suspended') return;
+    const go = ()=>{ if(ctx.state === 'suspended') ctx.resume().catch(()=>{}); };
+    go();
+    const onGesture = ()=>{ go(); if(ctx.state !== 'suspended'){ document.removeEventListener('pointerdown', onGesture, true); document.removeEventListener('keydown', onGesture, true); } };
+    document.addEventListener('pointerdown', onGesture, true);
+    document.addEventListener('keydown', onGesture, true);
   }
 
-  /* ---- Call recording (MediaRecorder) — one continuous file per attempt ----
-     Starts on the first mic use and runs through the whole call; stopRecording()
-     (called at end-of-call) returns the finished audio Blob for upload. Records
-     the learner's side only — the caller's lines are scripted text, not audio.
+  /* ---- Live volume meter (Web Audio) — initialised once, on first mic use ---- */
+  /* ---- Which mic to use ----
+     '' = the computer's default input. The mic test's picker sets this, and the
+     in-call meter, recording and (where Chrome supports it) speech recognition
+     use the same mic, so what passed the test is what the call hears. */
+  function audioConstraints(){
+    return cm.micDeviceId ? { audio:{ deviceId:{ exact:cm.micDeviceId } } } : { audio:true };
+  }
+  function setMicDevice(id){ cm.micDeviceId = (id && id !== 'default') ? id : ''; }
+  async function listMics(){
+    try{ return (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput'); }
+    catch(_){ return []; }
+  }
+
+  /* ---- Mic: opened on "Click to start speaking", released on stop ----
+     Testing update: nothing is heard, transcribed or recorded unless the mic
+     button is on. Each turn opens a fresh mic stream and closes it when the
+     learner clicks stop (or a response is tapped), so the browser's mic is off
+     between turns. Opening it fresh also re-checks permission on every click:
+     if access isn't granted (never given, dismissed, or switched off mid-call)
+     the browser asks again before the learner can speak. One AudioContext and
+     one recorder live for the whole call; the recorder is paused between turns. */
+  function ensureCtx(){
+    if(cm.audio){ wakeAudio(cm.audio); return; }
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    wakeAudio(ctx);
+    const an = ctx.createAnalyser(); an.fftSize = 1024;
+    cm.audio = ctx; cm.analyser = an; cm.data = new Uint8Array(an.fftSize);
+    try{ cm.dest = ctx.createMediaStreamDestination(); }catch(_){ cm.dest = null; }   // what the recorder records
+    loopMeter();
+  }
+  async function micPermission(){
+    try{ return (await navigator.permissions.query({ name:'microphone' })).state; }catch(_){ return ''; }
+  }
+  // onAsk() runs when the browser is about to show its Allow prompt.
+  async function openMic(onAsk){
+    closeMic();
+    try{
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('unavailable');
+      ensureCtx();   // before any await, while the click still counts as a user gesture (lets audio start in a course frame)
+      if(onAsk && (await micPermission()) !== 'granted') onAsk();
+      const stream = await navigator.mediaDevices.getUserMedia(audioConstraints());
+      const track = stream.getAudioTracks()[0];
+      if(!track || track.readyState !== 'live'){
+        stream.getTracks().forEach(t=>t.stop());
+        const e = new Error('The microphone track is not live'); e.name = 'NotReadableError'; throw e;
+      }
+      cm.stream = stream;
+      wakeAudio(cm.audio);
+      cm.src = cm.audio.createMediaStreamSource(stream);
+      cm.src.connect(cm.analyser);
+      if(cm.dest) cm.src.connect(cm.dest);
+      if(!cm.recStart) cm.recStart = performance.now();
+      return true;
+    } catch(e){ cm.lastError = e; closeMic(); return false; }
+  }
+  function closeMic(){
+    try{ if(cm.src) cm.src.disconnect(); }catch(_){}
+    cm.src = null;
+    try{ (cm.stream && cm.stream.getTracks() || []).forEach(t=>t.stop()); }catch(_){}
+    cm.stream = null;
+  }
+
+  /* ---- Call recording (MediaRecorder) — one file per attempt ----
+     Records ONLY while the mic button is on: it starts on the first spoken turn,
+     pauses when the learner clicks stop and resumes on their next turn, so the
+     file is the learner's spoken turns back to back. stopRecording() (called at
+     end-of-call) returns the finished audio Blob for upload. Records the
+     learner's side only — the caller's lines are scripted text, not audio.
      If MediaRecorder or a supported codec is missing, it silently no-ops. */
   function pickMime(){
     const cands = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
@@ -2464,12 +2619,22 @@ window.SCENARIO = {
       cm.recorder.start();   // one blob at stop; simplest and reliable for a POC
     } catch(e){ cm.recorder = null; }
   }
+  function recResume(){
+    if(!cm.dest) return;
+    if(!cm.recorder) startRecording(cm.dest.stream);
+    else if(cm.recorder.state === 'paused'){ try{ cm.recorder.resume(); }catch(_){} }
+  }
+  function recPause(){
+    if(cm.recorder && cm.recorder.state === 'recording'){ try{ cm.recorder.pause(); }catch(_){} }
+  }
   function stopRecording(){
-    if(cm.recStart && !cm.recEnd) cm.recEnd = performance.now();   // the call is over: freeze the timeline
+    if(cm.segStart){ cm.recAccum += (performance.now() - cm.segStart) / 1000; cm.segStart = 0; }
+    cm.recognizing = false;
+    if(!cm.recEnd) cm.recEnd = performance.now();   // the call is over: freeze the timeline
     return new Promise(resolve => {
       const rec = cm.recorder;
       // Always release the mic when the call ends, recorder or not.
-      const releaseMic = ()=>{ try{ (cm.stream && cm.stream.getTracks()||[]).forEach(t=>t.stop()); }catch(_){} };
+      const releaseMic = closeMic;
       if(!rec || rec.state === 'inactive'){ releaseMic(); resolve(null); return; }
       rec.onstop = () => {
         const type = (cm.chunks[0] && cm.chunks[0].type) || rec.mimeType || 'audio/webm';
@@ -2482,11 +2647,14 @@ window.SCENARIO = {
     });
   }
 
+  // Mic sensitivity: how much the raw level is boosted before it hits the 0..1
+  // meter. Used by the in-call meter AND the intro mic test so they always match.
+  const MIC_GAIN = 3.2;
   function level(){ // RMS -> 0..1, lightly boosted so normal speech reads mid-scale
     if(!cm.analyser) return 0;
     cm.analyser.getByteTimeDomainData(cm.data);
     let sum=0; for(let i=0;i<cm.data.length;i++){ const v=(cm.data[i]-128)/128; sum+=v*v; }
-    return Math.min(1, Math.sqrt(sum/cm.data.length) * 3.2);
+    return Math.min(1, Math.sqrt(sum/cm.data.length) * MIC_GAIN);
   }
   /* Whole-bar color for the CURRENT loudness. Only "too quiet" gets a warning
      color, and it's yellow, not red, so the meter never reads as failing.
@@ -2526,7 +2694,7 @@ window.SCENARIO = {
     const step = (ts)=>{
       const L = level();
       if(cm.recognizing){ cm.peak = Math.max(cm.peak, L); cm.curFrames.push(L); }
-      if(cm.recStart && !cm.recEnd){         // timeline for the results graph
+      if(cm.segStart && !cm.recEnd){         // timeline for the results graph (only while the mic is on)
         winMax = Math.max(winMax, L); if(cm.recognizing) winSpk = true;
         if(ts - lastSample >= 100){ cm.timeline.push([relNow(), winMax, winSpk ? 1 : 0]); winMax = 0; winSpk = false; lastSample = ts; }
       }
@@ -2536,13 +2704,15 @@ window.SCENARIO = {
         const pct = Math.round(smoothed*100 / STEP_PCT) * STEP_PCT;
         if(pct !== lastPct){ cm.meterFill.style.width = pct + '%'; lastPct = pct; }
         const bucket = Math.round(smoothed / 0.05);           // recolor per 5% band
-        // Grey while the learner isn't holding the mic, so pauses never look like a warning.
+        // Grey while the mic is off, so pauses never look like a warning.
         const b2 = cm.recognizing ? bucket : -2;
         if(b2 !== lastBucket){ cm.meterFill.style.background = cm.recognizing ? meterColor(smoothed) : '#D5DBE3'; lastBucket = b2; }
       }
-      cm.rafId = requestAnimationFrame(step);
+      cm.rafId = setTimeout(()=>step(performance.now()), 16);
     };
-    cm.rafId = requestAnimationFrame(step);
+    // A timer, not requestAnimationFrame: some course frames pause animation
+    // frames, which would freeze the meter and leave Voice and Projection with no samples.
+    cm.rafId = setTimeout(()=>step(performance.now()), 16);
   }
 
   /* ---- Attach the voice panel to the current screen's composer ---- */
@@ -2559,7 +2729,7 @@ window.SCENARIO = {
       cm.meterFill = null;
       panel.innerHTML = `
         <div class="voice voice-off">
-          <div class="voice-row"><button class="mic-btn" type="button" disabled><span class="mic-ico"></span>Hold &amp; say your answer</button></div>
+          <div class="voice-row"><button class="mic-btn" type="button" disabled><span class="mic-ico"></span>Click to start speaking</button></div>
           <p class="voice-status">This step is an action, not something you say. Tap the action you'd take.</p>
         </div>`;
       if(label) label.textContent = "Tap the action you'd take";
@@ -2576,10 +2746,10 @@ window.SCENARIO = {
     panel.innerHTML = `
       <div class="voice">
         <div class="voice-row">
-          <button class="mic-btn" id="micBtn" type="button"><span class="mic-ico"></span>Hold &amp; say your answer</button>
+          <button class="mic-btn" id="micBtn" type="button" aria-pressed="false"><span class="mic-ico"></span>Click to start speaking</button>
           <div class="meter"><div class="meter-fill" id="meterFill"></div><div class="meter-mark" style="left:22%"></div></div>
         </div>
-        <p class="voice-status" id="vStatus">Hold the button and read your chosen response aloud, as you would on a real call.</p>
+        <p class="voice-status" id="vStatus">Click the mic, read your chosen response aloud as you would on a real call, then click it again to stop.</p>
         <div class="voice-confirm" id="vConfirm" style="display:none"></div>
       </div>`;
     cm.meterFill = document.getElementById('meterFill');
@@ -2587,63 +2757,40 @@ window.SCENARIO = {
     const vStatus = document.getElementById('vStatus');
     const vConfirm = document.getElementById('vConfirm');
 
-    let rec=null, finalText='', listening=false, finished=false, committed=false;
+    let committed=false;
 
     function say(html){ vStatus.innerHTML = html; }
-    function resetBtn(){ micBtn.classList.remove('listening');
-      micBtn.innerHTML = `<span class="mic-ico"></span>Hold &amp; say your answer`; }
 
-    async function start(){
-      if(listening) return;
-      const ok = await ensureAudio();
-      if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' You can still tap a response above.')); return; }
-      finalText=''; cm.peak=0; cm.curFrames=[]; cm.t0=relNow(); cm.recognizing=true;
-      listening=true; finished=false; committed=false;
-      vConfirm.style.display='none'; vConfirm.innerHTML='';
-      choiceBtns.forEach(c=>c.btn.classList.remove('matched'));
-      rec = new SR(); rec.lang='en-US'; rec.interimResults=true; rec.continuous=true; rec.maxAlternatives=1;
-      rec.onresult = (e)=>{
-        let interim='';
-        for(let i=e.resultIndex;i<e.results.length;i++){
-          const r=e.results[i];
-          if(r.isFinal) finalText += r[0].transcript + ' ';
-          else interim += r[0].transcript;
-        }
-        say(`<span class="heard">“${escapeText((finalText+interim).trim())}”</span>`);
-      };
-      rec.onerror = (e)=>{ say(`<span style="color:#C81C0F">Didn't catch that (${e.error}). Try again.</span>`); };
-      // finish() runs whenever recognition ENDS — whether the learner released
-      // the button or the recogniser stopped on its own. (This is the fix: the
-      // old code gated finish behind a flag we had already cleared on release.)
-      rec.onend = ()=>{ finish(); };
-      try{ rec.start(); }catch(_){}
-      micBtn.classList.add('listening');
-      micBtn.innerHTML = `<span class="mic-ico"></span>Listening… release to submit`;
+    // How much of the option was actually said, in order: the share of the
+    // option's words (every word, not just key words) found in sequence in what
+    // was heard. ~1.0 when the learner reads it (nearly) verbatim. Counting every
+    // word keeps one misheard word in a short option from sinking the match
+    // (testing: "Wix" heard as "me" failed a near-exact read). Placeholders like
+    // [Name] are skipped: the learner says their own name, not the word "name".
+    function speechWords(str){
+      return String(str||'').toLowerCase()
+        .replace(/\[[^\]]*\]/g, ' ')
+        .replace(/['’]/g, '').replace(/(\w)-(\w)/g, '$1$2')       // I'm → im, e-commerce → ecommerce
+        .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean)
+        .map(w=>({ wicks:'wix', wiks:'wix', weeks:'wix', wix:'wix' }[w] || w)   // common mishearings of the brand
+               .replace(/(.)\1+/g, '$1'));                              // cancelled ~ canceled
     }
-
-    function stop(){ if(!listening) return; listening=false; cm.recognizing=false; cm.t1=relNow();
-      resetBtn();
-      if(rec){ try{ rec.stop(); }catch(_){} } }
-
-    // Fraction of the option's own content-words that were actually heard —
-    // ~1.0 when the learner reads an option (nearly) verbatim.
     function coverage(said, ch){
-      const heard = new Set(tokens(said));
-      const t = tokens(targetText(ch));
+      const t = speechWords(targetText(ch)), h = speechWords(said);
       if(!t.length) return 0;
-      let hit=0; t.forEach(w=>{ if(heard.has(w)) hit++; });
-      return hit / t.length;
+      let prev = new Array(h.length+1).fill(0);                     // longest common subsequence
+      for(const w of t){ const cur=[0];
+        for(let j=0;j<h.length;j++) cur.push(w===h[j] ? prev[j]+1 : Math.max(prev[j+1], cur[j]));
+        prev = cur; }
+      return prev[h.length] / t.length;
     }
 
-    function finish(){
-      if(finished) return; finished=true; listening=false; cm.recognizing=false;
-      resetBtn();
-      const said = finalText.trim();
-      if(!said){ say(`I didn't hear anything — hold the button and speak up.`); return; }
+    function finish(said){
+      if(!said){ say(`I didn't hear anything. Click the mic, speak up, then click it again to stop.`); return; }
 
       const pool = choiceBtns.filter(c=>!c.disabled);
       const ranked = scoreChoices(said, pool);
-      const top = ranked[0], second = ranked[1];
+      const top = ranked[0];
       choiceBtns.forEach(c=>c.btn.classList.remove('matched'));
 
       if(!top || top.score <= 0){
@@ -2651,30 +2798,29 @@ window.SCENARIO = {
         return;
       }
 
-      const cov = coverage(said, top.choice);
-      const gap = second ? (top.score - second.score) : top.score;
-      // STRONG / VERBATIM MATCH → auto-select, no click. True when the learner
-      // read most of an option's words, or the top choice clearly wins.
-      const strong = cov >= 0.5 || gap >= 0.4 || (!second) || top.score >= 1.2;
+      // Testing update: a response only counts when the learner says (nearly) all
+      // of it. Reading just the first sentence of a longer option is not a match:
+      // nothing is sent and they're asked to try again with the whole response.
+      // FULL_MATCH: the whole response has to be attempted aloud, but it leaves
+      // room for about 1 misheard or skipped word in 5. Saying only the first
+      // half (or first sentence) of an option stays under it and gets a retry.
+      const FULL_MATCH = 0.8;
+      // Highest coverage wins; ties keep the distinctive-word ranking (sort is stable).
+      const best = ranked.map(r=>({ ...r, cov: coverage(said, r.choice) })).sort((a,b)=>b.cov - a.cov)[0];
 
-      if(strong){
-        top.btn.classList.add('matched');
+      if(best && best.cov >= FULL_MATCH){
+        best.btn.classList.add('matched');
         say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;Matched. Sending…`);
         committed = true;
-        setTimeout(()=>commit(top), 600);   // brief beat so the learner sees the match
+        setTimeout(()=>commit(best), 600);   // brief beat so the learner sees the match
         return;
       }
 
-      // Ambiguous → show the top two to choose between (fallback only).
-      say(`<span class="heard">“${escapeText(said)}”</span><br>Not sure which one — tap the closest:`);
+      // Partial → retry. Nothing is highlighted, so the retry doesn't hint at an answer.
+      say(`<span class="heard">“${escapeText(said)}”</span><br>That wasn't a full response. Click the mic and read your chosen response all the way through, or tap it.`);
       vConfirm.style.display='flex'; vConfirm.innerHTML='';
-      ranked.slice(0,2).forEach(r=>{
-        r.btn.classList.add('matched');
-        const b=document.createElement('button'); b.className='vc-yes'; b.style.background='#116DFF';
-        b.textContent = shortLabel(r.choice); b.onclick=()=>commit(r); vConfirm.appendChild(b);
-      });
       const again=document.createElement('button'); again.className='vc-no'; again.textContent='Try again';
-      again.onclick=()=>{ vConfirm.style.display='none'; choiceBtns.forEach(c=>c.btn.classList.remove('matched')); say('Hold the button and read a response aloud.'); };
+      again.onclick=()=>{ vConfirm.style.display='none'; micBtn.click(); };   // starts listening again
       vConfirm.appendChild(again);
     }
 
@@ -2685,13 +2831,105 @@ window.SCENARIO = {
       logSpoken('response', scr.prompt, match.btn.textContent.replace(/^\s*Action\s*/, ''));
       if(match.btn._choose) match.btn._choose(); else match.btn.click(); }  // reuse the engine's real scoring path
 
-    // Press-and-hold interaction.
-    micBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); start(); });
-    micBtn.addEventListener('mouseup', stop);
-    micBtn.addEventListener('mouseleave', stop);
-    micBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); start(); }, {passive:false});
-    micBtn.addEventListener('touchend',  (e)=>{ e.preventDefault(); stop(); });
+    // Click to start, click again to stop (toggle).
+    bindToggleMic(micBtn, {
+      idleLabel: 'Click to start speaking',
+      beforeStart: async ()=>{
+        const ok = await openMic(()=>say('Your browser will ask to use your microphone. Choose <b>Allow</b> to start speaking.'));
+        if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' Click the mic to try again, or tap a response above.')); return false; }
+        return true;
+      },
+      onStart: ()=>{
+        committed=false;
+        vConfirm.style.display='none'; vConfirm.innerHTML='';
+        choiceBtns.forEach(c=>c.btn.classList.remove('matched'));
+        say('Listening… Read your response, then click the mic again to stop.');
+      },
+      onHeard: t=>say(`<span class="heard">“${escapeText(t)}”</span>`),
+      onError: err=>say(`<span style="color:#C81C0F">Didn't catch that (${escapeText(err)}). Click the mic to try again.</span>`),
+      onDone: finish
+    });
   }
+
+  /* ---- Click-to-talk mic (toggle) ----
+     Click once to start listening, click again to stop; only then is what was
+     heard matched and sent. Chrome's recognizer ends by itself after a short
+     pause, even with continuous=true. While the learner hasn't clicked stop we
+     quietly restart it and keep everything heard so far, so a pause mid-sentence
+     never submits a response early (testing: an answer was picked before the
+     learner finished saying it under the old hold-to-talk flow). */
+  function bindToggleMic(micBtn, o){
+    let rec=null, finalText='', interim='', listening=false, starting=false, ended=true, errored=false, capturing=false;
+    const idle = ()=>{ micBtn.classList.remove('listening'); micBtn.setAttribute('aria-pressed','false');
+      micBtn.innerHTML = `<span class="mic-ico"></span>${o.idleLabel}`; };
+    const live = ()=>{ micBtn.classList.add('listening'); micBtn.setAttribute('aria-pressed','true');
+      micBtn.innerHTML = `<span class="mic-ico"></span>Listening… click to stop`; };
+    const checking = ()=>{ micBtn.innerHTML = `<span class="mic-ico"></span>Checking microphone…`; };
+    // Ends this turn's capture: freeze the clock, pause the recording, release the mic.
+    const endCapture = ()=>{
+      if(!capturing) return; capturing=false;
+      cm.recognizing=false; cm.t1=relNow();
+      if(cm.segStart){ cm.recAccum += (performance.now() - cm.segStart) / 1000; cm.segStart = 0; }
+      recPause(); closeMic();
+    };
+    function done(){
+      if(ended) return; ended=true; listening=false; endCapture();
+      if(!micBtn.isConnected) return;          // screen moved on (e.g. a response was tapped)
+      idle();
+      if(!errored) o.onDone(finalText.trim());   // an error never sends a half-heard answer
+    }
+    function open(){
+      rec = new SR(); rec.lang='en-US'; rec.interimResults=true; rec.continuous=true; rec.maxAlternatives=1;
+      rec.onresult = (e)=>{
+        if(!micBtn.isConnected){ listening=false; try{ rec.abort(); }catch(_){} return; }
+        interim='';
+        for(let i=e.resultIndex;i<e.results.length;i++){
+          const r=e.results[i];
+          if(r.isFinal) finalText += r[0].transcript + ' ';
+          else interim += r[0].transcript;
+        }
+        o.onHeard((finalText+interim).trim());
+      };
+      rec.onerror = (e)=>{
+        // Silence / our own restart: keep listening. Anything else ends the turn.
+        if(e.error==='no-speech' || e.error==='aborted') return;
+        listening=false; errored=true; if(o.onError) o.onError(e.error);
+      };
+      rec.onend = ()=>{
+        if(interim){ finalText += interim + ' '; interim=''; }
+        if(listening && micBtn.isConnected){ try{ open(); return; }catch(_){ listening=false; } }
+        done();
+      };
+      // A mic picked in the mic test: newer Chrome can listen to that exact mic;
+      // older Chrome ignores the extra argument and uses the default input.
+      const track = cm.micDeviceId && cm.stream && cm.stream.getAudioTracks()[0];
+      if(track){ try{ rec.start(track); return; }catch(_){} }
+      rec.start();
+    }
+    async function start(){
+      if(listening || starting) return;
+      starting=true; checking();
+      const ok = await o.beforeStart(); starting=false;
+      if(!ok || !micBtn.isConnected){ if(ok) closeMic(); if(micBtn.isConnected) idle(); return; }
+      cm.segStart = performance.now(); recResume(); capturing = true;
+      finalText=''; interim=''; cm.peak=0; cm.curFrames=[]; cm.t0=relNow(); cm.recognizing=true;
+      listening=true; ended=false; errored=false;
+      if(o.onStart) o.onStart();
+      try{ open(); }catch(_){ listening=false; done(); return; }
+      live();
+    }
+    function stop(){
+      if(!listening) return; listening=false;
+      idle();
+      try{ rec.stop(); }catch(_){ done(); }   // final results arrive, then onend → done()
+      endCapture();                            // mic off the moment they click stop
+    }
+    idle();
+    micBtn.addEventListener('click', (e)=>{ e.preventDefault(); listening ? stop() : start(); });
+    // Lets the engine switch this mic off when a response is tapped mid-listen.
+    cm.stopMic = ()=>{ if(!listening) return; listening=false; errored=true; try{ rec.abort(); }catch(_){} done(); };
+  }
+  function stopMic(){ if(cm.stopMic) cm.stopMic(); }
 
   /* ---- Score one spoken response ---- */
   function speakingLevel(frames){
@@ -2711,7 +2949,7 @@ window.SCENARIO = {
   /* ---- Expert follow-up line: the learner says it aloud ----
      When a pick triggers another Expert line (e.g. "Expert: Love it, I'll keep
      this efficient then."), the engine pauses and shows that line here. The
-     learner holds the mic and says it; any reasonable attempt is accepted (it
+     learner clicks the mic, says it, and clicks again to stop; any reasonable attempt is accepted (it
      isn't graded), and it counts toward Voice and Projection like any response.
      "Send without saying it" always lets them move on. */
   function shouldSpeak(){ return !!SR && cm.voiceMode === true && !embeddedBlocked(); }
@@ -2721,50 +2959,40 @@ window.SCENARIO = {
     panel.innerHTML = `
       <div class="voice">
         <div class="voice-row">
-          <button class="mic-btn" id="micBtn" type="button"><span class="mic-ico"></span>Hold &amp; say this line</button>
+          <button class="mic-btn" id="micBtn" type="button" aria-pressed="false"><span class="mic-ico"></span>Click to start speaking</button>
           <div class="meter"><div class="meter-fill" id="meterFill"></div><div class="meter-mark" style="left:22%"></div></div>
         </div>
-        <p class="voice-status" id="vStatus">Hold the button and say the line above, as you would on a real call.</p>
+        <p class="voice-status" id="vStatus">Click the mic, say the line above as you would on a real call, then click it again to stop.</p>
         <div class="voice-confirm"><button class="vc-no" id="vSkip" type="button">Send without saying it</button></div>
       </div>`;
     cm.meterFill = document.getElementById('meterFill');
     const micBtn = document.getElementById('micBtn'), vStatus = document.getElementById('vStatus');
-    let rec = null, finalText = '', listening = false, finished = false, sent = false;
+    let sent = false;
     const say = h => { vStatus.innerHTML = h; };
-    const resetBtn = ()=>{ micBtn.classList.remove('listening'); micBtn.innerHTML = `<span class="mic-ico"></span>Hold &amp; say this line`; };
     const send = (spoken)=>{ if(sent) return; sent = true; if(spoken) logSpoken('line', 'Your follow-up line', line); onDone(); };
     document.getElementById('vSkip').onclick = ()=>send(false);
-    async function start(){
-      if(listening || sent) return;
-      const ok = await ensureAudio();
-      if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' Use Send without saying it to continue.')); return; }
-      finalText = ''; cm.peak = 0; cm.curFrames = []; cm.t0 = relNow(); cm.recognizing = true;
-      listening = true; finished = false;
-      rec = new SR(); rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = true;
-      rec.onresult = (e)=>{ let interim = '';
-        for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) finalText += r[0].transcript + ' '; else interim += r[0].transcript; }
-        say(`<span class="heard">“${escapeText((finalText+interim).trim())}”</span>`); };
-      rec.onerror = (e)=>{ say(`<span style="color:#C81C0F">Didn't catch that (${e.error}). Try again.</span>`); };
-      rec.onend = ()=>finish();
-      try{ rec.start(); }catch(_){}
-      micBtn.classList.add('listening'); micBtn.innerHTML = `<span class="mic-ico"></span>Listening… release to send`;
-    }
-    function stop(){ if(!listening) return; listening = false; cm.recognizing = false; cm.t1 = relNow(); resetBtn(); if(rec){ try{ rec.stop(); }catch(_){} } }
-    function finish(){
-      if(finished) return; finished = true; listening = false; cm.recognizing = false; resetBtn();
-      const said = finalText.trim();
-      if(!said){ say(`I didn't hear anything. Hold the button and speak up.`); return; }
+    function finish(said){
+      if(sent) return;
+      if(!said){ say(`I didn't hear anything. Click the mic, speak up, then click it again to stop.`); return; }
       const want = tokens(line), heard = new Set(tokens(said));
       const cov = want.length ? want.filter(w=>heard.has(w)).length / want.length : 1;
       if(cov < 0.3){ say(`<span class="heard">“${escapeText(said)}”</span><br>That didn't sound like the line. Try again, reading it as written.`); return; }
       say(`<span class="heard">“${escapeText(said)}”</span> &nbsp;Sending…`);
       setTimeout(()=>send(true), 500);
     }
-    micBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); start(); });
-    micBtn.addEventListener('mouseup', stop);
-    micBtn.addEventListener('mouseleave', stop);
-    micBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); start(); }, {passive:false});
-    micBtn.addEventListener('touchend',  (e)=>{ e.preventDefault(); stop(); });
+    bindToggleMic(micBtn, {
+      idleLabel: 'Click to start speaking',
+      beforeStart: async ()=>{
+        if(sent) return false;
+        const ok = await openMic(()=>say('Your browser will ask to use your microphone. Choose <b>Allow</b> to start speaking.'));
+        if(!ok){ micErrorMessage(cm.lastError).then(h=>say(h + ' Click the mic to try again, or use Send without saying it to continue.')); return false; }
+        return true;
+      },
+      onStart: ()=>say('Listening… Say the line, then click the mic again to stop.'),
+      onHeard: t=>say(`<span class="heard">“${escapeText(t)}”</span>`),
+      onError: err=>say(`<span style="color:#C81C0F">Didn't catch that (${escapeText(err)}). Click the mic to try again.</span>`),
+      onDone: finish
+    });
   }
 
   function fmtTime(s){ s = Math.max(0, Math.round(s||0)); const m = Math.floor(s/60), r = s%60; return m + ':' + (r<10?'0':'') + r; }
@@ -2781,7 +3009,7 @@ window.SCENARIO = {
   let graphState = null;
   function graphHTML(log){
     const tl = cm.timeline;
-    const total = cm.recEnd ? (cm.recEnd - cm.recStart) / 1000 : (tl.length ? tl[tl.length-1][0] : 0);
+    const total = cm.recEnd ? cm.recAccum : (tl.length ? tl[tl.length-1][0] : 0);
     if(tl.length < 2 || total <= 0){ graphState = null; return ''; }
     graphState = { total, log };
     return `
@@ -2994,38 +3222,58 @@ window.SCENARIO = {
      drives a meter and reports once the learner's voice clears the minimum-
      projection mark (0.22). It is NOT recorded, and stop() releases the mic.
      Permission granted here carries over, so the in-call mic won't prompt again. */
-  function micCheck(fillEl, onHeard){
+  /* onDiag (optional) gets a snapshot about twice a second, for the on-screen
+     troubleshooting readout: which mic, whether it sends sound, whether audio
+     is running, and the loudest level heard (so a flat meter has a reason). */
+  function micCheck(fillEl, onHeard, onDiag){
     let stream=null, ctx=null, raf=null, stopped=false, heard=false;
     const stop = ()=>{
-      stopped = true; if(raf) cancelAnimationFrame(raf);
+      stopped = true; if(raf) clearTimeout(raf);
       try{ (stream && stream.getTracks() || []).forEach(t=>t.stop()); }catch(_){}
       try{ if(ctx) ctx.close(); }catch(_){}
     };
     const ready = (async ()=>{
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('unavailable');
-      stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      stream = await navigator.mediaDevices.getUserMedia(audioConstraints());
       if(stopped){ stop(); return; }
       const Ctx = window.AudioContext || window.webkitAudioContext; ctx = new Ctx();
+      wakeAudio(ctx);
       const an = ctx.createAnalyser(); an.fftSize = 1024;
       ctx.createMediaStreamSource(stream).connect(an);
       const data = new Uint8Array(an.fftSize);
-      let smoothed = 0, framesAbove = 0;
+      const track = stream.getAudioTracks()[0];
+      let settings = {}; try{ settings = track.getSettings() || {}; }catch(_){}
+      const t0 = performance.now();
+      let smoothed = 0, framesAbove = 0, peak = 0, lastDiag = 0;
       const step = ()=>{
         an.getByteTimeDomainData(data);
         let sum=0; for(let i=0;i<data.length;i++){ const v=(data[i]-128)/128; sum+=v*v; }
-        const L = Math.min(1, Math.sqrt(sum/data.length) * 3.2);   // same scale as the in-call meter
+        const L = Math.min(1, Math.sqrt(sum/data.length) * MIC_GAIN);   // same scale as the in-call meter
         smoothed += (L - smoothed) * 0.2;
+        if(L > peak) peak = L;
+        const now = performance.now();
+        if(onDiag && now - lastDiag >= 500){
+          lastDiag = now;
+          onDiag({ label: track.label || 'Unnamed microphone', deviceId: settings.deviceId || '',
+                   muted: track.muted, enabled: track.enabled, live: track.readyState === 'live',
+                   ctx: ctx.state, peak: peak, secs: (now - t0) / 1000 });
+        }
         fillEl.style.width = Math.round(smoothed*100) + '%';
         fillEl.style.background = meterColor(smoothed);
-        if(smoothed >= 0.22 && ++framesAbove >= 8 && !heard){ heard = true; onHeard(); }
-        raf = requestAnimationFrame(step);
+        // Testing update: passes at a slightly quieter voice (was 0.22). This only
+        // affects the mic test; in-call volume scoring is unchanged.
+        if(smoothed >= 0.16 && ++framesAbove >= 8 && !heard){ heard = true; onHeard(); }
+        if(!stopped) raf = setTimeout(step, 33);
       };
-      raf = requestAnimationFrame(step);
+      // A timer, not requestAnimationFrame: some course frames pause animation
+      // frames, which would freeze the meter even while the mic is live.
+      raf = setTimeout(step, 33);
     })();
     return { ready, stop };
   }
 
-  window.CallMode = { attach, delivery, stopRecording, micCheck, micErrorMessage, embeddedBlocked,
+  window.CallMode = { attach, delivery, stopRecording, stopMic, micCheck, micErrorMessage, embeddedBlocked,
+                      listMics, setMicDevice, getMicDevice: ()=>cm.micDeviceId || '',
                       sayLine, shouldSpeak, setVoiceMode, bindGraph, mountGraph, supported: !!SR };
 })();
 </script>
